@@ -1,6 +1,7 @@
 package protocol.hgtp.base;
 
 import protocol.hgtp.exception.HgtpException;
+import util.module.ByteUtil;
 
 /**
  *    The HGTP header has the following format:
@@ -17,8 +18,8 @@ import protocol.hgtp.exception.HgtpException;
  */
 public class HgtpHeader {
 
-    private static final int HGTP_HEADER_SIZE = 12;
-    private static final short MAGIC_COOKIE = 0x48; // H
+    public static final int HGTP_HEADER_SIZE = 12;
+    public static final short MAGIC_COOKIE = 0x48; // H
 
     private final short magicCookie;                // 1 bytes
     private final short messageType;                // 1 bytes
@@ -62,11 +63,12 @@ public class HgtpHeader {
         }
     }
 
-    public HgtpHeader(short magicCookie, short messageType, int seqNumber, long timeStamp) {
+    public HgtpHeader(short magicCookie, short messageType, int seqNumber, long timeStamp, int bodyLength) {
         this.magicCookie = magicCookie;
         this.messageType = messageType;
         this.seqNumber = seqNumber;
-        this.timeStamp = timeStamp;
+        this.timeStamp = timeStamp % 4294967296L;
+        this.bodyLength = bodyLength;
     }
 
     public byte[] getByteData(){
@@ -95,7 +97,7 @@ public class HgtpHeader {
         return data;
     }
 
-
+    public short getMagicCookie() {return magicCookie;}
 
     public short getMessageType() {return messageType;}
 
