@@ -5,12 +5,12 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protocol.hgtp.exception.HgtpException;
-import protocol.hgtp.message.request.HgtpRequestRegister;
+import protocol.hgtp.message.request.HgtpRegisterRequest;
 import protocol.hgtp.message.base.HgtpHeader;
 import protocol.hgtp.message.base.HgtpMessageType;
-import protocol.hgtp.message.response.HgtpResponseOk;
-import protocol.hgtp.message.response.HgtpResponseUnauthorized;
-import util.module.ByteUtil;
+import protocol.hgtp.message.request.HgtpUnregisterRequest;
+import protocol.hgtp.message.response.HgtpCommonResponse;
+import protocol.hgtp.message.response.HgtpUnauthorizedResponse;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -22,37 +22,50 @@ public class HgtpTest {
     private static final Logger log = LoggerFactory.getLogger(HgtpTest.class);
     private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-DD HH:mm:ss.SSS");
 
-    private static final String TEST_REALM = "HGTP_SERVICE";
+    // hgtpRegisterTest
+    // 200 OK 응답                    : CLIENT_TEST_REALM == SERVER_TEST_REALM && AVAILABLE_REGISTER > CURRENT_REGISTER
+    // 403 Forbidden 응답             : CLIENT_TEST_REALM != SERVER_TEST_REALM
+    // 503 Service Unavailable 응답   : CLIENT_TEST_REALM == SERVER_TEST_REALM && AVAILABLE_REGISTER <= CURRENT_REGISTER
+    private static final String CLIENT_TEST_REALM = "HGTP_SERVICE";
+    private static final String SERVER_TEST_REALM = "HGTP_SERVICE";
     private static final String TEST_HASH_KEY = "950817";
+    private static final int AVAILABLE_REGISTER = 3;
+    private static final int CURRENT_REGISTER = 1;
+
+    // hgtpUnregisterTest
+    // 200 OK 응답                    : isServerError == false
+    // 400 Bad Request 응답           : isServerError == false && unknown messageType
+    // 503 Service Unavailable 응답   : isServerError == true
+    private static final boolean isServerError = false;
 
     @Test
-    public void hgtpRegisterSuccessTest() {
+    public void hgtpRegisterTest() {
         try {
-
             // send first Register
-            HgtpRequestRegister sendFirstHgtpRequestRegister = new HgtpRequestRegister(
+            HgtpRegisterRequest sendFirstHgtpRegisterRequest = new HgtpRegisterRequest(
                     HgtpHeader.MAGIC_COOKIE, HgtpMessageType.REGISTER, 4, TimeStamp.getCurrentTime().getSeconds(),
                     "regSessionId", 3600L, (short) 5060);
-            log.debug("SEND DATA : {}", sendFirstHgtpRequestRegister);
+            log.debug("RG1 SEND DATA : {}", sendFirstHgtpRegisterRequest);
             // recv first Register
-            byte[] recvFirstRegister = sendFirstHgtpRequestRegister.getByteData();
-            HgtpRequestRegister recvFirstHgtpRequestRegister = new HgtpRequestRegister(recvFirstRegister);
-            log.debug("RECV DATA  : {}", recvFirstHgtpRequestRegister);
+            byte[] recvFirstRegister = sendFirstHgtpRegisterRequest.getByteData();
+            HgtpRegisterRequest recvFirstHgtpRegisterRequest = new HgtpRegisterRequest(recvFirstRegister);
+            log.debug("RG1 RECV DATA  : {}", recvFirstHgtpRegisterRequest);
 
             // send unauthorized
-            HgtpResponseUnauthorized sendHgtpResponseUnauthorized = new HgtpResponseUnauthorized(
-                    recvFirstHgtpRequestRegister.getHgtpHeader().getMagicCookie(), HgtpMessageType.UNAUTHORIZED,
-                    recvFirstHgtpRequestRegister.getHgtpHeader().getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds(),
-                    recvFirstHgtpRequestRegister.getUserId(), TEST_REALM);
-            log.debug("SEND DATA : {}", sendHgtpResponseUnauthorized);
+            HgtpUnauthorizedResponse sendHgtpUnauthorizedResponse = new HgtpUnauthorizedResponse(
+                    recvFirstHgtpRegisterRequest.getHgtpHeader().getMagicCookie(), HgtpMessageType.UNAUTHORIZED,
+                    recvFirstHgtpRegisterRequest.getHgtpHeader().getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds(),
+                    recvFirstHgtpRegisterRequest.getHgtpHeader().getMessageType(),
+                    recvFirstHgtpRegisterRequest.getUserId(), CLIENT_TEST_REALM);
+            log.debug("URE SEND DATA : {}", sendHgtpUnauthorizedResponse);
             // recv unauthorized
-            byte[] recvUnauthorized = sendHgtpResponseUnauthorized.getByteData();
-            HgtpResponseUnauthorized recvHgtpResponseUnauthorized = new HgtpResponseUnauthorized(recvUnauthorized);
-            log.debug("RECV DATA : {}", recvHgtpResponseUnauthorized);
+            byte[] recvUnauthorized = sendHgtpUnauthorizedResponse.getByteData();
+            HgtpUnauthorizedResponse recvHgtpUnauthorizedResponse = new HgtpUnauthorizedResponse(recvUnauthorized);
+            log.debug("URE RECV DATA : {}", recvHgtpUnauthorizedResponse);
 
             // Encoding realm -> nonce
             MessageDigest messageDigestRealm = MessageDigest.getInstance("MD5");
-            messageDigestRealm.update(recvHgtpResponseUnauthorized.getRealm().getBytes(StandardCharsets.UTF_8));
+            messageDigestRealm.update(recvHgtpUnauthorizedResponse.getHgtpAuthorizedContext().getRealm().getBytes(StandardCharsets.UTF_8));
             messageDigestRealm.update(TEST_HASH_KEY.getBytes(StandardCharsets.UTF_8));
             byte[] digestRealm = messageDigestRealm.digest();
             messageDigestRealm.reset();
@@ -60,44 +73,90 @@ public class HgtpTest {
             String nonce = new String(messageDigestRealm.digest());
 
             // send second Register
-            HgtpRequestRegister sendSecondHgtpRequestRegister = new HgtpRequestRegister(
-                    HgtpHeader.MAGIC_COOKIE, HgtpMessageType.REGISTER, recvHgtpResponseUnauthorized.getHgtpHeader().getSeqNumber() + 1,
+            HgtpRegisterRequest sendSecondHgtpRegisterRequest = new HgtpRegisterRequest(
+                    HgtpHeader.MAGIC_COOKIE, HgtpMessageType.REGISTER, recvHgtpUnauthorizedResponse.getHgtpHeader().getSeqNumber() + 1,
                     TimeStamp.getCurrentTime().getSeconds(),
-                    recvHgtpResponseUnauthorized.getUserId(), 3600L, (short) 5060);
-            sendSecondHgtpRequestRegister.setNonce(nonce);
-            log.debug("SEND DATA : {}", sendSecondHgtpRequestRegister);
+                    recvHgtpUnauthorizedResponse.getHgtpAuthorizedContext().getUserId(), 3600L, (short) 5060);
+            sendSecondHgtpRegisterRequest.setNonce(nonce);
+            log.debug("RG2 SEND DATA : {}", sendSecondHgtpRegisterRequest);
             // recv second Register
-            byte[] recvSecondRegister = sendSecondHgtpRequestRegister.getByteData();
-            HgtpRequestRegister recvSecondHgtpRequestRegister = new HgtpRequestRegister(recvSecondRegister);
-            log.debug("RECV DATA  : {}", recvSecondHgtpRequestRegister);
+            byte[] recvSecondRegister = sendSecondHgtpRegisterRequest.getByteData();
+            HgtpRegisterRequest recvSecondHgtpRegisterRequest = new HgtpRegisterRequest(recvSecondRegister);
+            log.debug("RG2 RECV DATA  : {}", recvSecondHgtpRegisterRequest);
 
             // Decoding nonce -> realm
             MessageDigest messageDigestNonce = MessageDigest.getInstance("MD5");
-            messageDigestNonce.update(TEST_REALM.getBytes(StandardCharsets.UTF_8));
+            messageDigestNonce.update(SERVER_TEST_REALM.getBytes(StandardCharsets.UTF_8));
             messageDigestNonce.update(TEST_HASH_KEY.getBytes(StandardCharsets.UTF_8));
             byte[] digestNonce = messageDigestNonce.digest();
             messageDigestNonce.reset();
             messageDigestNonce.update(digestNonce);
 
             String curNonce = new String(messageDigestNonce.digest());
-            if (curNonce.equals(recvSecondHgtpRequestRegister.getNonce())) {
-                // send 200 Ok
-                HgtpResponseOk sendHgtpResponseOk = new HgtpResponseOk(recvSecondHgtpRequestRegister.getHgtpHeader().getMagicCookie(), HgtpMessageType.OK,
-                        recvSecondHgtpRequestRegister.getHgtpHeader().getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds(),
-                        recvSecondHgtpRequestRegister.getHgtpHeader().getMessageType(), recvFirstHgtpRequestRegister.getUserId());
-                log.debug("SEND DATA : {}", sendHgtpResponseOk);
-                // recv 200 Ok
-                byte[] recvResponseOk = sendHgtpResponseOk.getByteData();
-                HgtpResponseOk recvHgtpResponseOk = new HgtpResponseOk(recvResponseOk);
-                log.debug("RECV DATA  : {}", recvHgtpResponseOk);
-            } else {
-                log.debug("nonce not matching");
 
+            short messageType;
+            if (curNonce.equals(recvSecondHgtpRegisterRequest.getNonce())) {
+                if (AVAILABLE_REGISTER > CURRENT_REGISTER) {
+                    messageType = HgtpMessageType.OK;
+                } else {
+                    messageType = HgtpMessageType.SERVER_UNAVAILABLE;
+                }
+            } else {
+                messageType = HgtpMessageType.FORBIDDEN;
             }
 
+            // send response
+            HgtpCommonResponse sendHgtpResponse = new HgtpCommonResponse(
+                    recvSecondHgtpRegisterRequest.getHgtpHeader().getMagicCookie(), messageType,
+                    recvSecondHgtpRegisterRequest.getHgtpHeader().getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds(),
+                    recvSecondHgtpRegisterRequest.getHgtpHeader().getMessageType(), recvFirstHgtpRegisterRequest.getUserId());
+            log.debug("SEND DATA : {}", sendHgtpResponse);
+            // recv response
+            byte[] recvResponse = sendHgtpResponse.getByteData();
+            HgtpCommonResponse recvHgtpResponse = new HgtpCommonResponse(recvResponse);
+            log.debug("RECV DATA  : {}", recvHgtpResponse);
 
         } catch (HgtpException | NoSuchAlgorithmException e) {
             log.error("HgtpTest.hgtpRegisterSuccessTest ", e);
         }
+    }
+
+    @Test
+    public void hgtpUnregisterTest(){
+        try {
+            // send Unregister
+            HgtpUnregisterRequest sendHgtpUnregisterRequest = new HgtpUnregisterRequest(
+                    HgtpHeader.MAGIC_COOKIE, HgtpMessageType.UNREGISTER, 7, TimeStamp.getCurrentTime().getSeconds(), "unregSessionId");
+            log.debug("SEND DATA : {}", sendHgtpUnregisterRequest);
+            // recv Unregister
+            byte[] recvRequestUnregister = sendHgtpUnregisterRequest.getByteData();
+            HgtpUnregisterRequest recvHgtpUnregisterRequest = new HgtpUnregisterRequest(recvRequestUnregister);
+            log.debug("RECV DATA  : {}", recvHgtpUnregisterRequest);
+
+            short messageType;
+            if (isServerError) {
+                messageType = HgtpMessageType.SERVER_UNAVAILABLE;
+            } else {
+                if (recvHgtpUnregisterRequest.getHgtpHeader().getMessageType() != HgtpMessageType.UNREGISTER){
+                    messageType = HgtpMessageType.BAD_REQUEST;
+                } else {
+                    messageType = HgtpMessageType.OK;
+                }
+            }
+            // send response
+            HgtpCommonResponse sendHgtpResponse = new HgtpCommonResponse(
+                    recvHgtpUnregisterRequest.getHgtpHeader().getMagicCookie(), messageType,
+                    recvHgtpUnregisterRequest.getHgtpHeader().getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds(),
+                    recvHgtpUnregisterRequest.getHgtpHeader().getMessageType(), recvHgtpUnregisterRequest.getUserId());
+            log.debug("SEND DATA : {}", sendHgtpResponse);
+            // recv response
+            byte[] recvResponse = sendHgtpResponse.getByteData();
+            HgtpCommonResponse recvHgtpResponse = new HgtpCommonResponse(recvResponse);
+            log.debug("RECV DATA  : {}", recvHgtpResponse);
+
+        } catch (HgtpException e) {
+            log.error("HgtpTest.hgtpRegisterSuccessTest ", e);
+        }
+
     }
 }

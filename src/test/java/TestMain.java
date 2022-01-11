@@ -5,6 +5,8 @@ public class TestMain {
     @Test
     public void testMain() {
         HgtpTest hgtpTest = new HgtpTest();
-        hgtpTest.hgtpRegisterSuccessTest();
+        hgtpTest.hgtpRegisterTest();
+//        hgtpTest.hgtpUnregisterTest();
     }
+
 }

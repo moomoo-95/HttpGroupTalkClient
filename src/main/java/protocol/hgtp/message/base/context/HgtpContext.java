@@ -1,29 +1,21 @@
-package protocol.hgtp.message.response;
+package protocol.hgtp.message.base.context;
 
 import protocol.hgtp.exception.HgtpException;
-import protocol.hgtp.message.base.HgtpHeader;
-import protocol.hgtp.message.base.HgtpMessage;
 import protocol.hgtp.message.base.HgtpMessageType;
 import util.module.ByteUtil;
 
 import java.nio.charset.StandardCharsets;
 
-public class HgtpResponseOk extends HgtpMessage {
-
-    private final HgtpHeader hgtpHeader;
+public abstract class HgtpContext {
 
     private final short requestType;        // 1 bytes
     private final int userIdLength;         // 4 bytes
     private final String userId;            // userIdLength bytes
 
-    public HgtpResponseOk(byte[] data) throws HgtpException {
-        if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + 1 + ByteUtil.NUM_BYTES_IN_INT) {
-            int index = 0;
 
-            byte[] headerByteData = new byte[HgtpHeader.HGTP_HEADER_SIZE];
-            System.arraycopy(data, index, headerByteData, 0, headerByteData.length);
-            this.hgtpHeader = new HgtpHeader(headerByteData);
-            index += headerByteData.length;
+    public HgtpContext(byte[] data) {
+        if (data.length >= + 1 + ByteUtil.NUM_BYTES_IN_INT) {
+            int index = 0;
 
             byte[] requestTypeByteData = new byte[1];
             System.arraycopy(data, index, requestTypeByteData, 0, requestTypeByteData.length);
@@ -39,31 +31,21 @@ public class HgtpResponseOk extends HgtpMessage {
             System.arraycopy(data, index, idByteData, 0, idByteData.length);
             this.userId = new String(idByteData);
         } else {
-            this.hgtpHeader = null;
             this.requestType = HgtpMessageType.UNKNOWN;
             this.userIdLength = 0;
             this.userId = null;
         }
     }
 
-    public HgtpResponseOk(short magicCookie, short messageType, int seqNumber, long timeStamp, Short requestType, String userId) {
-        // requestType + userIdLength + userId
-        int bodyLength =  1 + ByteUtil.NUM_BYTES_IN_INT + userId.length();
-
-        this.hgtpHeader = new HgtpHeader(magicCookie, messageType, seqNumber, timeStamp, bodyLength);
+    public HgtpContext(Short requestType, String userId) {
         this.requestType = requestType;
         this.userIdLength = userId.getBytes(StandardCharsets.UTF_8).length;
         this.userId = userId;
     }
 
-    @Override
     public byte[] getByteData(){
-        byte[] data = new byte[HgtpHeader.HGTP_HEADER_SIZE + this.hgtpHeader.getBodyLength()];
+        byte[] data = new byte[this.getBodyLength()];
         int index = 0;
-
-        byte[] headerByteData = this.hgtpHeader.getByteData();
-        System.arraycopy(headerByteData, 0, data, index, headerByteData.length);
-        index += headerByteData.length;
 
         byte[] requestTypeByteData = ByteUtil.shortToBytes(requestType, true);
         System.arraycopy(requestTypeByteData, requestTypeByteData.length/2, data, index, requestTypeByteData.length/2);
@@ -76,13 +58,17 @@ public class HgtpResponseOk extends HgtpMessage {
         byte[] userIdByteData = userId.getBytes(StandardCharsets.UTF_8);
         System.arraycopy(userIdByteData, 0, data, index, userIdByteData.length);
 
-
         return data;
     }
 
-    public HgtpHeader getHgtpHeader() {return hgtpHeader;}
-
     public short getRequestType() {return requestType;}
 
+    public int getUserIdLength() {return userIdLength;}
+
     public String getUserId() {return userId;}
+
+    public int getBodyLength() {
+        // requestType + userIdLength + userId
+        return 1 + ByteUtil.NUM_BYTES_IN_INT + userId.length();
+    }
 }

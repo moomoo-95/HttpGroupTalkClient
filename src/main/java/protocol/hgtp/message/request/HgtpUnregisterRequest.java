@@ -1,23 +1,21 @@
-package protocol.hgtp.message.response;
+package protocol.hgtp.message.request;
 
+import protocol.hgtp.exception.HgtpException;
 import protocol.hgtp.message.base.HgtpHeader;
 import protocol.hgtp.message.base.HgtpMessage;
-import protocol.hgtp.exception.HgtpException;
 import util.module.ByteUtil;
 
 import java.nio.charset.StandardCharsets;
 
-public class HgtpResponseUnauthorized extends HgtpMessage {
+public class HgtpUnregisterRequest extends HgtpMessage {
 
     private final HgtpHeader hgtpHeader;
 
     private final int userIdLength;         // 4 bytes
     private final String userId;            // userIdLength bytes
-    private final int realmLength;          // 4 bytes
-    private final String realm;             // realmLength bytes
 
-    public HgtpResponseUnauthorized(byte[] data) throws HgtpException {
-        if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + ByteUtil.NUM_BYTES_IN_INT * 2) {
+    public HgtpUnregisterRequest(byte[] data) throws HgtpException {
+        if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + ByteUtil.NUM_BYTES_IN_INT) {
             int index = 0;
 
             byte[] headerByteData = new byte[HgtpHeader.HGTP_HEADER_SIZE];
@@ -33,39 +31,26 @@ public class HgtpResponseUnauthorized extends HgtpMessage {
             byte[] idByteData = new byte[userIdLength];
             System.arraycopy(data, index, idByteData, 0, idByteData.length);
             userId = new String(idByteData);
-            index += idByteData.length;
 
-            byte[] realmLengthByteData = new byte[ByteUtil.NUM_BYTES_IN_INT];
-            System.arraycopy(data, index, realmLengthByteData, 0, realmLengthByteData.length);
-            realmLength = ByteUtil.bytesToInt(realmLengthByteData, true);
-            index += realmLengthByteData.length;
-
-            byte[] realmByteData = new byte[realmLength];
-            System.arraycopy(data, index, realmByteData, 0, realmByteData.length);
-            realm = new String(realmByteData, StandardCharsets.UTF_8);
 
         } else {
             this.hgtpHeader = null;
             this.userIdLength = 0;
             this.userId = null;
-            this.realmLength = 0;
-            this.realm = null;
         }
     }
 
-    public HgtpResponseUnauthorized(short magicCookie, short messageType, int seqNumber, long timeStamp, String userId, String realm) {
-        // userIdLength + userId + realmLength + realm
-        int bodyLength = ByteUtil.NUM_BYTES_IN_INT + userId.length() + ByteUtil.NUM_BYTES_IN_INT +  realm.length();
+    public HgtpUnregisterRequest(short magicCookie, short messageType, int seqNumber, long timeStamp, String userId) {
+        // userIdLength + userId
+        int bodyLength = ByteUtil.NUM_BYTES_IN_INT + userId.length();
 
         this.hgtpHeader = new HgtpHeader(magicCookie, messageType, seqNumber, timeStamp, bodyLength);
         this.userIdLength = userId.getBytes(StandardCharsets.UTF_8).length;
         this.userId = userId;
-        this.realmLength = realm.getBytes(StandardCharsets.UTF_8).length;
-        this.realm = realm;
     }
 
     @Override
-    public byte[] getByteData(){
+    public byte[] getByteData() {
         byte[] data = new byte[HgtpHeader.HGTP_HEADER_SIZE + this.hgtpHeader.getBodyLength()];
         int index = 0;
 
@@ -79,14 +64,6 @@ public class HgtpResponseUnauthorized extends HgtpMessage {
 
         byte[] userIdByteData = userId.getBytes(StandardCharsets.UTF_8);
         System.arraycopy(userIdByteData, 0, data, index, userIdByteData.length);
-        index += userIdByteData.length;
-
-        byte[] realmLengthByteData = ByteUtil.intToBytes(realmLength, true);
-        System.arraycopy(realmLengthByteData, 0, data, index, realmLengthByteData.length);
-        index += realmLengthByteData.length;
-
-        byte[] realmByteData = realm.getBytes(StandardCharsets.UTF_8);
-        System.arraycopy(realmByteData, 0, data, index, realmByteData.length);
 
         return data;
     }
@@ -94,6 +71,4 @@ public class HgtpResponseUnauthorized extends HgtpMessage {
     public HgtpHeader getHgtpHeader() {return hgtpHeader;}
 
     public String getUserId() {return userId;}
-
-    public String getRealm() {return realm;}
 }

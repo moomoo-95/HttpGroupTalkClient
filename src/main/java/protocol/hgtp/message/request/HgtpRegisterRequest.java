@@ -7,7 +7,7 @@ import util.module.ByteUtil;
 
 import java.nio.charset.StandardCharsets;
 
-public class HgtpRequestRegister extends HgtpMessage {
+public class HgtpRegisterRequest extends HgtpMessage {
 
     private final HgtpHeader hgtpHeader;
 
@@ -18,7 +18,7 @@ public class HgtpRequestRegister extends HgtpMessage {
     private int nonceLength = 0;            // 4 bytes
     private String nonce = "";              // nonceLength bytes
 
-    public HgtpRequestRegister(byte[] data) throws HgtpException {
+    public HgtpRegisterRequest(byte[] data) throws HgtpException {
         if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + ByteUtil.NUM_BYTES_IN_INT + ByteUtil.NUM_BYTES_IN_LONG + ByteUtil.NUM_BYTES_IN_SHORT + ByteUtil.NUM_BYTES_IN_INT) {
             int index = 0;
 
@@ -66,7 +66,7 @@ public class HgtpRequestRegister extends HgtpMessage {
         }
     }
 
-    public HgtpRequestRegister(short magicCookie, short messageType, int seqNumber, long timeStamp, String userId, long expires, short listenPort) {
+    public HgtpRegisterRequest(short magicCookie, short messageType, int seqNumber, long timeStamp, String userId, long expires, short listenPort) {
         // userIdLength + userId + expires + listenPort + nonceLength (nonce 미포함)
         int bodyLength = ByteUtil.NUM_BYTES_IN_INT + userId.length() + ByteUtil.NUM_BYTES_IN_LONG
                 + ByteUtil.NUM_BYTES_IN_SHORT + ByteUtil.NUM_BYTES_IN_INT;
