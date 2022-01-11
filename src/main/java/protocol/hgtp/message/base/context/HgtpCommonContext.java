@@ -1,10 +1,8 @@
 package protocol.hgtp.message.base.context;
 
-import protocol.hgtp.exception.HgtpException;
-
 public class HgtpCommonContext extends HgtpContext {
 
-    public HgtpCommonContext(byte[] data) throws HgtpException {
+    public HgtpCommonContext(byte[] data) {
         super(data);
     }
 

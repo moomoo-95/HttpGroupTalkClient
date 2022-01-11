@@ -6,12 +6,12 @@ import util.module.ByteUtil;
 
 import java.nio.charset.StandardCharsets;
 
-public class HgtpAuthorizedContext extends HgtpContext {
+public class HgtpUnauthorizedContext extends HgtpContext {
 
     private final int realmLength;          // 4 bytes
     private final String realm;             // realmLength bytes
 
-    public HgtpAuthorizedContext(byte[] data) {
+    public HgtpUnauthorizedContext(byte[] data) {
         super(data);
         int index = super.getBodyLength();
 
@@ -32,7 +32,7 @@ public class HgtpAuthorizedContext extends HgtpContext {
         }
     }
 
-    public HgtpAuthorizedContext(Short requestType, String userId, String realm) {
+    public HgtpUnauthorizedContext(Short requestType, String userId, String realm) {
         super(requestType, userId);
 
         this.realmLength = realm.getBytes(StandardCharsets.UTF_8).length;
@@ -45,7 +45,6 @@ public class HgtpAuthorizedContext extends HgtpContext {
         int index = 0;
 
         byte[] commonContextData = super.getByteData();
-        Logger log = LoggerFactory.getLogger(HgtpAuthorizedContext.class);
         System.arraycopy(commonContextData, 0, data, index, commonContextData.length);
         index += commonContextData.length;
 

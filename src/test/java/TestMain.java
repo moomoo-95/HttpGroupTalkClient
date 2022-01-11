@@ -6,7 +6,7 @@ public class TestMain {
     public void testMain() {
         HgtpTest hgtpTest = new HgtpTest();
         hgtpTest.hgtpRegisterTest();
-//        hgtpTest.hgtpUnregisterTest();
+        hgtpTest.hgtpUnregisterTest();
     }
 
 }

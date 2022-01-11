@@ -26,7 +26,6 @@ public class HgtpCommonResponse extends HgtpMessage {
         } else {
             this.hgtpHeader = null;
             this.hgtpCommonContext = null;
-
         }
     }
 

@@ -1,6 +1,6 @@
 package protocol.hgtp.message.response;
 
-import protocol.hgtp.message.base.context.HgtpAuthorizedContext;
+import protocol.hgtp.message.base.context.HgtpUnauthorizedContext;
 import protocol.hgtp.message.base.HgtpHeader;
 import protocol.hgtp.message.base.HgtpMessage;
 import protocol.hgtp.exception.HgtpException;
@@ -10,7 +10,7 @@ import util.module.ByteUtil;
 public class HgtpUnauthorizedResponse extends HgtpMessage {
 
     private final HgtpHeader hgtpHeader;                        // 12 bytes
-    private final HgtpAuthorizedContext hgtpAuthorizedContext;  // At least 9 bytes
+    private final HgtpUnauthorizedContext hgtpUnauthorizedContext;  // At least 9 bytes
 
     public HgtpUnauthorizedResponse(byte[] data) throws HgtpException {
         if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + 1 + ByteUtil.NUM_BYTES_IN_INT * 2) {
@@ -23,11 +23,11 @@ public class HgtpUnauthorizedResponse extends HgtpMessage {
 
             byte[] contextByteData = new byte[this.hgtpHeader.getBodyLength()];
             System.arraycopy(data, index, contextByteData, 0, contextByteData.length);
-            this.hgtpAuthorizedContext = new HgtpAuthorizedContext(contextByteData);
+            this.hgtpUnauthorizedContext = new HgtpUnauthorizedContext(contextByteData);
 
         } else {
             this.hgtpHeader = null;
-            this.hgtpAuthorizedContext = null;
+            this.hgtpUnauthorizedContext = null;
         }
     }
 
@@ -36,7 +36,7 @@ public class HgtpUnauthorizedResponse extends HgtpMessage {
         int bodyLength = 1 + ByteUtil.NUM_BYTES_IN_INT + userId.length() + ByteUtil.NUM_BYTES_IN_INT +  realm.length();
 
         this.hgtpHeader = new HgtpHeader(magicCookie, messageType, seqNumber, timeStamp, bodyLength);
-        this.hgtpAuthorizedContext = new HgtpAuthorizedContext(requestType, userId, realm);
+        this.hgtpUnauthorizedContext = new HgtpUnauthorizedContext(requestType, userId, realm);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class HgtpUnauthorizedResponse extends HgtpMessage {
         System.arraycopy(headerByteData, 0, data, index, headerByteData.length);
         index += headerByteData.length;
 
-        byte[] contextByteData = this.hgtpAuthorizedContext.getByteData();
+        byte[] contextByteData = this.hgtpUnauthorizedContext.getByteData();
         System.arraycopy(contextByteData, 0, data, index, contextByteData.length);
 
         return data;
@@ -56,7 +56,7 @@ public class HgtpUnauthorizedResponse extends HgtpMessage {
 
     public HgtpHeader getHgtpHeader() {return hgtpHeader;}
 
-    public HgtpAuthorizedContext getHgtpAuthorizedContext() {
-        return hgtpAuthorizedContext;
+    public HgtpUnauthorizedContext getHgtpUnauthorizedContext() {
+        return hgtpUnauthorizedContext;
     }
 }
