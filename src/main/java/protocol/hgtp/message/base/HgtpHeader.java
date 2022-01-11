@@ -1,4 +1,4 @@
-package protocol.hgtp.base;
+package protocol.hgtp.message.base;
 
 import protocol.hgtp.exception.HgtpException;
 import util.module.ByteUtil;
@@ -43,12 +43,12 @@ public class HgtpHeader {
             this.seqNumber = ByteUtil.bytesToShort(seqNumberByteData, true);
             index += seqNumberByteData.length;
 
-            byte[] timeStampByteData = new byte[4];
-            System.arraycopy(data, index, timeStampByteData, 0, timeStampByteData.length);
-            this.timeStamp = ByteUtil.bytesToInt(timeStampByteData, true);
-            index += timeStampByteData.length;
+            byte[] timeStampByteData = new byte[8];
+            System.arraycopy(data, index, timeStampByteData, timeStampByteData.length/2, timeStampByteData.length/2);
+            this.timeStamp = ByteUtil.bytesToLong(timeStampByteData, true);
+            index += timeStampByteData.length/2;
 
-            byte[] bodyLengthByteData = new byte[4];
+            byte[] bodyLengthByteData = new byte[ByteUtil.NUM_BYTES_IN_INT];
             System.arraycopy(data, index, bodyLengthByteData, 0, bodyLengthByteData.length);
             this.bodyLength = ByteUtil.bytesToInt(bodyLengthByteData, true);
 
@@ -67,7 +67,7 @@ public class HgtpHeader {
         this.magicCookie = magicCookie;
         this.messageType = messageType;
         this.seqNumber = seqNumber;
-        this.timeStamp = timeStamp % 4294967296L;
+        this.timeStamp = timeStamp;
         this.bodyLength = bodyLength;
     }
 
@@ -107,15 +107,4 @@ public class HgtpHeader {
 
     public int getBodyLength() {return bodyLength;}
     public void setBodyLength(int bodyLength) {this.bodyLength = bodyLength;}
-
-    @Override
-    public String toString() {
-        return "HgtpHeader{" +
-                "magicCookie=" + magicCookie +
-                ", messageType=" + messageType +
-                ", seqNumber=" + seqNumber +
-                ", timeStamp=" + timeStamp +
-                ", bodyLength=" + bodyLength +
-                '}';
-    }
 }

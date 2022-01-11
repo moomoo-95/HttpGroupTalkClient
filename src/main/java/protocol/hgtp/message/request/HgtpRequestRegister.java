@@ -1,8 +1,8 @@
-package protocol.hgtp.request;
+package protocol.hgtp.message.request;
 
-import protocol.hgtp.base.HgtpHeader;
-import protocol.hgtp.base.HgtpMessage;
+import protocol.hgtp.message.base.HgtpHeader;
 import protocol.hgtp.exception.HgtpException;
+import protocol.hgtp.message.base.HgtpMessage;
 import util.module.ByteUtil;
 
 import java.nio.charset.StandardCharsets;
@@ -13,13 +13,13 @@ public class HgtpRequestRegister extends HgtpMessage {
 
     private final int userIdLength;         // 4 bytes
     private final String userId;            // userIdLength bytes
-    private final long expires;         // 8 bytes
-    private final short listenPort;     // 2 bytes
-    private int nonceLength = 0;        // 4 bytes
-    private String nonce = "";          // nonceLength bytes
+    private final long expires;             // 8 bytes
+    private final short listenPort;         // 2 bytes
+    private int nonceLength = 0;            // 4 bytes
+    private String nonce = "";              // nonceLength bytes
 
     public HgtpRequestRegister(byte[] data) throws HgtpException {
-        if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + ByteUtil.NUM_BYTES_IN_LONG + ByteUtil.NUM_BYTES_IN_SHORT) {
+        if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + ByteUtil.NUM_BYTES_IN_INT + ByteUtil.NUM_BYTES_IN_LONG + ByteUtil.NUM_BYTES_IN_SHORT + ByteUtil.NUM_BYTES_IN_INT) {
             int index = 0;
 
             byte[] headerByteData = new byte[HgtpHeader.HGTP_HEADER_SIZE];

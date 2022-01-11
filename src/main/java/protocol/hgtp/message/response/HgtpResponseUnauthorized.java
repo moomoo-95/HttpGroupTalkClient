@@ -1,8 +1,7 @@
-package protocol.hgtp.response;
+package protocol.hgtp.message.response;
 
-import protocol.hgtp.base.HgtpHeader;
-import protocol.hgtp.base.HgtpMessage;
-import protocol.hgtp.base.HgtpMessageType;
+import protocol.hgtp.message.base.HgtpHeader;
+import protocol.hgtp.message.base.HgtpMessage;
 import protocol.hgtp.exception.HgtpException;
 import util.module.ByteUtil;
 
@@ -18,7 +17,7 @@ public class HgtpResponseUnauthorized extends HgtpMessage {
     private final String realm;             // realmLength bytes
 
     public HgtpResponseUnauthorized(byte[] data) throws HgtpException {
-        if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + ByteUtil.NUM_BYTES_IN_INT * 3) {
+        if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + ByteUtil.NUM_BYTES_IN_INT * 2) {
             int index = 0;
 
             byte[] headerByteData = new byte[HgtpHeader.HGTP_HEADER_SIZE];
@@ -44,7 +43,6 @@ public class HgtpResponseUnauthorized extends HgtpMessage {
             byte[] realmByteData = new byte[realmLength];
             System.arraycopy(data, index, realmByteData, 0, realmByteData.length);
             realm = new String(realmByteData, StandardCharsets.UTF_8);
-            index += realmByteData.length;
 
         } else {
             this.hgtpHeader = null;
@@ -93,11 +91,9 @@ public class HgtpResponseUnauthorized extends HgtpMessage {
         return data;
     }
 
-    public HgtpHeader getURtspHeader() {
-        return hgtpHeader;
-    }
+    public HgtpHeader getHgtpHeader() {return hgtpHeader;}
 
-    public String getRealm() {
-        return realm;
-    }
+    public String getUserId() {return userId;}
+
+    public String getRealm() {return realm;}
 }

@@ -1,4 +1,4 @@
-package protocol.hgtp.base;
+package protocol.hgtp.message.base;
 
 public class HgtpMessageType {
     public static final short UNKNOWN = 0x00;
@@ -12,12 +12,12 @@ public class HgtpMessageType {
     public static final short INVITE_USER_FROM_ROOM = 0xA0;
     public static final short REMOVE_USER_FROM_ROOM = 0xA1;
 
-    public static final short OK_200 = 0x20;
-    public static final short BAD_REQUEST_400 = 0x40;
-    public static final short UNAUTHORIZED_401 = 0x41;
-    public static final short FORBIDDEN_403 = 0x43;
-    public static final short SERVER_UNAVAILABLE_503 = 0x53;
-    public static final short DECLINE_603 = 0x63;
+    public static final short OK = 0x20;
+    public static final short BAD_REQUEST = 0x40;
+    public static final short UNAUTHORIZED = 0x41;
+    public static final short FORBIDDEN = 0x43;
+    public static final short SERVER_UNAVAILABLE = 0x53;
+    public static final short DECLINE = 0x63;
 
     private HgtpMessageType() {
         // nothing

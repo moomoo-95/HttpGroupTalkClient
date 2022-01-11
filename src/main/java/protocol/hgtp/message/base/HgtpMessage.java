@@ -1,4 +1,4 @@
-package protocol.hgtp.base;
+package protocol.hgtp.message.base;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

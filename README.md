@@ -1,7 +1,5 @@
 # HttpGroupTalkClient
-
 ## Structure
-
 ### Basic Flow
 ![image](https://user-images.githubusercontent.com/58906637/148345567-485d7f5c-7715-4e30-b910-41c0aab6182b.png)
 
@@ -22,3 +20,8 @@
 
 ### Transport Structure
 ![image](https://user-images.githubusercontent.com/58906637/148347521-3cec8725-988f-4480-904c-552bd440379f.png)
+
+## Protocol
+### HGTP (Http Group Talk Protocol)
+#### Header Format
+
