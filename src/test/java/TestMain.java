@@ -1,8 +1,8 @@
+import moomoo.hgtp.client.util.CnameGenerator;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.hgtp.client.protocol.hgtp.HgtpTest;
-import util.CnameGenerator;
+import protocol.hgtp.HgtpTest;
 
 import java.nio.charset.StandardCharsets;
 
