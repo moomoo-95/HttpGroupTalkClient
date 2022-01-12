@@ -5,7 +5,7 @@ import util.module.ByteUtil;
 
 import java.nio.charset.StandardCharsets;
 
-public class HgtpRegisterContent extends HgtpContent {
+public class HgtpRegisterContent implements HgtpContent {
 
     private final long expires;             // 8 bytes
     private final short listenPort;         // 2 bytes
@@ -13,11 +13,9 @@ public class HgtpRegisterContent extends HgtpContent {
     private String nonce = "";              // nonceLength bytes
 
     public HgtpRegisterContent(byte[] data) {
-        super(data);
-        int index = super.getBodyLength();
 
-        if (data.length >= index + ByteUtil.NUM_BYTES_IN_LONG + ByteUtil.NUM_BYTES_IN_SHORT + ByteUtil.NUM_BYTES_IN_INT) {
-
+        if (data.length >= ByteUtil.NUM_BYTES_IN_LONG + ByteUtil.NUM_BYTES_IN_SHORT + ByteUtil.NUM_BYTES_IN_INT) {
+            int index = 0;
             byte[] expiresByteData = new byte[ByteUtil.NUM_BYTES_IN_LONG];
             System.arraycopy(data, index, expiresByteData, 0, expiresByteData.length);
             expires = ByteUtil.bytesToLong(expiresByteData, true);
@@ -52,12 +50,8 @@ public class HgtpRegisterContent extends HgtpContent {
 
     @Override
     public byte[] getByteData() {
-        byte[] data = new byte[getTotalBodyLength()];
+        byte[] data = new byte[getBodyLength()];
         int index = 0;
-
-        byte[] commonContextData = super.getByteData();
-        System.arraycopy(commonContextData, 0, data, index, commonContextData.length);
-        index += commonContextData.length;
 
         byte[] expiresByteData = ByteUtil.longToBytes(expires, true);
         System.arraycopy(expiresByteData, 0, data, index, expiresByteData.length);
@@ -82,8 +76,8 @@ public class HgtpRegisterContent extends HgtpContent {
         return data;
     }
 
-    public int getTotalBodyLength() {
-        return super.getBodyLength() + ByteUtil.NUM_BYTES_IN_LONG + ByteUtil.NUM_BYTES_IN_SHORT + ByteUtil.NUM_BYTES_IN_INT + nonceLength;
+    public int getBodyLength() {
+        return ByteUtil.NUM_BYTES_IN_LONG + ByteUtil.NUM_BYTES_IN_SHORT + ByteUtil.NUM_BYTES_IN_INT + nonceLength;
     }
 
     public String getNonce() {return nonce;}

@@ -1,19 +1,18 @@
 package protocol.hgtp.message.request;
 
-import protocol.hgtp.message.base.HgtpHeader;
 import protocol.hgtp.exception.HgtpException;
+import protocol.hgtp.message.base.HgtpHeader;
 import protocol.hgtp.message.base.HgtpMessage;
-import protocol.hgtp.message.base.content.HgtpRegisterContent;
-import util.module.ByteUtil;
+import protocol.hgtp.message.base.content.HgtpRoomContent;
 
 
-public class HgtpRegisterRequest extends HgtpMessage {
+public class HgtpDeleteRoomRequest extends HgtpMessage {
 
     private final HgtpHeader hgtpHeader;
-    private final HgtpRegisterContent hgtpContext;
+    private final HgtpRoomContent hgtpContext;
 
-    public HgtpRegisterRequest(byte[] data) throws HgtpException {
-        if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + ByteUtil.NUM_BYTES_IN_LONG + ByteUtil.NUM_BYTES_IN_SHORT + ByteUtil.NUM_BYTES_IN_INT) {
+    public HgtpDeleteRoomRequest(byte[] data) throws HgtpException {
+        if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + 12) {
             int index = 0;
 
             byte[] headerByteData = new byte[HgtpHeader.HGTP_HEADER_SIZE];
@@ -23,20 +22,18 @@ public class HgtpRegisterRequest extends HgtpMessage {
 
             byte[] contextByteData = new byte[hgtpHeader.getBodyLength()];
             System.arraycopy(data, index, contextByteData, 0, contextByteData.length);
-            this.hgtpContext = new HgtpRegisterContent(contextByteData);
+            this.hgtpContext = new HgtpRoomContent(contextByteData);
         } else {
             this.hgtpHeader = null;
             this.hgtpContext = null;
         }
     }
 
-    public HgtpRegisterRequest(short magicCookie, short messageType, String userId, int seqNumber, long timeStamp,  long expires, short listenPort) {
-        //  + expires + listenPort + nonceLength (nonce 미포함)
-        int bodyLength = ByteUtil.NUM_BYTES_IN_LONG
-                + ByteUtil.NUM_BYTES_IN_SHORT + ByteUtil.NUM_BYTES_IN_INT;
+    public HgtpDeleteRoomRequest(short magicCookie, short messageType, String userId, int seqNumber, long timeStamp, String roomId) {
+        int bodyLength = 12;
 
         this.hgtpHeader = new HgtpHeader(magicCookie, messageType, messageType, userId, seqNumber, timeStamp, bodyLength);
-        this.hgtpContext = new HgtpRegisterContent(expires, listenPort);
+        this.hgtpContext = new HgtpRoomContent(roomId);
     }
 
     @Override
@@ -56,5 +53,5 @@ public class HgtpRegisterRequest extends HgtpMessage {
 
     public HgtpHeader getHgtpHeader() {return hgtpHeader;}
 
-    public HgtpRegisterContent getHgtpContext() {return hgtpContext;}
+    public HgtpRoomContent getHgtpContext() {return hgtpContext;}
 }

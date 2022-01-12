@@ -6,7 +6,7 @@ import protocol.hgtp.message.base.HgtpMessage;
 
 public class HgtpCommonResponse extends HgtpMessage {
 
-    private final HgtpHeader hgtpHeader;                    // 12 bytes
+    private final HgtpHeader hgtpHeader;
 
     public HgtpCommonResponse(byte[] data) throws HgtpException {
         if (data.length >= HgtpHeader.HGTP_HEADER_SIZE) {

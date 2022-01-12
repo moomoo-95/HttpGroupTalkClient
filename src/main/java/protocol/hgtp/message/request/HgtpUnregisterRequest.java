@@ -6,7 +6,7 @@ import protocol.hgtp.message.base.HgtpMessage;
 
 public class HgtpUnregisterRequest extends HgtpMessage {
 
-    private final HgtpHeader hgtpHeader;                    // 12 bytes
+    private final HgtpHeader hgtpHeader;
 
     public HgtpUnregisterRequest(byte[] data) throws HgtpException {
         if (data.length >= HgtpHeader.HGTP_HEADER_SIZE) {

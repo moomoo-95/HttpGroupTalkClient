@@ -4,17 +4,15 @@ import util.module.ByteUtil;
 
 import java.nio.charset.StandardCharsets;
 
-public class HgtpUnauthorizedContent extends HgtpContent {
+public class HgtpUnauthorizedContent implements HgtpContent {
 
     private final int realmLength;          // 4 bytes
     private final String realm;             // realmLength bytes
 
     public HgtpUnauthorizedContent(byte[] data) {
-        super(data);
-        int index = super.getBodyLength();
+        if (data.length >= ByteUtil.NUM_BYTES_IN_INT) {
 
-        if (data.length >= index + ByteUtil.NUM_BYTES_IN_INT) {
-
+            int index = 0;
             byte[] realmLengthByteData = new byte[ByteUtil.NUM_BYTES_IN_INT];
             System.arraycopy(data, index, realmLengthByteData, 0, realmLengthByteData.length);
             realmLength = ByteUtil.bytesToInt(realmLengthByteData, true);
@@ -37,12 +35,8 @@ public class HgtpUnauthorizedContent extends HgtpContent {
 
     @Override
     public byte[] getByteData() {
-        byte[] data = new byte[getTotalBodyLength()];
+        byte[] data = new byte[getBodyLength()];
         int index = 0;
-
-        byte[] commonContextData = super.getByteData();
-        System.arraycopy(commonContextData, 0, data, index, commonContextData.length);
-        index += commonContextData.length;
 
         byte[] realmLengthByteData = ByteUtil.intToBytes(realmLength, true);
         System.arraycopy(realmLengthByteData, 0, data, index, realmLengthByteData.length);
@@ -54,8 +48,8 @@ public class HgtpUnauthorizedContent extends HgtpContent {
         return data;
     }
 
-    public int getTotalBodyLength() {
-        return super.getBodyLength() + ByteUtil.NUM_BYTES_IN_INT + realmLength;
+    public int getBodyLength() {
+        return ByteUtil.NUM_BYTES_IN_INT + realmLength;
     }
 
     public String getRealm() {

@@ -10,8 +10,8 @@ import util.module.ByteUtil;
 
 public class HgtpUnauthorizedResponse extends HgtpMessage {
 
-    private final HgtpHeader hgtpHeader;                        // 12 bytes
-    private final HgtpContent hgtpUnauthorizedContext;  // At least 9 bytes
+    private final HgtpHeader hgtpHeader;
+    private final HgtpUnauthorizedContent hgtpContext;
 
     public HgtpUnauthorizedResponse(byte[] data) throws HgtpException {
         if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + ByteUtil.NUM_BYTES_IN_INT) {
@@ -24,11 +24,11 @@ public class HgtpUnauthorizedResponse extends HgtpMessage {
 
             byte[] contextByteData = new byte[this.hgtpHeader.getBodyLength()];
             System.arraycopy(data, index, contextByteData, 0, contextByteData.length);
-            this.hgtpUnauthorizedContext = new HgtpUnauthorizedContent(contextByteData);
+            this.hgtpContext = new HgtpUnauthorizedContent(contextByteData);
 
         } else {
             this.hgtpHeader = null;
-            this.hgtpUnauthorizedContext = null;
+            this.hgtpContext = null;
         }
     }
 
@@ -37,7 +37,7 @@ public class HgtpUnauthorizedResponse extends HgtpMessage {
         int bodyLength = ByteUtil.NUM_BYTES_IN_INT +  realm.length();
 
         this.hgtpHeader = new HgtpHeader(magicCookie, messageType, requestType, userId, seqNumber, timeStamp, bodyLength);
-        this.hgtpUnauthorizedContext = new HgtpUnauthorizedContent(realm);
+        this.hgtpContext = new HgtpUnauthorizedContent(realm);
     }
 
     @Override
@@ -49,7 +49,7 @@ public class HgtpUnauthorizedResponse extends HgtpMessage {
         System.arraycopy(headerByteData, 0, data, index, headerByteData.length);
         index += headerByteData.length;
 
-        byte[] contextByteData = this.hgtpUnauthorizedContext.getByteData();
+        byte[] contextByteData = this.hgtpContext.getByteData();
         System.arraycopy(contextByteData, 0, data, index, contextByteData.length);
 
         return data;
@@ -57,5 +57,5 @@ public class HgtpUnauthorizedResponse extends HgtpMessage {
 
     public HgtpHeader getHgtpHeader() {return hgtpHeader;}
 
-    public HgtpUnauthorizedContent getHgtpUnauthorizedContext() {return (HgtpUnauthorizedContent) hgtpUnauthorizedContext;}
+    public HgtpUnauthorizedContent getHgtpContext() {return hgtpContext;}
 }

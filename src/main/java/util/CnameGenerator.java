@@ -18,8 +18,10 @@ public class CnameGenerator {
     //      > CNAME 도 SSRC 처럼 RTP 세션 내에서 유일해야 한다.
 
     ////////////////////////////////////////////////////////////
+    // non parameter was modified to int byteLength for use in this project. by hyeonseong
+    // public -> private
     // FUNCTIONS
-    public static String generateCname() {
+    private static String generateCname(int byteLength) {
         // generate unique identifier
         UUID uuid = UUID.randomUUID();
         // get the 64 least significant bits
@@ -35,12 +37,21 @@ public class CnameGenerator {
 
         // get the 96 least significant bits
         // note: 96 / 8 = 12
-        byte[] data = new byte[6];              // 12 was modified to 6 for use in this project.
-        buffer.get(data, 0, 6);    // 12 was modified to 6 for use in this project.
+        byte[] data = new byte[byteLength];        // 12 -> "byteLength"by hyeonseong
+        buffer.get(data, 0, byteLength);    // 12 -> "byteLength"by hyeonseong
 
         // convert the least 96 bits to ASCII Base64
         return DatatypeConverter.printBase64Binary(data);
     }
     ////////////////////////////////////////////////////////////
 
+    // add function by hyeonseong
+    public static String generateCnameUserId() {
+        return generateCname(6);
+    }
+
+    // add function by hyeonseong
+    public static String generateCnameRoomId() {
+        return generateCname(9);
+    }
 }
