@@ -1,29 +1,20 @@
 package protocol.hgtp.message.request;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import protocol.hgtp.message.base.HgtpHeader;
 import protocol.hgtp.exception.HgtpException;
 import protocol.hgtp.message.base.HgtpMessage;
-import protocol.hgtp.message.base.context.HgtpRegisterContext;
+import protocol.hgtp.message.base.content.HgtpContent;
+import protocol.hgtp.message.base.content.HgtpRegisterContent;
 import util.module.ByteUtil;
 
-import java.nio.charset.StandardCharsets;
 
 public class HgtpRegisterRequest extends HgtpMessage {
 
     private final HgtpHeader hgtpHeader;
-    private final HgtpRegisterContext hgtpRegisterContext;
-
-//    private final int userIdLength;         // 4 bytes
-//    private final String userId;            // userIdLength bytes
-//    private final long expires;             // 8 bytes
-//    private final short listenPort;         // 2 bytes
-//    private int nonceLength = 0;            // 4 bytes
-//    private String nonce = "";              // nonceLength bytes
+    private final HgtpContent hgtpRegisterContext;
 
     public HgtpRegisterRequest(byte[] data) throws HgtpException {
-        if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + ByteUtil.NUM_BYTES_IN_INT + ByteUtil.NUM_BYTES_IN_LONG + ByteUtil.NUM_BYTES_IN_SHORT + ByteUtil.NUM_BYTES_IN_INT) {
+        if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + ByteUtil.NUM_BYTES_IN_LONG + ByteUtil.NUM_BYTES_IN_SHORT + ByteUtil.NUM_BYTES_IN_INT) {
             int index = 0;
 
             byte[] headerByteData = new byte[HgtpHeader.HGTP_HEADER_SIZE];
@@ -33,20 +24,20 @@ public class HgtpRegisterRequest extends HgtpMessage {
 
             byte[] contextByteData = new byte[hgtpHeader.getBodyLength()];
             System.arraycopy(data, index, contextByteData, 0, contextByteData.length);
-            this.hgtpRegisterContext = new HgtpRegisterContext(contextByteData);
+            this.hgtpRegisterContext = new HgtpRegisterContent(contextByteData);
         } else {
             this.hgtpHeader = null;
             this.hgtpRegisterContext = null;
         }
     }
 
-    public HgtpRegisterRequest(short magicCookie, short messageType, int seqNumber, long timeStamp, String userId, long expires, short listenPort) {
-        // userIdLength + userId + expires + listenPort + nonceLength (nonce 미포함)
-        int bodyLength = 1 + ByteUtil.NUM_BYTES_IN_INT + userId.length() + ByteUtil.NUM_BYTES_IN_LONG
+    public HgtpRegisterRequest(short magicCookie, short messageType, String userId, int seqNumber, long timeStamp,  long expires, short listenPort) {
+        //  + expires + listenPort + nonceLength (nonce 미포함)
+        int bodyLength = ByteUtil.NUM_BYTES_IN_LONG
                 + ByteUtil.NUM_BYTES_IN_SHORT + ByteUtil.NUM_BYTES_IN_INT;
 
-        this.hgtpHeader = new HgtpHeader(magicCookie, messageType, seqNumber, timeStamp, bodyLength);
-        this.hgtpRegisterContext = new HgtpRegisterContext(messageType, userId, expires, listenPort);
+        this.hgtpHeader = new HgtpHeader(magicCookie, messageType, messageType, userId, seqNumber, timeStamp, bodyLength);
+        this.hgtpRegisterContext = new HgtpRegisterContent(expires, listenPort);
     }
 
     @Override
@@ -60,8 +51,6 @@ public class HgtpRegisterRequest extends HgtpMessage {
 
         byte[] contextByteData = this.hgtpRegisterContext.getByteData();
 
-        Logger log = LoggerFactory.getLogger(HgtpRegisterRequest.class);
-        log.debug("{} / {} / {}", data.length, headerByteData.length, contextByteData.length);
         System.arraycopy(contextByteData, 0, data, index, contextByteData.length);
 
         return data;
@@ -69,7 +58,5 @@ public class HgtpRegisterRequest extends HgtpMessage {
 
     public HgtpHeader getHgtpHeader() {return hgtpHeader;}
 
-    public HgtpRegisterContext getHgtpRegisterContext() {
-        return hgtpRegisterContext;
-    }
+    public HgtpRegisterContent getHgtpRegisterContext() {return (HgtpRegisterContent) hgtpRegisterContext;}
 }

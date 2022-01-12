@@ -1,20 +1,18 @@
-package protocol.hgtp.message.base.context;
+package protocol.hgtp.message.base.content;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import protocol.hgtp.message.base.HgtpHeader;
 import util.module.ByteUtil;
 
 import java.nio.charset.StandardCharsets;
 
-public class HgtpRegisterContext extends HgtpContext {
+public class HgtpRegisterContent extends HgtpContent {
 
     private final long expires;             // 8 bytes
     private final short listenPort;         // 2 bytes
     private int nonceLength = 0;            // 4 bytes
     private String nonce = "";              // nonceLength bytes
 
-    public HgtpRegisterContext(byte[] data) {
+    public HgtpRegisterContent(byte[] data) {
         super(data);
         int index = super.getBodyLength();
 
@@ -47,9 +45,7 @@ public class HgtpRegisterContext extends HgtpContext {
         }
     }
 
-    public HgtpRegisterContext(Short requestType, String userId, long expires, short listenPort) {
-        super(requestType, userId);
-
+    public HgtpRegisterContent(long expires, short listenPort) {
         this.expires = expires;
         this.listenPort = listenPort;
     }
@@ -86,21 +82,6 @@ public class HgtpRegisterContext extends HgtpContext {
         return data;
     }
 
-    @Override
-    public short getRequestType() {
-        return super.getRequestType();
-    }
-
-    @Override
-    public int getUserIdLength() {
-        return super.getUserIdLength();
-    }
-
-    @Override
-    public String getUserId() {
-        return super.getUserId();
-    }
-
     public int getTotalBodyLength() {
         return super.getBodyLength() + ByteUtil.NUM_BYTES_IN_LONG + ByteUtil.NUM_BYTES_IN_SHORT + ByteUtil.NUM_BYTES_IN_INT + nonceLength;
     }
@@ -110,7 +91,6 @@ public class HgtpRegisterContext extends HgtpContext {
     public void setNonce(HgtpHeader hgtpHeader, String nonce) {
         this.nonceLength = nonce.getBytes(StandardCharsets.UTF_8).length;
         this.nonce = nonce;
-
 
         hgtpHeader.setBodyLength(hgtpHeader.getBodyLength() + nonceLength);
     }

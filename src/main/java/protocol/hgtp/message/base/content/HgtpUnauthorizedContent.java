@@ -1,17 +1,15 @@
-package protocol.hgtp.message.base.context;
+package protocol.hgtp.message.base.content;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import util.module.ByteUtil;
 
 import java.nio.charset.StandardCharsets;
 
-public class HgtpUnauthorizedContext extends HgtpContext {
+public class HgtpUnauthorizedContent extends HgtpContent {
 
     private final int realmLength;          // 4 bytes
     private final String realm;             // realmLength bytes
 
-    public HgtpUnauthorizedContext(byte[] data) {
+    public HgtpUnauthorizedContent(byte[] data) {
         super(data);
         int index = super.getBodyLength();
 
@@ -32,9 +30,7 @@ public class HgtpUnauthorizedContext extends HgtpContext {
         }
     }
 
-    public HgtpUnauthorizedContext(Short requestType, String userId, String realm) {
-        super(requestType, userId);
-
+    public HgtpUnauthorizedContent(String realm) {
         this.realmLength = realm.getBytes(StandardCharsets.UTF_8).length;
         this.realm = realm;
     }
@@ -56,21 +52,6 @@ public class HgtpUnauthorizedContext extends HgtpContext {
         System.arraycopy(realmByteData, 0, data, index, realmByteData.length);
 
         return data;
-    }
-
-    @Override
-    public short getRequestType() {
-        return super.getRequestType();
-    }
-
-    @Override
-    public int getUserIdLength() {
-        return super.getUserIdLength();
-    }
-
-    @Override
-    public String getUserId() {
-        return super.getUserId();
     }
 
     public int getTotalBodyLength() {

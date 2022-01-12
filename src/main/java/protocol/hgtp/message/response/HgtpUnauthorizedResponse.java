@@ -1,6 +1,7 @@
 package protocol.hgtp.message.response;
 
-import protocol.hgtp.message.base.context.HgtpUnauthorizedContext;
+import protocol.hgtp.message.base.content.HgtpContent;
+import protocol.hgtp.message.base.content.HgtpUnauthorizedContent;
 import protocol.hgtp.message.base.HgtpHeader;
 import protocol.hgtp.message.base.HgtpMessage;
 import protocol.hgtp.exception.HgtpException;
@@ -10,10 +11,10 @@ import util.module.ByteUtil;
 public class HgtpUnauthorizedResponse extends HgtpMessage {
 
     private final HgtpHeader hgtpHeader;                        // 12 bytes
-    private final HgtpUnauthorizedContext hgtpUnauthorizedContext;  // At least 9 bytes
+    private final HgtpContent hgtpUnauthorizedContext;  // At least 9 bytes
 
     public HgtpUnauthorizedResponse(byte[] data) throws HgtpException {
-        if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + 1 + ByteUtil.NUM_BYTES_IN_INT * 2) {
+        if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + ByteUtil.NUM_BYTES_IN_INT) {
             int index = 0;
 
             byte[] headerByteData = new byte[HgtpHeader.HGTP_HEADER_SIZE];
@@ -23,7 +24,7 @@ public class HgtpUnauthorizedResponse extends HgtpMessage {
 
             byte[] contextByteData = new byte[this.hgtpHeader.getBodyLength()];
             System.arraycopy(data, index, contextByteData, 0, contextByteData.length);
-            this.hgtpUnauthorizedContext = new HgtpUnauthorizedContext(contextByteData);
+            this.hgtpUnauthorizedContext = new HgtpUnauthorizedContent(contextByteData);
 
         } else {
             this.hgtpHeader = null;
@@ -31,12 +32,12 @@ public class HgtpUnauthorizedResponse extends HgtpMessage {
         }
     }
 
-    public HgtpUnauthorizedResponse(short magicCookie, short messageType, int seqNumber, long timeStamp, Short requestType, String userId, String realm) {
-        // requestType + userIdLength + userId + realmLength + realm
-        int bodyLength = 1 + ByteUtil.NUM_BYTES_IN_INT + userId.length() + ByteUtil.NUM_BYTES_IN_INT +  realm.length();
+    public HgtpUnauthorizedResponse(short magicCookie, short messageType, Short requestType, String userId, int seqNumber, long timeStamp, String realm) {
+        // realmLength + realm
+        int bodyLength = ByteUtil.NUM_BYTES_IN_INT +  realm.length();
 
-        this.hgtpHeader = new HgtpHeader(magicCookie, messageType, seqNumber, timeStamp, bodyLength);
-        this.hgtpUnauthorizedContext = new HgtpUnauthorizedContext(requestType, userId, realm);
+        this.hgtpHeader = new HgtpHeader(magicCookie, messageType, requestType, userId, seqNumber, timeStamp, bodyLength);
+        this.hgtpUnauthorizedContext = new HgtpUnauthorizedContent(realm);
     }
 
     @Override
@@ -56,7 +57,5 @@ public class HgtpUnauthorizedResponse extends HgtpMessage {
 
     public HgtpHeader getHgtpHeader() {return hgtpHeader;}
 
-    public HgtpUnauthorizedContext getHgtpUnauthorizedContext() {
-        return hgtpUnauthorizedContext;
-    }
+    public HgtpUnauthorizedContent getHgtpUnauthorizedContext() {return (HgtpUnauthorizedContent) hgtpUnauthorizedContext;}
 }

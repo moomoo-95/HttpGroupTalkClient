@@ -11,6 +11,7 @@ import protocol.hgtp.message.base.HgtpMessageType;
 import protocol.hgtp.message.request.HgtpUnregisterRequest;
 import protocol.hgtp.message.response.HgtpCommonResponse;
 import protocol.hgtp.message.response.HgtpUnauthorizedResponse;
+import util.CnameGenerator;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -41,23 +42,29 @@ public class HgtpTest {
     @Test
     public void hgtpRegisterTest() {
         try {
+            String registerUserId = CnameGenerator.generateCname();
             // send first Register
             HgtpRegisterRequest sendFirstHgtpRegisterRequest = new HgtpRegisterRequest(
-                    HgtpHeader.MAGIC_COOKIE, HgtpMessageType.REGISTER, 4, TimeStamp.getCurrentTime().getSeconds(),
-                    "regSessionId", 3600L, (short) 5060);
+                    HgtpHeader.MAGIC_COOKIE, HgtpMessageType.REGISTER, registerUserId, 4, TimeStamp.getCurrentTime().getSeconds(),
+                    3600L, (short) 5060);
             log.debug("RG1 SEND DATA : {}", sendFirstHgtpRegisterRequest);
+
             // recv first Register
             byte[] recvFirstRegister = sendFirstHgtpRegisterRequest.getByteData();
+
+            log.debug("recvFirstRegister : {}", recvFirstRegister);
             HgtpRegisterRequest recvFirstHgtpRegisterRequest = new HgtpRegisterRequest(recvFirstRegister);
             log.debug("RG1 RECV DATA  : {}", recvFirstHgtpRegisterRequest);
 
             // send unauthorized
+            HgtpHeader recvReg1Header = recvFirstHgtpRegisterRequest.getHgtpHeader();
             HgtpUnauthorizedResponse sendHgtpUnauthorizedResponse = new HgtpUnauthorizedResponse(
-                    recvFirstHgtpRegisterRequest.getHgtpHeader().getMagicCookie(), HgtpMessageType.UNAUTHORIZED,
+                    recvReg1Header.getMagicCookie(), HgtpMessageType.UNAUTHORIZED,
+                    recvReg1Header.getRequestType(), recvReg1Header.getUserId(),
                     recvFirstHgtpRegisterRequest.getHgtpHeader().getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds(),
-                    recvFirstHgtpRegisterRequest.getHgtpHeader().getMessageType(),
-                    recvFirstHgtpRegisterRequest.getHgtpRegisterContext().getUserId(), CLIENT_TEST_REALM);
+                    CLIENT_TEST_REALM);
             log.debug("URE SEND DATA : {}", sendHgtpUnauthorizedResponse);
+
             // recv unauthorized
             byte[] recvUnauthorized = sendHgtpUnauthorizedResponse.getByteData();
             HgtpUnauthorizedResponse recvHgtpUnauthorizedResponse = new HgtpUnauthorizedResponse(recvUnauthorized);
@@ -73,12 +80,14 @@ public class HgtpTest {
             String nonce = new String(messageDigestRealm.digest());
 
             // send second Register
+            HgtpHeader recvUnauthHeader = recvHgtpUnauthorizedResponse.getHgtpHeader();
             HgtpRegisterRequest sendSecondHgtpRegisterRequest = new HgtpRegisterRequest(
-                    HgtpHeader.MAGIC_COOKIE, HgtpMessageType.REGISTER, recvHgtpUnauthorizedResponse.getHgtpHeader().getSeqNumber() + 1,
-                    TimeStamp.getCurrentTime().getSeconds(),
-                    recvHgtpUnauthorizedResponse.getHgtpUnauthorizedContext().getUserId(), 3600L, (short) 5060);
+                    HgtpHeader.MAGIC_COOKIE, HgtpMessageType.REGISTER, recvUnauthHeader.getUserId(),
+                    recvUnauthHeader.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds(),
+                    3600L, (short) 5060);
             sendSecondHgtpRegisterRequest.getHgtpRegisterContext().setNonce(sendSecondHgtpRegisterRequest.getHgtpHeader(), nonce);
             log.debug("RG2 SEND DATA : {}", sendSecondHgtpRegisterRequest);
+
             // recv second Register
             byte[] recvSecondRegister = sendSecondHgtpRegisterRequest.getByteData();
             HgtpRegisterRequest recvSecondHgtpRegisterRequest = new HgtpRegisterRequest(recvSecondRegister);
@@ -106,10 +115,12 @@ public class HgtpTest {
             }
 
             // send response
+            HgtpHeader recvReg2Header = recvSecondHgtpRegisterRequest.getHgtpHeader();
             HgtpCommonResponse sendHgtpResponse = new HgtpCommonResponse(
                     recvSecondHgtpRegisterRequest.getHgtpHeader().getMagicCookie(), messageType,
-                    recvSecondHgtpRegisterRequest.getHgtpHeader().getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds(),
-                    recvSecondHgtpRegisterRequest.getHgtpHeader().getMessageType(), recvFirstHgtpRegisterRequest.getHgtpRegisterContext().getUserId());
+                    recvReg2Header.getMessageType(), recvReg2Header.getUserId(),
+                    recvReg2Header.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds()
+                    );
             log.debug("SEND DATA : {}", sendHgtpResponse);
             // recv response
             byte[] recvResponse = sendHgtpResponse.getByteData();
@@ -124,9 +135,10 @@ public class HgtpTest {
     @Test
     public void hgtpUnregisterTest(){
         try {
+            String unregisterUserId = CnameGenerator.generateCname();
             // send Unregister
             HgtpUnregisterRequest sendHgtpUnregisterRequest = new HgtpUnregisterRequest(
-                    HgtpHeader.MAGIC_COOKIE, HgtpMessageType.UNREGISTER, 7, TimeStamp.getCurrentTime().getSeconds(), "unregSessionId");
+                    HgtpHeader.MAGIC_COOKIE, HgtpMessageType.UNREGISTER, unregisterUserId, 7, TimeStamp.getCurrentTime().getSeconds());
             log.debug("SEND DATA : {}", sendHgtpUnregisterRequest);
             // recv Unregister
             byte[] recvRequestUnregister = sendHgtpUnregisterRequest.getByteData();
@@ -144,10 +156,10 @@ public class HgtpTest {
                 }
             }
             // send response
+            HgtpHeader recvUnregHeader = recvHgtpUnregisterRequest.getHgtpHeader();
             HgtpCommonResponse sendHgtpResponse = new HgtpCommonResponse(
-                    recvHgtpUnregisterRequest.getHgtpHeader().getMagicCookie(), messageType,
-                    recvHgtpUnregisterRequest.getHgtpHeader().getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds(),
-                    recvHgtpUnregisterRequest.getHgtpHeader().getMessageType(), recvHgtpUnregisterRequest.getHgtpCommonContext().getUserId());
+                    recvUnregHeader.getMagicCookie(), messageType, recvUnregHeader.getMessageType(), recvUnregHeader.getUserId(),
+                    recvUnregHeader.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds());
             log.debug("SEND DATA : {}", sendHgtpResponse);
             // recv response
             byte[] recvResponse = sendHgtpResponse.getByteData();
