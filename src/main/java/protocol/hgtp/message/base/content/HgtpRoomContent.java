@@ -1,5 +1,7 @@
 package protocol.hgtp.message.base.content;
 
+import util.AppInstance;
+
 import java.nio.charset.StandardCharsets;
 
 public class HgtpRoomContent implements HgtpContent {
@@ -34,7 +36,7 @@ public class HgtpRoomContent implements HgtpContent {
     }
 
     public int getBodyLength() {
-        return 12;
+        return AppInstance.ROOM_ID_SIZE;
     }
 
     public String getRoomId() {

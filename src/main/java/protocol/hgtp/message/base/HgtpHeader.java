@@ -1,6 +1,7 @@
 package protocol.hgtp.message.base;
 
 import protocol.hgtp.exception.HgtpException;
+import util.AppInstance;
 import util.module.ByteUtil;
 
 import java.nio.charset.StandardCharsets;
@@ -63,7 +64,7 @@ public class HgtpHeader {
             this.requestType = ByteUtil.bytesToShort(new byte[]{0x0, mtToRtByteData[1]}, true);
             index += mtToRtByteData.length;
 
-            byte[] userIdByteData = new byte[8];
+            byte[] userIdByteData = new byte[AppInstance.USER_ID_SIZE];
             System.arraycopy(data, index, userIdByteData, 0, userIdByteData.length);
             this.userId = new String(userIdByteData, StandardCharsets.UTF_8);
             index += userIdByteData.length;
