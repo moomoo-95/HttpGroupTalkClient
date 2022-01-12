@@ -7,6 +7,7 @@ import network.socket.SocketManager;
 import network.socket.SocketProtocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import protocol.hgtp.HgtpConsumer;
 import service.scheduler.schedule.ScheduleManager;
 
 public class ServiceManager {
@@ -64,6 +65,9 @@ public class ServiceManager {
             this.isQuit = true;
             this.stop();
         }));
+
+        // HGTP Consumer 생성
+        HgtpConsumer.getInstance();
 
         // 인스턴스 생성
         baseEnvironment = new BaseEnvironment( new ScheduleManager(), new ResourceManager(MIN_PORT, MAX_PORT), DebugLevel.DEBUG );

@@ -12,6 +12,8 @@ public class TestMain {
     public void testMain() {
         String userId = CnameGenerator.generateCnameUserId();
         String roomId = CnameGenerator.generateCnameRoomId();
+        String userId2 = CnameGenerator.generateCnameUserId();
+        String roomId2 = CnameGenerator.generateCnameRoomId();
         log.debug("{} : {} : {}", userId.length(), userId, userId.getBytes(StandardCharsets.UTF_8));
         log.debug("{} : {} : {}", roomId.length(), roomId, roomId.getBytes(StandardCharsets.UTF_8));
         HgtpTest hgtpTest = new HgtpTest();
@@ -19,6 +21,10 @@ public class TestMain {
         hgtpTest.hgtpRegisterTest(userId);
         log.debug("-------------------- Create room --------------------");
         hgtpTest.hgtpCreateRoomTest(userId, roomId);
+        log.debug("-------------------- Join room --------------------");
+        hgtpTest.hgtpJoinRoomTest(userId, roomId);
+        log.debug("-------------------- Exit room --------------------");
+        hgtpTest.hgtpExitRoomTest(userId, roomId);
         log.debug("-------------------- Delete room --------------------");
         hgtpTest.hgtpDeleteRoomTest(userId, roomId);
         log.debug("-------------------- Unregister --------------------");

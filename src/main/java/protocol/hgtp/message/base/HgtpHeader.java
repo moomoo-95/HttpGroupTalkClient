@@ -38,7 +38,7 @@ public class HgtpHeader {
     private int bodyLength = 0;                     // 4 bytes
 
     public HgtpHeader(byte[] data) throws HgtpException {
-        if (data.length == HGTP_HEADER_SIZE) {
+        if (data.length >= HGTP_HEADER_SIZE) {
             int index = 0;
 
             byte[] magicCookieByteData = new byte[ByteUtil.NUM_BYTES_IN_SHORT];
@@ -63,7 +63,7 @@ public class HgtpHeader {
             this.requestType = ByteUtil.bytesToShort(new byte[]{0x0, mtToRtByteData[1]}, true);
             index += mtToRtByteData.length;
 
-            byte[] userIdByteData = new byte[ByteUtil.NUM_BYTES_IN_LONG];
+            byte[] userIdByteData = new byte[8];
             System.arraycopy(data, index, userIdByteData, 0, userIdByteData.length);
             this.userId = new String(userIdByteData, StandardCharsets.UTF_8);
             index += userIdByteData.length;

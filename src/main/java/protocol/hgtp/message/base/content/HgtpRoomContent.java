@@ -36,4 +36,8 @@ public class HgtpRoomContent implements HgtpContent {
     public int getBodyLength() {
         return 12;
     }
+
+    public String getRoomId() {
+        return roomId;
+    }
 }

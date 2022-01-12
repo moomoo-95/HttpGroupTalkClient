@@ -5,12 +5,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protocol.hgtp.exception.HgtpException;
-import protocol.hgtp.message.request.HgtpCreateRoomRequest;
-import protocol.hgtp.message.request.HgtpDeleteRoomRequest;
-import protocol.hgtp.message.request.HgtpRegisterRequest;
+import protocol.hgtp.message.request.*;
 import protocol.hgtp.message.base.HgtpHeader;
 import protocol.hgtp.message.base.HgtpMessageType;
-import protocol.hgtp.message.request.HgtpUnregisterRequest;
 import protocol.hgtp.message.response.HgtpCommonResponse;
 import protocol.hgtp.message.response.HgtpUnauthorizedResponse;
 
@@ -18,33 +15,57 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 
 public class HgtpTest {
 
     private static final Logger log = LoggerFactory.getLogger(HgtpTest.class);
     private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-DD HH:mm:ss.SSS");
 
-    // hgtpRegisterTest
-    // 200 OK 응답                    : CLIENT_TEST_REALM == SERVER_TEST_REALM && AVAILABLE_REGISTER > CURRENT_REGISTER
-    // 403 Forbidden 응답             : CLIENT_TEST_REALM != SERVER_TEST_REALM
-    // 503 Service Unavailable 응답   : CLIENT_TEST_REALM == SERVER_TEST_REALM && AVAILABLE_REGISTER <= CURRENT_REGISTER
-    private static final String CLIENT_TEST_REALM = "HGTP_SERVICE";
-    private static final String SERVER_TEST_REALM = "HGTP_SERVICE";
+    // Common
     private static final String TEST_HASH_KEY = "950817";
+
+    // Server
+    private boolean isServerError = false;
+    private static final String SERVER_TEST_REALM = "HGTP_SERVICE";
     private static final int AVAILABLE_REGISTER = 3;
-    private static final int CURRENT_REGISTER = 1;
+    private static final int AVAILABLE_ROOM = 3;
+    private static final HashMap<String, String> userInfoMap = new HashMap<>();
+    private static final HashMap<String, String> roomInfoMap = new HashMap<>();
+
+    // Client
+    private static final String CLIENT_TEST_REALM = "HGTP_SERVICE";
+
+    // hgtpRegisterTest
+    // 200 OK 응답                    : CLIENT_TEST_REALM == SERVER_TEST_REALM && AVAILABLE_REGISTER > userInfoMap.size()
+    // 403 Forbidden 응답             : CLIENT_TEST_REALM != SERVER_TEST_REALM
+    // 503 Service Unavailable 응답   : CLIENT_TEST_REALM == SERVER_TEST_REALM && AVAILABLE_REGISTER <= userInfoMap.size()
+
 
     // hgtpUnregisterTest
     // 200 OK 응답                    : isServerError == false
     // 400 Bad Request 응답           : isServerError == false && unknown messageType
     // 503 Service Unavailable 응답   : isServerError == true
-    private static final boolean isServerError = false;
 
     // hgtpCreateRoomTest
-    // 200 OK 응답                    : isDuplicationRoom == false
-    // 400 Bad Request 응답           : isDuplicationRoom == false && unknown messageType
-    // 503 Service Unavailable 응답   : isDuplicationRoom == true
-    private static final boolean isDuplicationRoom = false;
+    // 200 OK 응답                    : isServerError == false && AVAILABLE_REGISTER > roomInfoMap.size()
+    // 400 Bad Request 응답           : isServerError == false && unknown messageType
+    // 503 Service Unavailable 응답   : isServerError == true  || AVAILABLE_REGISTER <= roomInfoMap.size()
+
+    // hgtpDeleteRoomTest
+    // 200 OK 응답                    : isServerError == false
+    // 400 Bad Request 응답           : isServerError == false && unknown messageType
+    // 503 Service Unavailable 응답   : isServerError == true
+
+    // hgtpJoinRoomTest
+    // 200 OK 응답                    : isServerError == false
+    // 400 Bad Request 응답           : isServerError == false && unknown messageType
+    // 503 Service Unavailable 응답   : isServerError == true
+
+    // hgtpExitRoomTest
+    // 200 OK 응답                    : isServerError == false
+    // 400 Bad Request 응답           : isServerError == false && unknown messageType
+    // 503 Service Unavailable 응답   : isServerError == true
 
     @Test
     public void hgtpRegisterTest(String userId) {
@@ -57,8 +78,6 @@ public class HgtpTest {
 
             // recv first Register
             byte[] recvFirstRegister = sendFirstHgtpRegisterRequest.getByteData();
-
-            log.debug("recvFirstRegister : {}", recvFirstRegister);
             HgtpRegisterRequest recvFirstHgtpRegisterRequest = new HgtpRegisterRequest(recvFirstRegister);
             log.debug("RG1 RECV DATA  : {}", recvFirstHgtpRegisterRequest);
 
@@ -110,14 +129,22 @@ public class HgtpTest {
             String curNonce = new String(messageDigestNonce.digest());
 
             short messageType;
+            String msgType = "";
             if (curNonce.equals(recvSecondHgtpRegisterRequest.getHgtpContext().getNonce())) {
-                if (AVAILABLE_REGISTER > CURRENT_REGISTER) {
+                if (AVAILABLE_REGISTER > userInfoMap.size()) {
+                    userInfoMap.put(recvSecondHgtpRegisterRequest.getHgtpHeader().getUserId(), userId);
                     messageType = HgtpMessageType.OK;
-                } else {
+                    msgType = "OK";
+                } else if (userInfoMap.containsKey(recvSecondHgtpRegisterRequest.getHgtpHeader().getUserId())) {
                     messageType = HgtpMessageType.SERVER_UNAVAILABLE;
+                    msgType = "SUA";
+                } else {
+                    messageType = HgtpMessageType.UNKNOWN;
+                    msgType = "UNW";
                 }
             } else {
                 messageType = HgtpMessageType.FORBIDDEN;
+                msgType = "FBN";
             }
 
             // send response
@@ -127,11 +154,11 @@ public class HgtpTest {
                     recvReg2Header.getMessageType(), recvReg2Header.getUserId(),
                     recvReg2Header.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds()
                     );
-            log.debug("SEND DATA : {}", sendHgtpResponse);
+            log.debug("{} SEND DATA : {}", msgType, sendHgtpResponse);
             // recv response
             byte[] recvResponse = sendHgtpResponse.getByteData();
             HgtpCommonResponse recvHgtpResponse = new HgtpCommonResponse(recvResponse);
-            log.debug("RECV DATA  : {}", recvHgtpResponse);
+            log.debug("{} RECV DATA  : {}", msgType, recvHgtpResponse);
 
         } catch (HgtpException | NoSuchAlgorithmException e) {
             log.error("HgtpTest.hgtpRegisterTest ", e);
@@ -151,13 +178,18 @@ public class HgtpTest {
             log.debug("RECV DATA  : {}", recvHgtpUnregisterRequest);
 
             short messageType;
+            String msgType = "";
             if (isServerError) {
                 messageType = HgtpMessageType.SERVER_UNAVAILABLE;
+                msgType = "SUA";
             } else {
-                if (recvHgtpUnregisterRequest.getHgtpHeader().getMessageType() != HgtpMessageType.UNREGISTER){
+                if (recvHgtpUnregisterRequest.getHgtpHeader().getMessageType() != HgtpMessageType.UNREGISTER || !userInfoMap.containsKey(recvHgtpUnregisterRequest.getHgtpHeader().getUserId())) {
                     messageType = HgtpMessageType.BAD_REQUEST;
+                    msgType = "BAD";
                 } else {
+                    userInfoMap.remove(recvHgtpUnregisterRequest.getHgtpHeader().getUserId());
                     messageType = HgtpMessageType.OK;
+                    msgType = "OK";
                 }
             }
             // send response
@@ -165,11 +197,11 @@ public class HgtpTest {
             HgtpCommonResponse sendHgtpResponse = new HgtpCommonResponse(
                     recvUnregHeader.getMagicCookie(), messageType, recvUnregHeader.getMessageType(), recvUnregHeader.getUserId(),
                     recvUnregHeader.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds());
-            log.debug("SEND DATA : {}", sendHgtpResponse);
+            log.debug("{} SEND DATA : {}", msgType, sendHgtpResponse);
             // recv response
             byte[] recvResponse = sendHgtpResponse.getByteData();
             HgtpCommonResponse recvHgtpResponse = new HgtpCommonResponse(recvResponse);
-            log.debug("RECV DATA  : {}", recvHgtpResponse);
+            log.debug("{} RECV DATA : {}", msgType, recvHgtpResponse);
 
         } catch (HgtpException e) {
             log.error("HgtpTest.hgtpUnregisterTest ", e);
@@ -191,26 +223,30 @@ public class HgtpTest {
             log.debug("RECV DATA  : {}", recvHgtpCreateRoomReqeust);
 
             short messageType;
-            if (isServerError) {
+            String msgType = "";
+            if (isServerError || AVAILABLE_ROOM < roomInfoMap.size()) {
                 messageType = HgtpMessageType.SERVER_UNAVAILABLE;
+                msgType = "SUA";
             } else {
-                if (recvHgtpCreateRoomReqeust.getHgtpHeader().getMessageType() != HgtpMessageType.CREATE_ROOM){
+                if (recvHgtpCreateRoomReqeust.getHgtpHeader().getMessageType() != HgtpMessageType.CREATE_ROOM || !userInfoMap.containsKey(recvHgtpCreateRoomReqeust.getHgtpHeader().getUserId())){
                     messageType = HgtpMessageType.BAD_REQUEST;
+                    msgType = "BAD";
                 } else {
+                    roomInfoMap.put(recvHgtpCreateRoomReqeust.getHgtpContext().getRoomId(), roomId);
                     messageType = HgtpMessageType.OK;
+                    msgType = "OK";
                 }
             }
             // send response
-            HgtpHeader recvUnregHeader = recvHgtpCreateRoomReqeust.getHgtpHeader();
+            HgtpHeader recvCreateHeader = recvHgtpCreateRoomReqeust.getHgtpHeader();
             HgtpCommonResponse sendHgtpResponse = new HgtpCommonResponse(
-                    recvUnregHeader.getMagicCookie(), messageType, recvUnregHeader.getMessageType(), recvUnregHeader.getUserId(),
-                    recvUnregHeader.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds());
-            log.debug("SEND DATA : {}", sendHgtpResponse);
+                    recvCreateHeader.getMagicCookie(), messageType, recvCreateHeader.getMessageType(), recvCreateHeader.getUserId(),
+                    recvCreateHeader.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds());
+            log.debug("{} SEND DATA : {}", msgType, sendHgtpResponse);
             // recv response
             byte[] recvResponse = sendHgtpResponse.getByteData();
             HgtpCommonResponse recvHgtpResponse = new HgtpCommonResponse(recvResponse);
-            log.debug("RECV DATA  : {}", recvHgtpResponse);
-
+            log.debug("{} RECV DATA : {}", msgType, recvHgtpResponse);
         } catch (HgtpException e) {
             log.error("HgtpTest.hgtpCreateRoomTest ", e);
         }
@@ -231,13 +267,17 @@ public class HgtpTest {
             log.debug("RECV DATA  : {}", recvHgtpDeleteRoomReqeust);
 
             short messageType;
+            String msgType = "";
             if (isServerError) {
                 messageType = HgtpMessageType.SERVER_UNAVAILABLE;
+                msgType = "SUA";
             } else {
-                if (recvHgtpDeleteRoomReqeust.getHgtpHeader().getMessageType() != HgtpMessageType.CREATE_ROOM){
+                if (recvHgtpDeleteRoomReqeust.getHgtpHeader().getMessageType() != HgtpMessageType.DELETE_ROOM || !roomInfoMap.containsKey(recvHgtpDeleteRoomReqeust.getHgtpContext().getRoomId())){
                     messageType = HgtpMessageType.BAD_REQUEST;
+                    msgType = "BAD";
                 } else {
                     messageType = HgtpMessageType.OK;
+                    msgType = "OK";
                 }
             }
             // send response
@@ -245,14 +285,103 @@ public class HgtpTest {
             HgtpCommonResponse sendHgtpResponse = new HgtpCommonResponse(
                     recvUnregHeader.getMagicCookie(), messageType, recvUnregHeader.getMessageType(), recvUnregHeader.getUserId(),
                     recvUnregHeader.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds());
-            log.debug("SEND DATA : {}", sendHgtpResponse);
+            log.debug("{} SEND DATA : {}", msgType, sendHgtpResponse);
             // recv response
             byte[] recvResponse = sendHgtpResponse.getByteData();
             HgtpCommonResponse recvHgtpResponse = new HgtpCommonResponse(recvResponse);
-            log.debug("RECV DATA  : {}", recvHgtpResponse);
+            log.debug("{} RECV DATA : {}", msgType, recvHgtpResponse);
+
 
         } catch (HgtpException e) {
             log.error("HgtpTest.hgtpDeleteRoomTest ", e);
+        }
+    }
+
+    @Test
+    public void hgtpJoinRoomTest(String userId, String roomId){
+        try {
+            // send Join room
+            HgtpJoinRoomRequest sendHgtpJoinRoomReqeust = new HgtpJoinRoomRequest(
+                    HgtpHeader.MAGIC_COOKIE, HgtpMessageType.JOIN_ROOM, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId
+            );
+            log.debug("SEND DATA : {}", sendHgtpJoinRoomReqeust);
+
+            // recv Join room
+            byte[] recvRequestJoinRoom = sendHgtpJoinRoomReqeust.getByteData();
+            HgtpJoinRoomRequest recvHgtpJoinRoomReqeust = new HgtpJoinRoomRequest(recvRequestJoinRoom);
+            log.debug("RECV DATA  : {}", recvHgtpJoinRoomReqeust);
+
+            short messageType;
+            String msgType = "";
+            if (isServerError) {
+                messageType = HgtpMessageType.SERVER_UNAVAILABLE;
+                msgType = "SUA";
+            } else {
+                if (recvHgtpJoinRoomReqeust.getHgtpHeader().getMessageType() != HgtpMessageType.JOIN_ROOM || !roomInfoMap.containsKey(recvHgtpJoinRoomReqeust.getHgtpContext().getRoomId())){
+                    messageType = HgtpMessageType.BAD_REQUEST;
+                    msgType = "BAD";
+                } else {
+                    roomInfoMap.put(recvHgtpJoinRoomReqeust.getHgtpContext().getRoomId(), roomId);
+                    messageType = HgtpMessageType.OK;
+                    msgType = "OK";
+                }
+            }
+            // send response
+            HgtpHeader recvJoinHeader = recvHgtpJoinRoomReqeust.getHgtpHeader();
+            HgtpCommonResponse sendHgtpResponse = new HgtpCommonResponse(
+                    recvJoinHeader.getMagicCookie(), messageType, recvJoinHeader.getMessageType(), recvJoinHeader.getUserId(),
+                    recvJoinHeader.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds());
+            log.debug("{} SEND DATA : {}", msgType, sendHgtpResponse);
+            // recv response
+            byte[] recvResponse = sendHgtpResponse.getByteData();
+            HgtpCommonResponse recvHgtpResponse = new HgtpCommonResponse(recvResponse);
+            log.debug("{} RECV DATA : {}", msgType, recvHgtpResponse);
+        } catch (HgtpException e) {
+            log.error("HgtpTest.hgtpJoinRoomTest ", e);
+        }
+    }
+
+    @Test
+    public void hgtpExitRoomTest(String userId, String roomId){
+        try {
+            // send Exit room
+            HgtpExitRoomRequest sendHgtpExitRoomReqeust = new HgtpExitRoomRequest(
+                    HgtpHeader.MAGIC_COOKIE, HgtpMessageType.EXIT_ROOM, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId
+            );
+            log.debug("SEND DATA : {}", sendHgtpExitRoomReqeust);
+
+            // recv Exit room
+            byte[] recvRequestExitRoom = sendHgtpExitRoomReqeust.getByteData();
+            HgtpExitRoomRequest recvHgtpExitRoomReqeust = new HgtpExitRoomRequest(recvRequestExitRoom);
+            log.debug("RECV DATA  : {}", recvHgtpExitRoomReqeust);
+
+            short messageType;
+            String msgType = "";
+            if (isServerError) {
+                messageType = HgtpMessageType.SERVER_UNAVAILABLE;
+                msgType = "SUA";
+            } else {
+                if (recvHgtpExitRoomReqeust.getHgtpHeader().getMessageType() != HgtpMessageType.EXIT_ROOM || !roomInfoMap.containsKey(recvHgtpExitRoomReqeust.getHgtpContext().getRoomId())){
+                    messageType = HgtpMessageType.BAD_REQUEST;
+                    msgType = "BAD";
+                } else {
+                    roomInfoMap.put(recvHgtpExitRoomReqeust.getHgtpContext().getRoomId(), roomId);
+                    messageType = HgtpMessageType.OK;
+                    msgType = "OK";
+                }
+            }
+            // send response
+            HgtpHeader recvExitHeader = recvHgtpExitRoomReqeust.getHgtpHeader();
+            HgtpCommonResponse sendHgtpResponse = new HgtpCommonResponse(
+                    recvExitHeader.getMagicCookie(), messageType, recvExitHeader.getMessageType(), recvExitHeader.getUserId(),
+                    recvExitHeader.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds());
+            log.debug("{} SEND DATA : {}", msgType, sendHgtpResponse);
+            // recv response
+            byte[] recvResponse = sendHgtpResponse.getByteData();
+            HgtpCommonResponse recvHgtpResponse = new HgtpCommonResponse(recvResponse);
+            log.debug("{} RECV DATA : {}", msgType, recvHgtpResponse);
+        } catch (HgtpException e) {
+            log.error("HgtpTest.hgtpExitRoomTest ", e);
         }
     }
 }
