@@ -1,5 +1,6 @@
 package service;
 
+import com.hgtp.client.protocol.hgtp.HgtpConsumer;
 import instance.BaseEnvironment;
 import instance.DebugLevel;
 import network.definition.NetAddress;
@@ -7,7 +8,6 @@ import network.socket.SocketManager;
 import network.socket.SocketProtocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import protocol.hgtp.HgtpConsumer;
 import service.scheduler.schedule.ScheduleManager;
 
 public class ServiceManager {
