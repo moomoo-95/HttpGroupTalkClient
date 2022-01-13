@@ -10,7 +10,7 @@ import util.module.ByteUtil;
 public class HgtpUnauthorizedResponse extends HgtpMessage {
 
     private final HgtpHeader hgtpHeader;
-    private final HgtpUnauthorizedContent hgtpContext;
+    private final HgtpUnauthorizedContent hgtpContent;
 
     public HgtpUnauthorizedResponse(byte[] data) throws HgtpException {
         if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + ByteUtil.NUM_BYTES_IN_INT) {
@@ -23,11 +23,11 @@ public class HgtpUnauthorizedResponse extends HgtpMessage {
 
             byte[] contextByteData = new byte[this.hgtpHeader.getBodyLength()];
             System.arraycopy(data, index, contextByteData, 0, contextByteData.length);
-            this.hgtpContext = new HgtpUnauthorizedContent(contextByteData);
+            this.hgtpContent = new HgtpUnauthorizedContent(contextByteData);
 
         } else {
             this.hgtpHeader = null;
-            this.hgtpContext = null;
+            this.hgtpContent = null;
         }
     }
 
@@ -36,7 +36,7 @@ public class HgtpUnauthorizedResponse extends HgtpMessage {
         int bodyLength = ByteUtil.NUM_BYTES_IN_INT +  realm.length();
 
         this.hgtpHeader = new HgtpHeader(magicCookie, messageType, requestType, userId, seqNumber, timeStamp, bodyLength);
-        this.hgtpContext = new HgtpUnauthorizedContent(realm);
+        this.hgtpContent = new HgtpUnauthorizedContent(realm);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class HgtpUnauthorizedResponse extends HgtpMessage {
         System.arraycopy(headerByteData, 0, data, index, headerByteData.length);
         index += headerByteData.length;
 
-        byte[] contextByteData = this.hgtpContext.getByteData();
+        byte[] contextByteData = this.hgtpContent.getByteData();
         System.arraycopy(contextByteData, 0, data, index, contextByteData.length);
 
         return data;
@@ -56,5 +56,5 @@ public class HgtpUnauthorizedResponse extends HgtpMessage {
 
     public HgtpHeader getHgtpHeader() {return hgtpHeader;}
 
-    public HgtpUnauthorizedContent getHgtpContext() {return hgtpContext;}
+    public HgtpUnauthorizedContent getHgtpContent() {return hgtpContent;}
 }

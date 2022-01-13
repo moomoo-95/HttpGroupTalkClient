@@ -1,6 +1,7 @@
 package protocol.hgtp;
 
 import moomoo.hgtp.client.protocol.hgtp.message.request.*;
+import moomoo.hgtp.client.service.AppInstance;
 import org.apache.commons.net.ntp.TimeStamp;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -72,7 +73,7 @@ public class HgtpTest {
         try {
             // send first Register
             HgtpRegisterRequest sendFirstHgtpRegisterRequest = new HgtpRegisterRequest(
-                    HgtpHeader.MAGIC_COOKIE, HgtpMessageType.REGISTER, userId, 4, TimeStamp.getCurrentTime().getSeconds(),
+                    AppInstance.MAGIC_COOKIE, HgtpMessageType.REGISTER, userId, 4, TimeStamp.getCurrentTime().getSeconds(),
                     3600L, (short) 5060);
             log.debug("RG1 SEND DATA : {}", sendFirstHgtpRegisterRequest);
 
@@ -97,7 +98,7 @@ public class HgtpTest {
 
             // Encoding realm -> nonce
             MessageDigest messageDigestRealm = MessageDigest.getInstance("MD5");
-            messageDigestRealm.update(recvHgtpUnauthorizedResponse.getHgtpContext().getRealm().getBytes(StandardCharsets.UTF_8));
+            messageDigestRealm.update(recvHgtpUnauthorizedResponse.getHgtpContent().getRealm().getBytes(StandardCharsets.UTF_8));
             messageDigestRealm.update(TEST_HASH_KEY.getBytes(StandardCharsets.UTF_8));
             byte[] digestRealm = messageDigestRealm.digest();
             messageDigestRealm.reset();
@@ -107,10 +108,10 @@ public class HgtpTest {
             // send second Register
             HgtpHeader recvUnauthHeader = recvHgtpUnauthorizedResponse.getHgtpHeader();
             HgtpRegisterRequest sendSecondHgtpRegisterRequest = new HgtpRegisterRequest(
-                    HgtpHeader.MAGIC_COOKIE, HgtpMessageType.REGISTER, recvUnauthHeader.getUserId(),
+                    AppInstance.MAGIC_COOKIE, HgtpMessageType.REGISTER, recvUnauthHeader.getUserId(),
                     recvUnauthHeader.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds(),
                     3600L, (short) 5060);
-            sendSecondHgtpRegisterRequest.getHgtpContext().setNonce(sendSecondHgtpRegisterRequest.getHgtpHeader(), nonce);
+            sendSecondHgtpRegisterRequest.getHgtpContent().setNonce(sendSecondHgtpRegisterRequest.getHgtpHeader(), nonce);
             log.debug("RG2 SEND DATA : {}", sendSecondHgtpRegisterRequest);
 
             // recv second Register
@@ -130,7 +131,7 @@ public class HgtpTest {
 
             short messageType;
             String msgType = "";
-            if (curNonce.equals(recvSecondHgtpRegisterRequest.getHgtpContext().getNonce())) {
+            if (curNonce.equals(recvSecondHgtpRegisterRequest.getHgtpContent().getNonce())) {
                 if (AVAILABLE_REGISTER > userInfoMap.size()) {
                     userInfoMap.put(recvSecondHgtpRegisterRequest.getHgtpHeader().getUserId(), userId);
                     messageType = HgtpMessageType.OK;
@@ -170,7 +171,7 @@ public class HgtpTest {
         try {
             // send Unregister
             HgtpUnregisterRequest sendHgtpUnregisterRequest = new HgtpUnregisterRequest(
-                    HgtpHeader.MAGIC_COOKIE, HgtpMessageType.UNREGISTER, userId, 7, TimeStamp.getCurrentTime().getSeconds());
+                    AppInstance.MAGIC_COOKIE, HgtpMessageType.UNREGISTER, userId, 7, TimeStamp.getCurrentTime().getSeconds());
             log.debug("SEND DATA : {}", sendHgtpUnregisterRequest);
             // recv Unregister
             byte[] recvRequestUnregister = sendHgtpUnregisterRequest.getByteData();
@@ -213,7 +214,7 @@ public class HgtpTest {
         try {
             // send Create room
             HgtpCreateRoomRequest sendHgtpCreateRoomReqeust = new HgtpCreateRoomRequest(
-                    HgtpHeader.MAGIC_COOKIE, HgtpMessageType.CREATE_ROOM, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId
+                    AppInstance.MAGIC_COOKIE, HgtpMessageType.CREATE_ROOM, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId
             );
             log.debug("SEND DATA : {}", sendHgtpCreateRoomReqeust);
 
@@ -232,7 +233,7 @@ public class HgtpTest {
                     messageType = HgtpMessageType.BAD_REQUEST;
                     msgType = "BAD";
                 } else {
-                    roomInfoMap.put(recvHgtpCreateRoomReqeust.getHgtpContext().getRoomId(), roomId);
+                    roomInfoMap.put(recvHgtpCreateRoomReqeust.getHgtpContent().getRoomId(), roomId);
                     messageType = HgtpMessageType.OK;
                     msgType = "OK";
                 }
@@ -257,7 +258,7 @@ public class HgtpTest {
         try {
             // send Delete room
             HgtpDeleteRoomRequest sendHgtpDeleteRoomReqeust = new HgtpDeleteRoomRequest(
-                    HgtpHeader.MAGIC_COOKIE, HgtpMessageType.DELETE_ROOM, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId
+                    AppInstance.MAGIC_COOKIE, HgtpMessageType.DELETE_ROOM, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId
             );
             log.debug("SEND DATA : {}", sendHgtpDeleteRoomReqeust);
 
@@ -272,7 +273,7 @@ public class HgtpTest {
                 messageType = HgtpMessageType.SERVER_UNAVAILABLE;
                 msgType = "SUA";
             } else {
-                if (recvHgtpDeleteRoomReqeust.getHgtpHeader().getMessageType() != HgtpMessageType.DELETE_ROOM || !roomInfoMap.containsKey(recvHgtpDeleteRoomReqeust.getHgtpContext().getRoomId())){
+                if (recvHgtpDeleteRoomReqeust.getHgtpHeader().getMessageType() != HgtpMessageType.DELETE_ROOM || !roomInfoMap.containsKey(recvHgtpDeleteRoomReqeust.getHgtpContent().getRoomId())){
                     messageType = HgtpMessageType.BAD_REQUEST;
                     msgType = "BAD";
                 } else {
@@ -302,7 +303,7 @@ public class HgtpTest {
         try {
             // send Join room
             HgtpJoinRoomRequest sendHgtpJoinRoomReqeust = new HgtpJoinRoomRequest(
-                    HgtpHeader.MAGIC_COOKIE, HgtpMessageType.JOIN_ROOM, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId
+                    AppInstance.MAGIC_COOKIE, HgtpMessageType.JOIN_ROOM, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId
             );
             log.debug("SEND DATA : {}", sendHgtpJoinRoomReqeust);
 
@@ -317,11 +318,11 @@ public class HgtpTest {
                 messageType = HgtpMessageType.SERVER_UNAVAILABLE;
                 msgType = "SUA";
             } else {
-                if (recvHgtpJoinRoomReqeust.getHgtpHeader().getMessageType() != HgtpMessageType.JOIN_ROOM || !roomInfoMap.containsKey(recvHgtpJoinRoomReqeust.getHgtpContext().getRoomId())){
+                if (recvHgtpJoinRoomReqeust.getHgtpHeader().getMessageType() != HgtpMessageType.JOIN_ROOM || !roomInfoMap.containsKey(recvHgtpJoinRoomReqeust.getHgtpContent().getRoomId())){
                     messageType = HgtpMessageType.BAD_REQUEST;
                     msgType = "BAD";
                 } else {
-                    roomInfoMap.put(recvHgtpJoinRoomReqeust.getHgtpContext().getRoomId(), roomId);
+                    roomInfoMap.put(recvHgtpJoinRoomReqeust.getHgtpContent().getRoomId(), roomId);
                     messageType = HgtpMessageType.OK;
                     msgType = "OK";
                 }
@@ -346,7 +347,7 @@ public class HgtpTest {
         try {
             // send Exit room
             HgtpExitRoomRequest sendHgtpExitRoomReqeust = new HgtpExitRoomRequest(
-                    HgtpHeader.MAGIC_COOKIE, HgtpMessageType.EXIT_ROOM, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId
+                    AppInstance.MAGIC_COOKIE, HgtpMessageType.EXIT_ROOM, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId
             );
             log.debug("SEND DATA : {}", sendHgtpExitRoomReqeust);
 
@@ -361,11 +362,11 @@ public class HgtpTest {
                 messageType = HgtpMessageType.SERVER_UNAVAILABLE;
                 msgType = "SUA";
             } else {
-                if (recvHgtpExitRoomReqeust.getHgtpHeader().getMessageType() != HgtpMessageType.EXIT_ROOM || !roomInfoMap.containsKey(recvHgtpExitRoomReqeust.getHgtpContext().getRoomId())){
+                if (recvHgtpExitRoomReqeust.getHgtpHeader().getMessageType() != HgtpMessageType.EXIT_ROOM || !roomInfoMap.containsKey(recvHgtpExitRoomReqeust.getHgtpContent().getRoomId())){
                     messageType = HgtpMessageType.BAD_REQUEST;
                     msgType = "BAD";
                 } else {
-                    roomInfoMap.put(recvHgtpExitRoomReqeust.getHgtpContext().getRoomId(), roomId);
+                    roomInfoMap.put(recvHgtpExitRoomReqeust.getHgtpContent().getRoomId(), roomId);
                     messageType = HgtpMessageType.OK;
                     msgType = "OK";
                 }
@@ -382,6 +383,98 @@ public class HgtpTest {
             log.debug("{} RECV DATA : {}", msgType, recvHgtpResponse);
         } catch (HgtpException e) {
             log.error("HgtpTest.hgtpExitRoomTest ", e);
+        }
+    }
+
+    @Test
+    public void hgtpInviteUserFromRoomTest(String userId, String roomId, String peerUserId){
+        try {
+            // send Exit room
+            HgtpInviteUserFromRoomRequest sendHgtpInviteUserFromRoomRequest = new HgtpInviteUserFromRoomRequest(
+                    AppInstance.MAGIC_COOKIE, HgtpMessageType.INVITE_USER_FROM_ROOM, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId, peerUserId
+            );
+            log.debug("SEND DATA : {}", sendHgtpInviteUserFromRoomRequest);
+
+            // recv Exit room
+            byte[] recvHgtpInviteUserFromRoom = sendHgtpInviteUserFromRoomRequest.getByteData();
+            HgtpInviteUserFromRoomRequest recvHgtpInviteUserFromRoomRequest = new HgtpInviteUserFromRoomRequest(recvHgtpInviteUserFromRoom);
+            log.debug("RECV DATA  : {}", recvHgtpInviteUserFromRoomRequest);
+
+            short messageType;
+            String msgType = "";
+            if (isServerError) {
+                messageType = HgtpMessageType.SERVER_UNAVAILABLE;
+                msgType = "SUA";
+            } else {
+                if (recvHgtpInviteUserFromRoomRequest.getHgtpHeader().getMessageType() != HgtpMessageType.INVITE_USER_FROM_ROOM
+                        || !roomInfoMap.containsKey(recvHgtpInviteUserFromRoomRequest.getHgtpContent().getRoomId())
+                        || !userInfoMap.containsKey(recvHgtpInviteUserFromRoomRequest.getHgtpContent().getPeerUserId())){
+                    messageType = HgtpMessageType.BAD_REQUEST;
+                    msgType = "BAD";
+                } else {
+                    roomInfoMap.put(recvHgtpInviteUserFromRoomRequest.getHgtpContent().getRoomId(), roomId);
+                    messageType = HgtpMessageType.OK;
+                    msgType = "OK";
+                }
+            }
+            // send response
+            HgtpHeader recvInviteUserFromRoomHeader = recvHgtpInviteUserFromRoomRequest.getHgtpHeader();
+            HgtpCommonResponse sendHgtpResponse = new HgtpCommonResponse(
+                    recvInviteUserFromRoomHeader.getMagicCookie(), messageType, recvInviteUserFromRoomHeader.getMessageType(), recvInviteUserFromRoomHeader.getUserId(),
+                    recvInviteUserFromRoomHeader.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds());
+            log.debug("{} SEND DATA : {}", msgType, sendHgtpResponse);
+            // recv response
+            byte[] recvResponse = sendHgtpResponse.getByteData();
+            HgtpCommonResponse recvHgtpResponse = new HgtpCommonResponse(recvResponse);
+            log.debug("{} RECV DATA : {}", msgType, recvHgtpResponse);
+        } catch (HgtpException e) {
+            log.error("HgtpTest.hgtpInviteUserFromRoomTest ", e);
+        }
+    }
+
+    @Test
+    public void hgtpRemoveUserFromRoomTest(String userId, String roomId, String peerUserId){
+        try {
+            // send Exit room
+            HgtpRemoveUserFromRoomRequest sendHgtpRemoveUserFromRoomRequest = new HgtpRemoveUserFromRoomRequest(
+                    AppInstance.MAGIC_COOKIE, HgtpMessageType.REMOVE_USER_FROM_ROOM, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId, peerUserId
+            );
+            log.debug("SEND DATA : {}", sendHgtpRemoveUserFromRoomRequest);
+
+            // recv Exit room
+            byte[] recvHgtpRemoveUserFromRoom = sendHgtpRemoveUserFromRoomRequest.getByteData();
+            HgtpRemoveUserFromRoomRequest recvHgtpRemoveUserFromRoomRequest = new HgtpRemoveUserFromRoomRequest(recvHgtpRemoveUserFromRoom);
+            log.debug("RECV DATA  : {}", recvHgtpRemoveUserFromRoomRequest);
+
+            short messageType;
+            String msgType = "";
+            if (isServerError) {
+                messageType = HgtpMessageType.SERVER_UNAVAILABLE;
+                msgType = "SUA";
+            } else {
+                if (recvHgtpRemoveUserFromRoomRequest.getHgtpHeader().getMessageType() != HgtpMessageType.REMOVE_USER_FROM_ROOM
+                        || !roomInfoMap.containsKey(recvHgtpRemoveUserFromRoomRequest.getHgtpContent().getRoomId())
+                        || !userInfoMap.containsKey(recvHgtpRemoveUserFromRoomRequest.getHgtpContent().getPeerUserId())){
+                    messageType = HgtpMessageType.BAD_REQUEST;
+                    msgType = "BAD";
+                } else {
+                    roomInfoMap.put(recvHgtpRemoveUserFromRoomRequest.getHgtpContent().getRoomId(), roomId);
+                    messageType = HgtpMessageType.OK;
+                    msgType = "OK";
+                }
+            }
+            // send response
+            HgtpHeader recvRemoveUserFromRoomHeader = recvHgtpRemoveUserFromRoomRequest.getHgtpHeader();
+            HgtpCommonResponse sendHgtpResponse = new HgtpCommonResponse(
+                    recvRemoveUserFromRoomHeader.getMagicCookie(), messageType, recvRemoveUserFromRoomHeader.getMessageType(), recvRemoveUserFromRoomHeader.getUserId(),
+                    recvRemoveUserFromRoomHeader.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds());
+            log.debug("{} SEND DATA : {}", msgType, sendHgtpResponse);
+            // recv response
+            byte[] recvResponse = sendHgtpResponse.getByteData();
+            HgtpCommonResponse recvHgtpResponse = new HgtpCommonResponse(recvResponse);
+            log.debug("{} RECV DATA : {}", msgType, recvHgtpResponse);
+        } catch (HgtpException e) {
+            log.error("HgtpTest.hgtpRemoveUserFromRoomTest ", e);
         }
     }
 }

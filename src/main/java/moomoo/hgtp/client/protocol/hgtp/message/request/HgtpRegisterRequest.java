@@ -10,7 +10,7 @@ import util.module.ByteUtil;
 public class HgtpRegisterRequest extends HgtpMessage {
 
     private final HgtpHeader hgtpHeader;
-    private final HgtpRegisterContent hgtpContext;
+    private final HgtpRegisterContent hgtpContent;
 
     public HgtpRegisterRequest(byte[] data) throws HgtpException {
         if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + ByteUtil.NUM_BYTES_IN_LONG + ByteUtil.NUM_BYTES_IN_SHORT + ByteUtil.NUM_BYTES_IN_INT) {
@@ -23,10 +23,10 @@ public class HgtpRegisterRequest extends HgtpMessage {
 
             byte[] contextByteData = new byte[hgtpHeader.getBodyLength()];
             System.arraycopy(data, index, contextByteData, 0, contextByteData.length);
-            this.hgtpContext = new HgtpRegisterContent(contextByteData);
+            this.hgtpContent = new HgtpRegisterContent(contextByteData);
         } else {
             this.hgtpHeader = null;
-            this.hgtpContext = null;
+            this.hgtpContent = null;
         }
     }
 
@@ -36,7 +36,7 @@ public class HgtpRegisterRequest extends HgtpMessage {
                 + ByteUtil.NUM_BYTES_IN_SHORT + ByteUtil.NUM_BYTES_IN_INT;
 
         this.hgtpHeader = new HgtpHeader(magicCookie, messageType, messageType, userId, seqNumber, timeStamp, bodyLength);
-        this.hgtpContext = new HgtpRegisterContent(expires, listenPort);
+        this.hgtpContent = new HgtpRegisterContent(expires, listenPort);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class HgtpRegisterRequest extends HgtpMessage {
         System.arraycopy(headerByteData, 0, data, index, headerByteData.length);
         index += headerByteData.length;
 
-        byte[] contextByteData = this.hgtpContext.getByteData();
+        byte[] contextByteData = this.hgtpContent.getByteData();
         System.arraycopy(contextByteData, 0, data, index, contextByteData.length);
 
         return data;
@@ -56,5 +56,5 @@ public class HgtpRegisterRequest extends HgtpMessage {
 
     public HgtpHeader getHgtpHeader() {return hgtpHeader;}
 
-    public HgtpRegisterContent getHgtpContext() {return hgtpContext;}
+    public HgtpRegisterContent getHgtpContent() {return hgtpContent;}
 }

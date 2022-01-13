@@ -52,6 +52,10 @@ public class HgtpConsumer implements Runnable {
     public void parseHgtpMessage(byte[] data) {
         try {
             HgtpHeader hgtpHeader = new HgtpHeader(data);
+            if (hgtpHeader == null) {
+                log.warn("This is not HGTP Message. [{}]", data);
+                return;
+            }
 
             log.debug("({}) () () RECV MSG TYPE : {}", hgtpHeader.getUserId(), hgtpHeader.getMessageType());
             switch (hgtpHeader.getMessageType()){

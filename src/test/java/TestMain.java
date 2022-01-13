@@ -19,10 +19,15 @@ public class TestMain {
         HgtpTest hgtpTest = new HgtpTest();
         log.debug("-------------------- Register --------------------");
         hgtpTest.hgtpRegisterTest(userId);
+        hgtpTest.hgtpRegisterTest(userId2);
         log.debug("-------------------- Create room --------------------");
         hgtpTest.hgtpCreateRoomTest(userId, roomId);
         log.debug("-------------------- Join room --------------------");
         hgtpTest.hgtpJoinRoomTest(userId, roomId);
+        log.debug("-------------------- Invite user from room --------------------");
+        hgtpTest.hgtpInviteUserFromRoomTest(userId, roomId, userId2);
+        log.debug("-------------------- Remove user from room --------------------");
+        hgtpTest.hgtpRemoveUserFromRoomTest(userId, roomId, userId2);
         log.debug("-------------------- Exit room --------------------");
         hgtpTest.hgtpExitRoomTest(userId, roomId);
         log.debug("-------------------- Delete room --------------------");

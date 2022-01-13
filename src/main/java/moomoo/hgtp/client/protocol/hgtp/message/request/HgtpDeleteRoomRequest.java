@@ -9,7 +9,7 @@ import moomoo.hgtp.client.protocol.hgtp.message.base.content.HgtpRoomContent;
 public class HgtpDeleteRoomRequest extends HgtpMessage {
 
     private final HgtpHeader hgtpHeader;
-    private final HgtpRoomContent hgtpContext;
+    private final HgtpRoomContent hgtpContent;
 
     public HgtpDeleteRoomRequest(byte[] data) throws HgtpException {
         if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + 12) {
@@ -22,10 +22,10 @@ public class HgtpDeleteRoomRequest extends HgtpMessage {
 
             byte[] contextByteData = new byte[hgtpHeader.getBodyLength()];
             System.arraycopy(data, index, contextByteData, 0, contextByteData.length);
-            this.hgtpContext = new HgtpRoomContent(contextByteData);
+            this.hgtpContent = new HgtpRoomContent(contextByteData);
         } else {
             this.hgtpHeader = null;
-            this.hgtpContext = null;
+            this.hgtpContent = null;
         }
     }
 
@@ -33,7 +33,7 @@ public class HgtpDeleteRoomRequest extends HgtpMessage {
         int bodyLength = 12;
 
         this.hgtpHeader = new HgtpHeader(magicCookie, messageType, messageType, userId, seqNumber, timeStamp, bodyLength);
-        this.hgtpContext = new HgtpRoomContent(roomId);
+        this.hgtpContent = new HgtpRoomContent(roomId);
     }
 
     @Override
@@ -45,7 +45,7 @@ public class HgtpDeleteRoomRequest extends HgtpMessage {
         System.arraycopy(headerByteData, 0, data, index, headerByteData.length);
         index += headerByteData.length;
 
-        byte[] contextByteData = this.hgtpContext.getByteData();
+        byte[] contextByteData = this.hgtpContent.getByteData();
         System.arraycopy(contextByteData, 0, data, index, contextByteData.length);
 
         return data;
@@ -53,5 +53,5 @@ public class HgtpDeleteRoomRequest extends HgtpMessage {
 
     public HgtpHeader getHgtpHeader() {return hgtpHeader;}
 
-    public HgtpRoomContent getHgtpContext() {return hgtpContext;}
+    public HgtpRoomContent getHgtpContent() {return hgtpContent;}
 }

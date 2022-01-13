@@ -1,6 +1,6 @@
 package moomoo.hgtp.client;
 
-import moomoo.hgtp.client.config.ConfigManager;
+import moomoo.hgtp.client.service.AppInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import moomoo.hgtp.client.service.ServiceManager;
@@ -12,15 +12,26 @@ public class HttpGroupTalkClientMain {
 
     public static void main(String[] args) {
         if (args.length != 2) {
-            log.error("Fail to argument &local port &remote port");
+            log.error("Fail to argument &config path &mode");
             return;
         }
 
         log.debug("HttpGroupTalkClientMain Start.");
-        ConfigManager.getInstance();
+        AppInstance appInstance = AppInstance.getInstance();
+        switch (args[1]){
+            case "server":
+                appInstance.setServer(true);
+                break;
+            case "client":
+                appInstance.setServer(false);
+                break;
+            default:
+                log.error("Fail to mode argument");
+                return;
+        }
+        appInstance.setConfigManager(args[0]);
 
         ServiceManager serviceManager = ServiceManager.getInstance();
-        serviceManager.setPort(Integer.parseInt(args[0]), Integer.parseInt(args[1]));
         serviceManager.loop();
 
     }

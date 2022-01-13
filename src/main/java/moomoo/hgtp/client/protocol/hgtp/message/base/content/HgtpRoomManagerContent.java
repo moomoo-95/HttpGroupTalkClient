@@ -1,6 +1,6 @@
 package moomoo.hgtp.client.protocol.hgtp.message.base.content;
 
-import moomoo.hgtp.client.config.ConfigManager;
+import moomoo.hgtp.client.service.AppInstance;
 
 import java.nio.charset.StandardCharsets;
 
@@ -12,12 +12,12 @@ public class HgtpRoomManagerContent implements HgtpContent {
     public HgtpRoomManagerContent(byte[] data) {
         if (data.length >= getBodyLength()) {
             int index = 0;
-            byte[] roomIdByteData = new byte[ConfigManager.ROOM_ID_SIZE];
+            byte[] roomIdByteData = new byte[AppInstance.ROOM_ID_SIZE];
             System.arraycopy(data, index, roomIdByteData, 0, roomIdByteData.length);
             this.roomId = new String(roomIdByteData, StandardCharsets.UTF_8);
             index += roomIdByteData.length;
 
-            byte[] peerUserIdByteData = new byte[ConfigManager.USER_ID_SIZE];
+            byte[] peerUserIdByteData = new byte[AppInstance.USER_ID_SIZE];
             System.arraycopy(data, index, peerUserIdByteData, 0, peerUserIdByteData.length);
             this.peerUserId = new String(peerUserIdByteData, StandardCharsets.UTF_8);
 
@@ -48,7 +48,7 @@ public class HgtpRoomManagerContent implements HgtpContent {
     }
 
     public int getBodyLength() {
-        return ConfigManager.ROOM_ID_SIZE + ConfigManager.USER_ID_SIZE;
+        return AppInstance.ROOM_ID_SIZE + AppInstance.USER_ID_SIZE;
     }
 
     public String getRoomId() {

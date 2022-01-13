@@ -14,24 +14,32 @@ import service.scheduler.schedule.ScheduleManager;
 public class ServiceManager {
 
     private static final Logger log = LoggerFactory.getLogger(ServiceManager.class);
-    private static final String HOST = "192.168.2.163";
     private static final int DELAY_TIME = 1000;
     private static final int MIN_PORT = 5000;
     private static final int MAX_PORT = 7000;
     private static final int SEND_BUF = 1048576;
     private static final int RECV_BUF = 1048576;
 
+    private final String localIp;
+    private final int localHgtpPort;
+
     private static ServiceManager serviceManager = null;
 
     // NetAddress 생성
-    private final NetAddress clientAddress = new NetAddress(HOST, 5000,true, SocketProtocol.TCP);
-    private final NetAddress serverAddress = new NetAddress(HOST, 6000,true, SocketProtocol.TCP);
+    private final NetAddress clientAddress;
+    private final NetAddress serverAddress;
 
     private BaseEnvironment baseEnvironment = null;
     private SocketManager socketManager = null;
     private boolean isQuit = false;
 
     public ServiceManager() {
+        AppInstance appInstance = AppInstance.getInstance();
+        this.localIp = appInstance.getConfigManager().getLocalListenIp();
+        this.localHgtpPort = appInstance.getConfigManager().getLocalListenPort();
+
+        this.clientAddress = new NetAddress(localIp, localHgtpPort,true, SocketProtocol.TCP);
+        this.serverAddress = new NetAddress(localIp, 6000,true, SocketProtocol.TCP);
     }
 
     public static ServiceManager getInstance() {
@@ -55,11 +63,6 @@ public class ServiceManager {
         }
     }
 
-    public void setPort(int localPort, int remotePort) {
-        clientAddress.setPort(localPort);
-        serverAddress.setPort(remotePort);
-    }
-
     public boolean start() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             log.error("Process is about to quit (Ctrl+C)");
@@ -80,7 +83,7 @@ public class ServiceManager {
 
     public void stop() {
         // 소켓 삭제
-        if (socketManager != null || socketManager.getSocket(clientAddress) != null) {
+        if (socketManager != null && socketManager.getSocket(clientAddress) != null) {
             socketManager.removeSocket(clientAddress);
         }
 
