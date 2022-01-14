@@ -4,6 +4,7 @@ import moomoo.hgtp.client.protocol.hgtp.exception.HgtpException;
 import moomoo.hgtp.client.protocol.hgtp.message.base.HgtpHeader;
 import moomoo.hgtp.client.protocol.hgtp.message.base.HgtpMessage;
 import moomoo.hgtp.client.protocol.hgtp.message.base.content.HgtpRoomManagerContent;
+import moomoo.hgtp.client.service.AppInstance;
 
 
 public class HgtpRemoveUserFromRoomRequest extends HgtpMessage {
@@ -12,7 +13,7 @@ public class HgtpRemoveUserFromRoomRequest extends HgtpMessage {
     private final HgtpRoomManagerContent hgtpContent;
 
     public HgtpRemoveUserFromRoomRequest(byte[] data) throws HgtpException {
-        if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + 12) {
+        if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + AppInstance.ROOM_ID_SIZE + AppInstance.USER_ID_SIZE) {
             int index = 0;
 
             byte[] headerByteData = new byte[HgtpHeader.HGTP_HEADER_SIZE];

@@ -1,3 +1,5 @@
+import moomoo.hgtp.client.protocol.hgtp.HgtpManager;
+import moomoo.hgtp.client.service.AppInstance;
 import moomoo.hgtp.client.util.CnameGenerator;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -10,6 +12,11 @@ public class TestMain {
     private static final Logger log = LoggerFactory.getLogger(TestMain.class);
     @Test
     public void testMain() {
+        AppInstance appInstance = AppInstance.getInstance();
+        appInstance.setConfigManager("src/main/resources/config/user_config.ini");
+        HgtpManager hgtpManager = HgtpManager.getInstance();
+        hgtpManager.startHgtp();
+
         String userId = CnameGenerator.generateCnameUserId();
         String roomId = CnameGenerator.generateCnameRoomId();
         String userId2 = CnameGenerator.generateCnameUserId();
@@ -36,7 +43,7 @@ public class TestMain {
 
         hgtpTest.hgtpUnregisterTest(userId);
 
-
+        hgtpManager.stopHgtp();
     }
 
 }

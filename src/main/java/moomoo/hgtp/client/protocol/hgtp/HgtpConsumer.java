@@ -16,20 +16,11 @@ public class HgtpConsumer implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(HgtpResponseHandler.class);
 
-    private static  HgtpConsumer hgtpConsumer = null;
-
-    private final ConcurrentCyclicFIFO<byte[]> hgtpQueue = new ConcurrentCyclicFIFO<>();
+    private final ConcurrentCyclicFIFO<byte[]> hgtpQueue;
     private boolean isQuit = false;
 
-    public HgtpConsumer() {
-        // nothing
-    }
-
-    public static HgtpConsumer getInstance() {
-        if (hgtpConsumer == null) {
-            hgtpConsumer = new HgtpConsumer();
-        }
-        return hgtpConsumer;
+    public HgtpConsumer(ConcurrentCyclicFIFO<byte[]> hgtpQueue) {
+        this.hgtpQueue = hgtpQueue;
     }
 
     @Override

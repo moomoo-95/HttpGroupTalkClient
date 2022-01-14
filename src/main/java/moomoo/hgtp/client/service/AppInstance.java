@@ -17,6 +17,7 @@ public class AppInstance {
     public static final int ROOM_ID_SIZE = 12;
     public static final int SEQ_INCREMENT = 1;
     public static final short MAGIC_COOKIE = 0x4853; // HS
+    public static final String ALGORITHM = "MD5";
     public static final String MD5_REALM = "HGTP_SERVICE";
     public static final String MD5_HASH_KEY = "950817";
 
@@ -32,7 +33,7 @@ public class AppInstance {
     public AppInstance() {
         try {
             // Decoding nonce -> realm
-            MessageDigest messageDigestNonce = MessageDigest.getInstance("MD5");
+            MessageDigest messageDigestNonce = MessageDigest.getInstance(ALGORITHM);
             messageDigestNonce.update(AppInstance.MD5_REALM.getBytes(StandardCharsets.UTF_8));
             messageDigestNonce.update(AppInstance.MD5_HASH_KEY.getBytes(StandardCharsets.UTF_8));
             byte[] digestNonce = messageDigestNonce.digest();

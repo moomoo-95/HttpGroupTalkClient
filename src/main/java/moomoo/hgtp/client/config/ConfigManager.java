@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 
 public class ConfigManager {
 
@@ -17,16 +16,27 @@ public class ConfigManager {
     private static final String SECTION_COMMON = "COMMON";
     private static final String SECTION_NETWORK = "NETWORK";
     private static final String SECTION_HGTP = "HGTP";
+    private static final String SECTION_HTTP = "HTTP";
 
     // Field
+    // NETWORK
     private static final String FIELD_LOCAL_LISTEN_IP = "LOCAL_LISTEN_IP";
-    private static final String FIELD_LOCAL_HGTP_LISTEN_PORT = "LOCAL_HGTP_LISTEN_PORT";
+    // HGTP
+    private static final String FIELD_HGTP_LISTEN_PORT = "HGTP_LISTEN_PORT";
+    private static final String FIELD_HGTP_THREAD_SIZE = "HGTP_THREAD_SIZE";
+    private static final String FIELD_HGTP_EXPIRE_TIME = "HGTP_EXPIRE_TIME";
+    // HTTP
+    private static final String FIELD_HTTP_LISTEN_PORT = "HTTP_LISTEN_PORT";
 
     // COMMON
     // NETWORK
     private String localListenIp = "";
-    private int localListenPort = 0;
     // HGTP
+    private short hgtpListenPort = 0;
+    private int  hgtpThreadSize = 0;
+    private long hgtpExpireTime = 0;
+    // HTTP
+    private short httpListenPort = 0;
 
     public ConfigManager(String configPath) {
         File iniFile = new File(configPath);
@@ -41,6 +51,7 @@ public class ConfigManager {
             loadCommonConfig();
             loadNetworkConfig();
             loadHgtpConfig();
+            loadHttpConfig();
         } catch (Exception e) {
             log.error("ConfigManager ", e);
         }
@@ -54,16 +65,37 @@ public class ConfigManager {
     private void loadNetworkConfig() {
         this.localListenIp = getIniValue(SECTION_NETWORK, FIELD_LOCAL_LISTEN_IP);
 
-        this.localListenPort = Integer.parseInt(getIniValue(SECTION_NETWORK, FIELD_LOCAL_HGTP_LISTEN_PORT));
-        if (localListenPort < 1024 || localListenPort > 65535) {
-            log.debug("[{}] config [{}] : [{}] Error (1024 - 65535)", SECTION_NETWORK, FIELD_LOCAL_HGTP_LISTEN_PORT, localListenPort);
-            System.exit(1);
-        }
         log.debug("Load [{}] config...(OK)", SECTION_NETWORK);
     }
 
     private void loadHgtpConfig() {
-        // nothing
+        this.hgtpListenPort = Short.parseShort(getIniValue(SECTION_HGTP, FIELD_HGTP_LISTEN_PORT));
+        if (hgtpListenPort < 1024 || hgtpListenPort > 32767) {
+            log.debug("[{}] config [{}] : [{}] Error (1024 - 32767)", SECTION_HGTP, FIELD_HGTP_LISTEN_PORT, hgtpListenPort);
+            System.exit(1);
+        }
+
+        this.hgtpThreadSize = Integer.parseInt(getIniValue(SECTION_HGTP, FIELD_HGTP_THREAD_SIZE));
+        if (hgtpThreadSize <= 0) {
+            log.debug("[{}] config [{}] : [{} -> 3] Warn", SECTION_HGTP, FIELD_HGTP_THREAD_SIZE, hgtpThreadSize);
+            hgtpThreadSize = 3;
+        }
+
+        this.hgtpExpireTime = Long.parseLong(getIniValue(SECTION_HGTP, FIELD_HGTP_EXPIRE_TIME));
+        if (hgtpExpireTime <= 0) {
+            log.debug("[{}] config [{}] : [{} -> 3600] Warn", SECTION_HGTP, FIELD_HGTP_THREAD_SIZE, hgtpExpireTime);
+            hgtpExpireTime = 3600;
+        }
+        log.debug("Load [{}] config...(OK)", SECTION_HGTP);
+    }
+
+    private void loadHttpConfig() {
+        this.httpListenPort = Short.parseShort(getIniValue(SECTION_HTTP, FIELD_HTTP_LISTEN_PORT));
+        if (httpListenPort < 1024 || httpListenPort > 32767) {
+            log.debug("[{}] config [{}] : [{}] Error (1024 - 32767)", SECTION_HTTP, FIELD_HTTP_LISTEN_PORT, httpListenPort);
+            System.exit(1);
+        }
+
         log.debug("Load [{}] config...(OK)", SECTION_HGTP);
     }
 
@@ -92,5 +124,10 @@ public class ConfigManager {
     }
 
     public String getLocalListenIp() {return localListenIp;}
-    public int getLocalListenPort() {return localListenPort;}
+
+    public short getHgtpListenPort() {return hgtpListenPort;}
+    public int getHgtpThreadSize() {return hgtpThreadSize;}
+    public long getHgtpExpireTime() {return hgtpExpireTime;}
+
+    public short getHttpListenPort() {return httpListenPort;}
 }

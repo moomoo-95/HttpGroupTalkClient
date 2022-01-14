@@ -7,7 +7,6 @@ import moomoo.hgtp.client.protocol.hgtp.message.request.*;
 import moomoo.hgtp.client.protocol.hgtp.message.response.HgtpCommonResponse;
 import moomoo.hgtp.client.protocol.hgtp.message.response.HgtpUnauthorizedResponse;
 import moomoo.hgtp.client.service.AppInstance;
-import org.apache.commons.net.ntp.TimeStamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,11 +32,11 @@ public class HgtpRequestHandler {
                     AppInstance.MAGIC_COOKIE, HgtpMessageType.UNAUTHORIZED, hgtpHeader.getRequestType(),
                     hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp(), AppInstance.MD5_REALM);
 
-            // todo send HgtpUnauthorizedResponse
+            return true; // todo send HgtpUnauthorizedResponse
         } else {
-            short messageType = HgtpMessageType.UNKNOWN;
+            short messageType;
             if (hgtpRegisterContent.getNonce().equals(appInstance.getServerNonce())) {
-                if (false) { // 최대 유저 초과할 경우
+                if (false) { // todo 최대 유저 초과할 경우
                     messageType = HgtpMessageType.SERVER_UNAVAILABLE;
                 } else {
                     messageType = HgtpMessageType.OK;
@@ -49,13 +48,14 @@ public class HgtpRequestHandler {
             HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
                     AppInstance.MAGIC_COOKIE, messageType, hgtpHeader.getRequestType(),
                     hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
-            // todo send hgtpCommonResponse
+            return true; // todo send hgtpCommonResponse
         }
-        return true;
     }
 
     public static boolean unregisterRequestProcessing(HgtpUnregisterRequest hgtpUnregisterRequest) {
-        log.debug("({}) () () RECV HGTP MSG [{}]", hgtpUnregisterRequest.getHgtpHeader().getUserId(), hgtpUnregisterRequest);
+        HgtpHeader hgtpHeader = hgtpUnregisterRequest.getHgtpHeader();
+        log.debug("({}) () () RECV HGTP MSG [{}]", hgtpHeader.getUserId(), hgtpUnregisterRequest);
+
         return true;
     }
 

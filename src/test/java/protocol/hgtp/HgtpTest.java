@@ -1,5 +1,7 @@
 package protocol.hgtp;
 
+import moomoo.hgtp.client.protocol.hgtp.HgtpConsumer;
+import moomoo.hgtp.client.protocol.hgtp.HgtpManager;
 import moomoo.hgtp.client.protocol.hgtp.message.request.*;
 import moomoo.hgtp.client.service.AppInstance;
 import org.apache.commons.net.ntp.TimeStamp;
@@ -71,6 +73,8 @@ public class HgtpTest {
     @Test
     public void hgtpRegisterTest(String userId) {
         try {
+
+
             // send first Register
             HgtpRegisterRequest sendFirstHgtpRegisterRequest = new HgtpRegisterRequest(
                     AppInstance.MAGIC_COOKIE, HgtpMessageType.REGISTER, userId, 4, TimeStamp.getCurrentTime().getSeconds(),
@@ -78,6 +82,8 @@ public class HgtpTest {
             log.debug("RG1 SEND DATA : {}", sendFirstHgtpRegisterRequest);
 
             // recv first Register
+
+            HgtpManager.getInstance().putMessage(sendFirstHgtpRegisterRequest.getByteData());
             byte[] recvFirstRegister = sendFirstHgtpRegisterRequest.getByteData();
             HgtpRegisterRequest recvFirstHgtpRegisterRequest = new HgtpRegisterRequest(recvFirstRegister);
             log.debug("RG1 RECV DATA  : {}", recvFirstHgtpRegisterRequest);
@@ -229,7 +235,8 @@ public class HgtpTest {
                 messageType = HgtpMessageType.SERVER_UNAVAILABLE;
                 msgType = "SUA";
             } else {
-                if (recvHgtpCreateRoomReqeust.getHgtpHeader().getMessageType() != HgtpMessageType.CREATE_ROOM || !userInfoMap.containsKey(recvHgtpCreateRoomReqeust.getHgtpHeader().getUserId())){
+                if (recvHgtpCreateRoomReqeust.getHgtpHeader().getMessageType() != HgtpMessageType.CREATE_ROOM
+                        || !userInfoMap.containsKey(recvHgtpCreateRoomReqeust.getHgtpHeader().getUserId())){
                     messageType = HgtpMessageType.BAD_REQUEST;
                     msgType = "BAD";
                 } else {
