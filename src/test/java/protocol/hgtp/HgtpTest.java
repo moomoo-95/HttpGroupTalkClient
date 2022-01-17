@@ -78,7 +78,7 @@ public class HgtpTest {
             // send first Register
             HgtpRegisterRequest sendFirstHgtpRegisterRequest = new HgtpRegisterRequest(
                     AppInstance.MAGIC_COOKIE, HgtpMessageType.REGISTER, userId, 4, TimeStamp.getCurrentTime().getSeconds(),
-                    3600L, (short) 5060);
+                    3600L, AppInstance.getInstance ().getConfigManager().getLocalListenIp(), (short) 5060);
             log.debug("RG1 SEND DATA : {}", sendFirstHgtpRegisterRequest);
 
             // recv first Register
@@ -116,7 +116,7 @@ public class HgtpTest {
             HgtpRegisterRequest sendSecondHgtpRegisterRequest = new HgtpRegisterRequest(
                     AppInstance.MAGIC_COOKIE, HgtpMessageType.REGISTER, recvUnauthHeader.getUserId(),
                     recvUnauthHeader.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds(),
-                    3600L, (short) 5060);
+                    3600L, AppInstance.getInstance ().getConfigManager().getLocalListenIp(), (short) 5060);
             sendSecondHgtpRegisterRequest.getHgtpContent().setNonce(sendSecondHgtpRegisterRequest.getHgtpHeader(), nonce);
             log.debug("RG2 SEND DATA : {}", sendSecondHgtpRegisterRequest);
 

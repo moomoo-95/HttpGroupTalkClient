@@ -31,10 +31,8 @@ public class HgtpRemoveUserFromRoomRequest extends HgtpMessage {
     }
 
     public HgtpRemoveUserFromRoomRequest(short magicCookie, short messageType, String userId, int seqNumber, long timeStamp, String roomId, String peerUserId) {
-        int bodyLength = 12 + 8;
-
-        this.hgtpHeader = new HgtpHeader(magicCookie, messageType, messageType, userId, seqNumber, timeStamp, bodyLength);
         this.hgtpContent = new HgtpRoomManagerContent(roomId, peerUserId);
+        this.hgtpHeader = new HgtpHeader(magicCookie, messageType, messageType, userId, seqNumber, timeStamp, hgtpContent.getBodyLength());
     }
 
     @Override

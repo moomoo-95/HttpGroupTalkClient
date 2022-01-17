@@ -55,11 +55,11 @@ public class HgtpResponseHandler {
             String nonce = new String(messageDigestRealm.digest());
 
             //todo 메소드 화 send second Register
-            HgtpRegisterRequest hgtpRegisterRequest = new HgtpRegisterRequest(
-                    AppInstance.MAGIC_COOKIE, HgtpMessageType.REGISTER, hgtpHeader.getUserId(),
-                    hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, TimeStamp.getCurrentTime().getSeconds(),
-                    appInstance.getConfigManager().getHgtpExpireTime(), AppInstance.getInstance().getConfigManager().getHgtpListenPort());
-            hgtpRegisterRequest.getHgtpContent().setNonce(hgtpRegisterRequest.getHgtpHeader(), nonce);
+//            HgtpRegisterRequest hgtpRegisterRequest = new HgtpRegisterRequest(
+//                    AppInstance.MAGIC_COOKIE, HgtpMessageType.REGISTER, hgtpHeader.getUserId(),
+//                    hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, TimeStamp.getCurrentTime().getSeconds(),
+//                    appInstance.getConfigManager().getHgtpExpireTime(), AppInstance.getInstance().getConfigManager().getHgtpListenPort());
+//            hgtpRegisterRequest.getHgtpContent().setNonce(hgtpRegisterRequest.getHgtpHeader(), nonce);
             return true; // todo send HgtpRegisterRequest
         } catch (Exception e) {
             log.error("HgtpResponseHandler.unauthorizedResponseProcessing ", e);

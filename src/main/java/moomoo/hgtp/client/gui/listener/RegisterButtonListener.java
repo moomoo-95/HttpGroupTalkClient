@@ -1,5 +1,6 @@
 package moomoo.hgtp.client.gui.listener;
 
+import moomoo.hgtp.client.config.ConfigManager;
 import moomoo.hgtp.client.network.NetworkManager;
 import moomoo.hgtp.client.protocol.hgtp.message.base.HgtpMessageType;
 import moomoo.hgtp.client.protocol.hgtp.message.request.HgtpRegisterRequest;
@@ -19,12 +20,13 @@ public class RegisterButtonListener implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         AppInstance appInstance = AppInstance.getInstance();
+        ConfigManager configManager = appInstance.getConfigManager();
 
         // Send Register
         HgtpRegisterRequest hgtpRegisterRequest = new HgtpRegisterRequest(
                 AppInstance.MAGIC_COOKIE, HgtpMessageType.REGISTER, appInstance.getUserId(),
                 1, TimeStamp.getCurrentTime().getSeconds(),
-                appInstance.getConfigManager().getHgtpExpireTime(), appInstance.getConfigManager().getHgtpListenPort()
+                configManager.getHgtpExpireTime(), configManager.getLocalListenIp(), configManager.getHgtpListenPort()
                 );
         byte[] data = hgtpRegisterRequest.getByteData();
 

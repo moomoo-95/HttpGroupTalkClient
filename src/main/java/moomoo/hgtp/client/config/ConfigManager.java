@@ -27,8 +27,6 @@ public class ConfigManager {
     // HGTP
     private static final String FIELD_HGTP_LISTEN_PORT = "HGTP_LISTEN_PORT";
     private static final String FIELD_HGTP_TARGET_PORT = "HGTP_TARGET_PORT";
-    private static final String FIELD_HGTP_MIN_PORT = "HGTP_MIN_PORT";
-    private static final String FIELD_HGTP_MAX_PORT = "HGTP_MAX_PORT";
     private static final String FIELD_HGTP_THREAD_SIZE = "HGTP_THREAD_SIZE";
     private static final String FIELD_HGTP_EXPIRE_TIME = "HGTP_EXPIRE_TIME";
     // HTTP
@@ -43,8 +41,6 @@ public class ConfigManager {
     // HGTP
     private short hgtpListenPort = 0;
     private short hgtpTargetPort = 0;
-    private int  hgtpMinPort = 0;
-    private int  hgtpMaxPort = 0;
     private int  hgtpThreadSize = 0;
     private long hgtpExpireTime = 0;
     // HTTP
@@ -107,23 +103,6 @@ public class ConfigManager {
             System.exit(1);
         }
 
-        this.hgtpMinPort = Short.parseShort(getIniValue(SECTION_HGTP, FIELD_HGTP_MIN_PORT));
-        if (hgtpMinPort < 1024 || hgtpMinPort > 32767) {
-            log.error("[{}] config [{}] : [{}] Error (1024 - 32767)", SECTION_HGTP, FIELD_HGTP_MIN_PORT, hgtpMinPort);
-            System.exit(1);
-        }
-
-        this.hgtpMaxPort = Short.parseShort(getIniValue(SECTION_HGTP, FIELD_HGTP_MAX_PORT));
-        if (hgtpMaxPort < 1024 || hgtpMaxPort > 32767) {
-            log.error("[{}] config [{}] : [{}] Error (1024 - 32767)", SECTION_HGTP, FIELD_HGTP_MAX_PORT, hgtpMaxPort);
-            System.exit(1);
-        }
-
-        if (hgtpMinPort > hgtpMaxPort) {
-            log.error("[{}] config [{}] : [{} > {}] Error. {} > {}", SECTION_HGTP, FIELD_HGTP_MIN_PORT, FIELD_HGTP_MAX_PORT, hgtpMinPort, hgtpMaxPort);
-            System.exit(1);
-        }
-
         this.hgtpThreadSize = Integer.parseInt(getIniValue(SECTION_HGTP, FIELD_HGTP_THREAD_SIZE));
         if (hgtpThreadSize <= 0) {
             log.warn("[{}] config [{}] : [{} -> 3] Warn", SECTION_HGTP, FIELD_HGTP_THREAD_SIZE, hgtpThreadSize);
@@ -180,8 +159,6 @@ public class ConfigManager {
 
     public short getHgtpListenPort() {return hgtpListenPort;}
     public short getHgtpTargetPort() {return hgtpTargetPort;}
-    public int getHgtpMinPort() {return hgtpMinPort;}
-    public int getHgtpMaxPort() {return hgtpMaxPort;}
     public int getHgtpThreadSize() {return hgtpThreadSize;}
     public long getHgtpExpireTime() {return hgtpExpireTime;}
 

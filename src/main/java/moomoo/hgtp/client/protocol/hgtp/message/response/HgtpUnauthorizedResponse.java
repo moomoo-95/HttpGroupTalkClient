@@ -32,11 +32,8 @@ public class HgtpUnauthorizedResponse extends HgtpMessage {
     }
 
     public HgtpUnauthorizedResponse(short magicCookie, short messageType, Short requestType, String userId, int seqNumber, long timeStamp, String realm) {
-        // realmLength + realm
-        int bodyLength = ByteUtil.NUM_BYTES_IN_INT +  realm.length();
-
-        this.hgtpHeader = new HgtpHeader(magicCookie, messageType, requestType, userId, seqNumber, timeStamp, bodyLength);
         this.hgtpContent = new HgtpUnauthorizedContent(realm);
+        this.hgtpHeader = new HgtpHeader(magicCookie, messageType, requestType, userId, seqNumber, timeStamp, hgtpContent.getBodyLength());
     }
 
     @Override

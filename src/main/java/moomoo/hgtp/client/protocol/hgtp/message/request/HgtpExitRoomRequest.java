@@ -31,10 +31,8 @@ public class HgtpExitRoomRequest extends HgtpMessage {
     }
 
     public HgtpExitRoomRequest(short magicCookie, short messageType, String userId, int seqNumber, long timeStamp, String roomId) {
-        int bodyLength = 12;
-
-        this.hgtpHeader = new HgtpHeader(magicCookie, messageType, messageType, userId, seqNumber, timeStamp, bodyLength);
         this.hgtpContent = new HgtpRoomContent(roomId);
+        this.hgtpHeader = new HgtpHeader(magicCookie, messageType, messageType, userId, seqNumber, timeStamp, hgtpContent.getBodyLength());
     }
 
     @Override

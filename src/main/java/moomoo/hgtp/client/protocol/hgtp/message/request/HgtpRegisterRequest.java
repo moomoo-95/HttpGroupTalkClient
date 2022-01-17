@@ -30,13 +30,9 @@ public class HgtpRegisterRequest extends HgtpMessage {
         }
     }
 
-    public HgtpRegisterRequest(short magicCookie, short messageType, String userId, int seqNumber, long timeStamp,  long expires, short listenPort) {
-        //  + expires + listenPort + nonceLength (nonce 미포함)
-        int bodyLength = ByteUtil.NUM_BYTES_IN_LONG
-                + ByteUtil.NUM_BYTES_IN_SHORT + ByteUtil.NUM_BYTES_IN_INT;
-
-        this.hgtpHeader = new HgtpHeader(magicCookie, messageType, messageType, userId, seqNumber, timeStamp, bodyLength);
-        this.hgtpContent = new HgtpRegisterContent(expires, listenPort);
+    public HgtpRegisterRequest(short magicCookie, short messageType, String userId, int seqNumber, long timeStamp, long expires, String listenIp, short listenPort) {
+        this.hgtpContent = new HgtpRegisterContent(expires, listenIp, listenPort);
+        this.hgtpHeader = new HgtpHeader(magicCookie, messageType, messageType, userId, seqNumber, timeStamp, hgtpContent.getBodyLength());
     }
 
     @Override

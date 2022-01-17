@@ -7,7 +7,10 @@ import java.nio.charset.StandardCharsets;
 
 public class HgtpRegisterContent implements HgtpContent {
 
+
     private final long expires;             // 8 bytes
+    private final int listenIpLength;       // 4 bytes
+    private final String listenIp;          // listenIpLength bytes
     private final short listenPort;         // 2 bytes
     private int nonceLength = 0;            // 4 bytes
     private String nonce = "";              // nonceLength bytes
@@ -20,6 +23,16 @@ public class HgtpRegisterContent implements HgtpContent {
             System.arraycopy(data, index, expiresByteData, 0, expiresByteData.length);
             expires = ByteUtil.bytesToLong(expiresByteData, true);
             index += expiresByteData.length;
+
+            byte[] listenIpLengthByteData = new byte[ByteUtil.NUM_BYTES_IN_INT];
+            System.arraycopy(data, index, listenIpLengthByteData, 0, listenIpLengthByteData.length);
+            listenIpLength = ByteUtil.bytesToInt(listenIpLengthByteData, true);
+            index += listenIpLengthByteData.length;
+
+            byte[] listenIpByteData = new byte[listenIpLength];
+            System.arraycopy(data, index, listenIpByteData, 0, listenIpByteData.length);
+            listenIp = new String(listenIpByteData);
+            index += listenIpByteData.length;
 
             byte[] listenPortByteData = new byte[ByteUtil.NUM_BYTES_IN_SHORT];
             System.arraycopy(data, index, listenPortByteData, 0, listenPortByteData.length);
@@ -40,12 +53,16 @@ public class HgtpRegisterContent implements HgtpContent {
         } else {
             this.expires = 0;
             this.listenPort = 0;
+            this.listenIpLength = 0;
+            this.listenIp = "";
         }
     }
 
-    public HgtpRegisterContent(long expires, short listenPort) {
+    public HgtpRegisterContent(long expires, String listenIp, short listenPort) {
         this.expires = expires;
+        this.listenIp = listenIp;
         this.listenPort = listenPort;
+        this.listenIpLength = listenIp.length();
     }
 
     @Override
@@ -56,6 +73,14 @@ public class HgtpRegisterContent implements HgtpContent {
         byte[] expiresByteData = ByteUtil.longToBytes(expires, true);
         System.arraycopy(expiresByteData, 0, data, index, expiresByteData.length);
         index += expiresByteData.length;
+
+        byte[] listenIpLengthByteData = ByteUtil.intToBytes(listenIpLength, true);
+        System.arraycopy(listenIpLengthByteData, 0, data, index, listenIpLengthByteData.length);
+        index += listenIpLengthByteData.length;
+
+        byte[] listenIpByteData = listenIp.getBytes(StandardCharsets.UTF_8);
+        System.arraycopy(listenIpByteData, 0, data, index, listenIpByteData.length);
+        index += listenIpByteData.length;
 
         byte[] listenPortByteData = ByteUtil.shortToBytes(listenPort, true);
         System.arraycopy(listenPortByteData, 0, data, index, listenPortByteData.length);
@@ -77,8 +102,14 @@ public class HgtpRegisterContent implements HgtpContent {
     }
 
     public int getBodyLength() {
-        return ByteUtil.NUM_BYTES_IN_LONG + ByteUtil.NUM_BYTES_IN_SHORT + ByteUtil.NUM_BYTES_IN_INT + nonceLength;
+        return ByteUtil.NUM_BYTES_IN_LONG + ByteUtil.NUM_BYTES_IN_INT + listenIpLength + ByteUtil.NUM_BYTES_IN_SHORT + ByteUtil.NUM_BYTES_IN_INT + nonceLength;
     }
+
+    public long getExpires() {return expires;}
+
+    public String getListenIp() {return listenIp;}
+
+    public short getListenPort() {return listenPort;}
 
     public String getNonce() {return nonce;}
 
