@@ -1,6 +1,7 @@
 package moomoo.hgtp.client.service;
 
 import moomoo.hgtp.client.config.ConfigManager;
+import moomoo.hgtp.client.util.CnameGenerator;
 import org.apache.commons.net.ntp.TimeStamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ public class AppInstance {
 
     private static final Logger log = LoggerFactory.getLogger(AppInstance.class);
 
+    public static final long SERVER_SESSION_ID = 84;
     public static final int USER_ID_SIZE = 8;
     public static final int ROOM_ID_SIZE = 12;
     public static final int SEQ_INCREMENT = 1;
@@ -23,6 +25,8 @@ public class AppInstance {
 
     private static AppInstance appInstance = null;
 
+    private final String userId;
+
     private boolean isServer = false;
 
     private String configPath = "";
@@ -31,6 +35,8 @@ public class AppInstance {
     private String serverNonce = "";
 
     public AppInstance() {
+        userId = CnameGenerator.generateCnameUserId();
+
         try {
             // Decoding nonce -> realm
             MessageDigest messageDigestNonce = MessageDigest.getInstance(ALGORITHM);
@@ -53,6 +59,8 @@ public class AppInstance {
         }
         return appInstance;
     }
+
+    public String getUserId() {return userId;}
 
     public boolean isServer() {return isServer;}
     public void setServer(boolean server) {isServer = server;}

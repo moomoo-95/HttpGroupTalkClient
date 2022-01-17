@@ -1,12 +1,15 @@
 package moomoo.hgtp.client.protocol.hgtp.message.response.handler;
 
+import moomoo.hgtp.client.network.NetworkManager;
 import moomoo.hgtp.client.protocol.hgtp.message.base.HgtpHeader;
 import moomoo.hgtp.client.protocol.hgtp.message.base.HgtpMessageType;
+import moomoo.hgtp.client.protocol.hgtp.message.base.content.HgtpRegisterContent;
 import moomoo.hgtp.client.protocol.hgtp.message.base.content.HgtpUnauthorizedContent;
 import moomoo.hgtp.client.protocol.hgtp.message.request.HgtpRegisterRequest;
 import moomoo.hgtp.client.protocol.hgtp.message.response.HgtpCommonResponse;
 import moomoo.hgtp.client.protocol.hgtp.message.response.HgtpUnauthorizedResponse;
 import moomoo.hgtp.client.service.AppInstance;
+import network.socket.GroupSocket;
 import org.apache.commons.net.ntp.TimeStamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +26,12 @@ public class HgtpResponseHandler {
     }
 
     public static boolean okResponseProcessing(HgtpCommonResponse hgtpOkResponse) {
-        log.debug("({}) () () RECV HGTP MSG [{}]", hgtpOkResponse.getHgtpHeader().getUserId(), hgtpOkResponse);
+        HgtpHeader hgtpHeader = hgtpOkResponse.getHgtpHeader();
+        log.debug("({}) () () RECV HGTP MSG [{}]", hgtpHeader.getUserId(), hgtpOkResponse);
+
+        if (hgtpHeader.getRequestType() == HgtpMessageType.REGISTER) {
+            // nothing
+        }
         return true;
     }
 

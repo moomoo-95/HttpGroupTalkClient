@@ -10,6 +10,7 @@ import moomoo.hgtp.client.config.ConfigManager;
 import moomoo.hgtp.client.network.handler.HgtpChannelHandler;
 import moomoo.hgtp.client.network.handler.HttpChannelHandler;
 import moomoo.hgtp.client.service.AppInstance;
+import network.definition.DestinationRecord;
 import network.definition.NetAddress;
 import network.socket.GroupSocket;
 import network.socket.SocketManager;
@@ -20,17 +21,16 @@ import service.scheduler.schedule.ScheduleManager;
 public class NetworkManager {
 
     private static NetworkManager networkManager = null;
-    private static final int MIN_PORT = 5000;
-    private static final int MAX_PORT = 7000;
-    private static final int SEND_BUF = 1048576;
-    private static final int RECV_BUF = 1048576;
 
     // NetAddress 생성
     private BaseEnvironment baseEnvironment = null;
     private SocketManager socketManager = null;
 
-    NetAddress hgtpAddress = null;
-    NetAddress httpAddress = null;
+    private NetAddress hgtpLocalAddress = null;
+    private NetAddress hgtpTargetAddress = null;
+
+    private NetAddress httpLocalAddress = null;
+    private NetAddress httpTargetAddress = null;
 
     public NetworkManager() {
         // nothing
@@ -43,17 +43,23 @@ public class NetworkManager {
         return networkManager;
     }
 
-    public void startNetwork(){
+    public void startSocket(){
         ConfigManager configManager = AppInstance.getInstance().getConfigManager();
 
         // 인스턴스 생성
-        baseEnvironment = new BaseEnvironment( new ScheduleManager(), new ResourceManager(MIN_PORT, MAX_PORT), DebugLevel.DEBUG );
+        baseEnvironment = new BaseEnvironment( new ScheduleManager(), new ResourceManager(configManager.getHgtpMinPort(), configManager.getHgtpMaxPort()), DebugLevel.DEBUG );
 
         // SocketManager 생성
-        socketManager = new SocketManager( baseEnvironment, true, 10, SEND_BUF, RECV_BUF );
+        socketManager = new SocketManager( baseEnvironment, true, 10, configManager.getSendBufSize(), configManager.getRecvBufSize() );
 
-        hgtpAddress = new NetAddress(configManager.getLocalListenIp(), configManager.getHgtpListenPort(),true, SocketProtocol.UDP);
-        httpAddress = new NetAddress(configManager.getLocalListenIp(), configManager.getHttpListenPort(), true, SocketProtocol.TCP);
+        // HGTP local / target 주소 설정
+        hgtpLocalAddress = new NetAddress(configManager.getLocalListenIp(), configManager.getHgtpListenPort(),true, SocketProtocol.UDP);
+        hgtpTargetAddress = new NetAddress(configManager.getTargetListenIp(), configManager.getHgtpTargetPort(), true, SocketProtocol.UDP);
+
+        // HTTP local / target 주소 설정
+        httpLocalAddress = new NetAddress(configManager.getLocalListenIp(), configManager.getHttpListenPort(), true, SocketProtocol.TCP);
+        // todo register 등록시 저장되도록 설정
+        //httpTargetAddress = new NetAddress(configManager.getTargetListenIp(), configManager.getHttpListenPort(), true, SocketProtocol.TCP);
 
         ChannelInitializer<NioDatagramChannel> hgtpChannelInitializer = new ChannelInitializer<NioDatagramChannel>() {
             @Override
@@ -71,25 +77,26 @@ public class NetworkManager {
             }
         };
 
-        socketManager.addSocket(hgtpAddress, hgtpChannelInitializer);
-        socketManager.addSocket(httpAddress, httpChannelInitializer);
+        socketManager.addSocket(hgtpLocalAddress, hgtpChannelInitializer);
+        socketManager.addSocket(httpLocalAddress, httpChannelInitializer);
 
-        GroupSocket hgtpGroupSocket = socketManager.getSocket(hgtpAddress);
+        GroupSocket hgtpGroupSocket = socketManager.getSocket(hgtpLocalAddress);
         hgtpGroupSocket.getListenSocket().openListenChannel();
+        hgtpGroupSocket.addDestination(hgtpTargetAddress, null, AppInstance.SERVER_SESSION_ID, hgtpChannelInitializer);
 
-        GroupSocket httpGroupSocket = socketManager.getSocket(httpAddress);
+        GroupSocket httpGroupSocket = socketManager.getSocket(httpLocalAddress);
         httpGroupSocket.getListenSocket().openListenChannel();
     }
 
-    public void stopNetwork() {
+    public void stopSocket() {
         // 소켓 삭제
         if (socketManager != null) {
-            if (socketManager.getSocket(hgtpAddress) != null) {
-                socketManager.removeSocket(hgtpAddress);
+            if (socketManager.getSocket(hgtpLocalAddress) != null) {
+                socketManager.removeSocket(hgtpLocalAddress);
             }
 
-            if (socketManager.getSocket(httpAddress) != null) {
-                socketManager.removeSocket(httpAddress);
+            if (socketManager.getSocket(httpLocalAddress) != null) {
+                socketManager.removeSocket(httpLocalAddress);
             }
         }
 
@@ -98,4 +105,10 @@ public class NetworkManager {
             baseEnvironment.stop();
         }
     }
+
+    public BaseEnvironment getBaseEnvironment() {return baseEnvironment;}
+
+    public GroupSocket getHgtpGroupSocket() {return socketManager.getSocket(hgtpLocalAddress);}
+
+    public GroupSocket getHttpGroupSocket() {return socketManager.getSocket(httpLocalAddress);}
 }

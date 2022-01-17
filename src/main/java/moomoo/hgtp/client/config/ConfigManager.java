@@ -21,8 +21,14 @@ public class ConfigManager {
     // Field
     // NETWORK
     private static final String FIELD_LOCAL_LISTEN_IP = "LOCAL_LISTEN_IP";
+    private static final String FIELD_TARGET_LISTEN_IP = "TARGET_LISTEN_IP";
+    private static final String FIELD_SEND_BUF_SIZE = "SEND_BUF_SIZE";
+    private static final String FIELD_RECV_BUF_SIZE = "RECV_BUF_SIZE";
     // HGTP
     private static final String FIELD_HGTP_LISTEN_PORT = "HGTP_LISTEN_PORT";
+    private static final String FIELD_HGTP_TARGET_PORT = "HGTP_TARGET_PORT";
+    private static final String FIELD_HGTP_MIN_PORT = "HGTP_MIN_PORT";
+    private static final String FIELD_HGTP_MAX_PORT = "HGTP_MAX_PORT";
     private static final String FIELD_HGTP_THREAD_SIZE = "HGTP_THREAD_SIZE";
     private static final String FIELD_HGTP_EXPIRE_TIME = "HGTP_EXPIRE_TIME";
     // HTTP
@@ -31,8 +37,14 @@ public class ConfigManager {
     // COMMON
     // NETWORK
     private String localListenIp = "";
+    private String targetListenIp = "";
+    private int  sendBufSize = 0;
+    private int  recvBufSize = 0;
     // HGTP
     private short hgtpListenPort = 0;
+    private short hgtpTargetPort = 0;
+    private int  hgtpMinPort = 0;
+    private int  hgtpMaxPort = 0;
     private int  hgtpThreadSize = 0;
     private long hgtpExpireTime = 0;
     // HTTP
@@ -65,25 +77,62 @@ public class ConfigManager {
     private void loadNetworkConfig() {
         this.localListenIp = getIniValue(SECTION_NETWORK, FIELD_LOCAL_LISTEN_IP);
 
+        this.targetListenIp = getIniValue(SECTION_NETWORK, FIELD_TARGET_LISTEN_IP);
+
+        this.sendBufSize = Integer.parseInt(getIniValue(SECTION_NETWORK, FIELD_SEND_BUF_SIZE));
+        if (sendBufSize < 1024) {
+            log.warn("[{}] config [{}] : [{} -> 1048576] Warn", SECTION_NETWORK, FIELD_SEND_BUF_SIZE, sendBufSize);
+            sendBufSize = 1048576;
+        }
+
+        this.recvBufSize = Integer.parseInt(getIniValue(SECTION_NETWORK, FIELD_SEND_BUF_SIZE));
+        if (recvBufSize < 1024) {
+            log.warn("[{}] config [{}] : [{} -> 1048576] Warn", SECTION_NETWORK, FIELD_RECV_BUF_SIZE, recvBufSize);
+            recvBufSize = 1048576;
+        }
+
         log.debug("Load [{}] config...(OK)", SECTION_NETWORK);
     }
 
     private void loadHgtpConfig() {
         this.hgtpListenPort = Short.parseShort(getIniValue(SECTION_HGTP, FIELD_HGTP_LISTEN_PORT));
         if (hgtpListenPort < 1024 || hgtpListenPort > 32767) {
-            log.debug("[{}] config [{}] : [{}] Error (1024 - 32767)", SECTION_HGTP, FIELD_HGTP_LISTEN_PORT, hgtpListenPort);
+            log.error("[{}] config [{}] : [{}] Error (1024 - 32767)", SECTION_HGTP, FIELD_HGTP_LISTEN_PORT, hgtpListenPort);
+            System.exit(1);
+        }
+
+        this.hgtpTargetPort = Short.parseShort(getIniValue(SECTION_HGTP, FIELD_HGTP_TARGET_PORT));
+        if (hgtpTargetPort < 1024 || hgtpTargetPort > 32767) {
+            log.error("[{}] config [{}] : [{}] Error (1024 - 32767)", SECTION_HGTP, FIELD_HGTP_TARGET_PORT, hgtpTargetPort);
+            System.exit(1);
+        }
+
+        this.hgtpMinPort = Short.parseShort(getIniValue(SECTION_HGTP, FIELD_HGTP_MIN_PORT));
+        if (hgtpMinPort < 1024 || hgtpMinPort > 32767) {
+            log.error("[{}] config [{}] : [{}] Error (1024 - 32767)", SECTION_HGTP, FIELD_HGTP_MIN_PORT, hgtpMinPort);
+            System.exit(1);
+        }
+
+        this.hgtpMaxPort = Short.parseShort(getIniValue(SECTION_HGTP, FIELD_HGTP_MAX_PORT));
+        if (hgtpMaxPort < 1024 || hgtpMaxPort > 32767) {
+            log.error("[{}] config [{}] : [{}] Error (1024 - 32767)", SECTION_HGTP, FIELD_HGTP_MAX_PORT, hgtpMaxPort);
+            System.exit(1);
+        }
+
+        if (hgtpMinPort > hgtpMaxPort) {
+            log.error("[{}] config [{}] : [{} > {}] Error. {} > {}", SECTION_HGTP, FIELD_HGTP_MIN_PORT, FIELD_HGTP_MAX_PORT, hgtpMinPort, hgtpMaxPort);
             System.exit(1);
         }
 
         this.hgtpThreadSize = Integer.parseInt(getIniValue(SECTION_HGTP, FIELD_HGTP_THREAD_SIZE));
         if (hgtpThreadSize <= 0) {
-            log.debug("[{}] config [{}] : [{} -> 3] Warn", SECTION_HGTP, FIELD_HGTP_THREAD_SIZE, hgtpThreadSize);
+            log.warn("[{}] config [{}] : [{} -> 3] Warn", SECTION_HGTP, FIELD_HGTP_THREAD_SIZE, hgtpThreadSize);
             hgtpThreadSize = 3;
         }
 
         this.hgtpExpireTime = Long.parseLong(getIniValue(SECTION_HGTP, FIELD_HGTP_EXPIRE_TIME));
         if (hgtpExpireTime <= 0) {
-            log.debug("[{}] config [{}] : [{} -> 3600] Warn", SECTION_HGTP, FIELD_HGTP_THREAD_SIZE, hgtpExpireTime);
+            log.warn("[{}] config [{}] : [{} -> 3600] Warn", SECTION_HGTP, FIELD_HGTP_THREAD_SIZE, hgtpExpireTime);
             hgtpExpireTime = 3600;
         }
         log.debug("Load [{}] config...(OK)", SECTION_HGTP);
@@ -92,7 +141,7 @@ public class ConfigManager {
     private void loadHttpConfig() {
         this.httpListenPort = Short.parseShort(getIniValue(SECTION_HTTP, FIELD_HTTP_LISTEN_PORT));
         if (httpListenPort < 1024 || httpListenPort > 32767) {
-            log.debug("[{}] config [{}] : [{}] Error (1024 - 32767)", SECTION_HTTP, FIELD_HTTP_LISTEN_PORT, httpListenPort);
+            log.error("[{}] config [{}] : [{}] Error (1024 - 32767)", SECTION_HTTP, FIELD_HTTP_LISTEN_PORT, httpListenPort);
             System.exit(1);
         }
 
@@ -102,7 +151,7 @@ public class ConfigManager {
     private String getIniValue(String section, String key){
         String value = ini.get(section, key);
         if (value == null) {
-            log.warn("[{}] \"{}\" is null.", section, key);
+            log.error("[{}] \"{}\" is null.", section, key);
             System.exit(1);
             return null;
         }
@@ -124,10 +173,19 @@ public class ConfigManager {
     }
 
     public String getLocalListenIp() {return localListenIp;}
+    public String getTargetListenIp() {return targetListenIp;}
+    public int getSendBufSize() {return sendBufSize;}
+    public int getRecvBufSize() {return recvBufSize;}
+
 
     public short getHgtpListenPort() {return hgtpListenPort;}
+    public short getHgtpTargetPort() {return hgtpTargetPort;}
+    public int getHgtpMinPort() {return hgtpMinPort;}
+    public int getHgtpMaxPort() {return hgtpMaxPort;}
     public int getHgtpThreadSize() {return hgtpThreadSize;}
     public long getHgtpExpireTime() {return hgtpExpireTime;}
 
     public short getHttpListenPort() {return httpListenPort;}
+
+
 }

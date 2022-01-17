@@ -1,5 +1,8 @@
 package moomoo.hgtp.client.protocol.hgtp.message.base;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class HgtpMessageType {
     public static final short UNKNOWN = 0x00;
 
@@ -23,24 +26,23 @@ public class HgtpMessageType {
         // nothing
     }
 
-    //    public static final Map<String, Short> REQUEST_HASHMAP = new HashMap<String, Short>() {
-//        {
-//        put("REGISTER", REGISTER);
-//        put("UNREGISTER", UNREGISTER);
-//        put("CREATE_ROOM", CREATE_ROOM);
-//        put("DELETE_ROOM", DELETE_ROOM);
-//        put("JOIN_ROOM", JOIN_ROOM);
-//        put("EXIT_ROOM", EXIT_ROOM);
-//        put("INVITE_USER_FROM_ROOM", INVITE_USER_FROM_ROOM);
-//        put("REMOVE_USER_FROM_ROOM", REMOVE_USER_FROM_ROOM);
-//    } };
-//
-//    public static final Map<String, Short> RESPONSE_HASHMAP = new HashMap<String, Short>() { {
-//        put("OK_200", OK_200);
-//        put("BAD_REQUEST_400", BAD_REQUEST_400);
-//        put("UNAUTHORIZED_401", UNAUTHORIZED_401);
-//        put("FORBIDDEN_403", FORBIDDEN_403);
-//        put("SERVER_UNAVAILABLE_503", SERVER_UNAVAILABLE_503);
-//        put("DECLINE_603", DECLINE_603);
-//    } };
+    public static final Map<Short, String> REQUEST_HASHMAP = new HashMap<Short, String>() { {
+            put(REGISTER, "REGISTER");
+            put(UNREGISTER, "UNREGISTER");
+            put(CREATE_ROOM, "CREATE_ROOM");
+            put(DELETE_ROOM, "DELETE_ROOM");
+            put(JOIN_ROOM, "JOIN_ROOM");
+            put(EXIT_ROOM, "EXIT_ROOM");
+            put(INVITE_USER_FROM_ROOM, "INVITE_USER_FROM_ROOM");
+            put(REMOVE_USER_FROM_ROOM, "REMOVE_USER_FROM_ROOM");
+    } };
+
+    public static final Map<Short, String> RESPONSE_HASHMAP = new HashMap<Short, String>() { {
+        put(OK, "OK");
+        put(BAD_REQUEST, "BAD_REQUEST");
+        put(UNAUTHORIZED, "UNAUTHORIZED");
+        put(FORBIDDEN, "FORBIDDEN");
+        put(SERVER_UNAVAILABLE, "SERVER_UNAVAILABLE");
+        put(DECLINE, "DECLINE");
+    } };
 }
