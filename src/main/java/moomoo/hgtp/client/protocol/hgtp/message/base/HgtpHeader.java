@@ -1,7 +1,7 @@
 package moomoo.hgtp.client.protocol.hgtp.message.base;
 
-import moomoo.hgtp.client.service.AppInstance;
 import moomoo.hgtp.client.protocol.hgtp.exception.HgtpException;
+import moomoo.hgtp.client.service.AppInstance;
 import util.module.ByteUtil;
 
 import java.nio.charset.StandardCharsets;

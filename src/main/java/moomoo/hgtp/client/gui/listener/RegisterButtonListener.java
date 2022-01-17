@@ -1,6 +1,5 @@
 package moomoo.hgtp.client.gui.listener;
 
-import moomoo.hgtp.client.config.ConfigManager;
 import moomoo.hgtp.client.network.NetworkManager;
 import moomoo.hgtp.client.protocol.hgtp.message.base.HgtpMessageType;
 import moomoo.hgtp.client.protocol.hgtp.message.request.HgtpRegisterRequest;

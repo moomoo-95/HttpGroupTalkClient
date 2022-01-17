@@ -1,9 +1,9 @@
 package moomoo.hgtp.client;
 
 import moomoo.hgtp.client.service.AppInstance;
+import moomoo.hgtp.client.service.ServiceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import moomoo.hgtp.client.service.ServiceManager;
 
 
 public class HttpGroupTalkClientMain {

@@ -1,8 +1,8 @@
 package moomoo.hgtp.client.service;
 
+import moomoo.hgtp.client.gui.GuiManager;
 import moomoo.hgtp.client.network.NetworkManager;
 import moomoo.hgtp.client.protocol.hgtp.HgtpManager;
-import moomoo.hgtp.client.gui.GuiManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

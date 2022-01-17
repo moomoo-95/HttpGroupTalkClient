@@ -10,7 +10,6 @@ import moomoo.hgtp.client.config.ConfigManager;
 import moomoo.hgtp.client.network.handler.HgtpChannelHandler;
 import moomoo.hgtp.client.network.handler.HttpChannelHandler;
 import moomoo.hgtp.client.service.AppInstance;
-import network.definition.DestinationRecord;
 import network.definition.NetAddress;
 import network.socket.GroupSocket;
 import network.socket.SocketManager;
