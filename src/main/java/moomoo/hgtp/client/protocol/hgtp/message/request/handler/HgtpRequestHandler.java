@@ -73,6 +73,18 @@ public class HgtpRequestHandler {
         log.debug("({}) () () [{}] SEND DATA {}", appInstance.getUserId(), HgtpMessageType.REQUEST_HASHMAP.get(hgtpRegisterRequest.getHgtpHeader().getMessageType()), hgtpRegisterRequest);
     }
 
+    public void sendUnregisterRequest(HgtpUnregisterRequest hgtpUnregisterRequest) {
+        byte[] data = hgtpUnregisterRequest.getByteData();
+
+        DestinationRecord destinationRecord = NetworkManager.getInstance().getHgtpGroupSocket().getDestination(AppInstance.SERVER_SESSION_ID);
+        if (destinationRecord == null) {
+            log.warn("({}) () () DestinationRecord Channel is null.", appInstance.getUserId());
+        }
+
+        destinationRecord.getNettyChannel().sendData(data, data.length);
+        log.debug("({}) () () [{}] SEND DATA {}", appInstance.getUserId(), HgtpMessageType.REQUEST_HASHMAP.get(hgtpUnregisterRequest.getHgtpHeader().getMessageType()), hgtpUnregisterRequest);
+    }
+
     public void sendCreateRoomRequest(HgtpCreateRoomRequest hgtpCreateRoomRequest) {
         byte[] data = hgtpCreateRoomRequest.getByteData();
 

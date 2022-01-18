@@ -40,6 +40,9 @@ public class HgtpResponseHandler {
             case HgtpMessageType.REGISTER:
                 controlPanel.setRegisterButtonStatus();
                 break;
+            case HgtpMessageType.UNREGISTER:
+                controlPanel.setInitButtonStatus();
+                break;
             case HgtpMessageType.CREATE_ROOM:
                 controlPanel.setCreateRoomButtonStatus();
                 break;
@@ -58,6 +61,9 @@ public class HgtpResponseHandler {
         switch (hgtpHeader.getRequestType()) {
             case HgtpMessageType.REGISTER:
                 // todo register 등록 실패 상태
+                break;
+            case HgtpMessageType.UNREGISTER:
+                // todo register 등록 해제 실패 상태
                 break;
             case HgtpMessageType.CREATE_ROOM:
                 appInstance.initRoomId();
@@ -112,6 +118,9 @@ public class HgtpResponseHandler {
         switch (hgtpHeader.getRequestType()) {
             case HgtpMessageType.REGISTER:
                 // todo register 등록 실패 상태
+                break;
+            case HgtpMessageType.UNREGISTER:
+                // todo register 등록 해제 실패 상태
                 break;
             case HgtpMessageType.CREATE_ROOM:
                 appInstance.initRoomId();

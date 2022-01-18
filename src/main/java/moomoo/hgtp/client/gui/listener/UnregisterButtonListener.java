@@ -3,6 +3,7 @@ package moomoo.hgtp.client.gui.listener;
 import moomoo.hgtp.client.config.ConfigManager;
 import moomoo.hgtp.client.protocol.hgtp.message.base.HgtpMessageType;
 import moomoo.hgtp.client.protocol.hgtp.message.request.HgtpRegisterRequest;
+import moomoo.hgtp.client.protocol.hgtp.message.request.HgtpUnregisterRequest;
 import moomoo.hgtp.client.protocol.hgtp.message.request.handler.HgtpRequestHandler;
 import moomoo.hgtp.client.service.AppInstance;
 import org.apache.commons.net.ntp.TimeStamp;
@@ -22,5 +23,13 @@ public class UnregisterButtonListener implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         AppInstance appInstance = AppInstance.getInstance();
         ConfigManager configManager = appInstance.getConfigManager();
+
+        // Send Register
+        HgtpUnregisterRequest hgtpUnregisterRequest = new HgtpUnregisterRequest(
+                AppInstance.MAGIC_COOKIE, HgtpMessageType.UNREGISTER, appInstance.getUserId(),
+                AppInstance.SEQ_INCREMENT, TimeStamp.getCurrentTime().getSeconds()
+        );
+
+        hgtpRequestHandler.sendUnregisterRequest(hgtpUnregisterRequest);
     }
 }
