@@ -27,8 +27,6 @@ public class AppInstance {
 
     private final String userId;
 
-    private boolean isServer = false;
-
     private String configPath = "";
     private ConfigManager configManager = null;
 
@@ -61,9 +59,6 @@ public class AppInstance {
     }
 
     public String getUserId() {return userId;}
-
-    public boolean isServer() {return isServer;}
-    public void setServer(boolean server) {isServer = server;}
 
     public String getConfigPath() {return configPath;}
 

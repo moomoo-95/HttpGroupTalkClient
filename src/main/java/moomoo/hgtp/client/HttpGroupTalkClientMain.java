@@ -11,24 +11,13 @@ public class HttpGroupTalkClientMain {
     private static final Logger log = LoggerFactory.getLogger(HttpGroupTalkClientMain.class);
 
     public static void main(String[] args) {
-        if (args.length != 2) {
-            log.error("Fail to argument &config path &mode");
+        if (args.length != 1) {
+            log.error("Fail to argument &config path");
             return;
         }
 
         log.debug("HttpGroupTalkClientMain Start.");
         AppInstance appInstance = AppInstance.getInstance();
-        switch (args[1]){
-            case "server":
-                appInstance.setServer(true);
-                break;
-            case "client":
-                appInstance.setServer(false);
-                break;
-            default:
-                log.error("Fail to mode argument");
-                return;
-        }
         appInstance.setConfigManager(args[0]);
 
         ServiceManager serviceManager = ServiceManager.getInstance();

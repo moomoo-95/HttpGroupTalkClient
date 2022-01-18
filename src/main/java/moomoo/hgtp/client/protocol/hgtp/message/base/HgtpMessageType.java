@@ -45,4 +45,9 @@ public class HgtpMessageType {
         put(SERVER_UNAVAILABLE, "SERVER_UNAVAILABLE");
         put(DECLINE, "DECLINE");
     } };
+
+    public static final Map<Short, String> HGTP_HASHMAP = new HashMap<Short, String>() { {
+        putAll(REQUEST_HASHMAP);
+        putAll(RESPONSE_HASHMAP);
+    } };
 }

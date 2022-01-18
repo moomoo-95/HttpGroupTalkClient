@@ -1,9 +1,11 @@
 package moomoo.hgtp.client.protocol.hgtp.message.response.handler;
 
+import moomoo.hgtp.client.config.ConfigManager;
 import moomoo.hgtp.client.protocol.hgtp.message.base.HgtpHeader;
 import moomoo.hgtp.client.protocol.hgtp.message.base.HgtpMessageType;
 import moomoo.hgtp.client.protocol.hgtp.message.base.content.HgtpUnauthorizedContent;
 import moomoo.hgtp.client.protocol.hgtp.message.request.HgtpRegisterRequest;
+import moomoo.hgtp.client.protocol.hgtp.message.request.handler.HgtpRequestHandler;
 import moomoo.hgtp.client.protocol.hgtp.message.response.HgtpCommonResponse;
 import moomoo.hgtp.client.protocol.hgtp.message.response.HgtpUnauthorizedResponse;
 import moomoo.hgtp.client.service.AppInstance;
@@ -18,11 +20,13 @@ public class HgtpResponseHandler {
 
     private static final Logger log = LoggerFactory.getLogger(HgtpResponseHandler.class);
 
+    private final HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();
+
     public HgtpResponseHandler() {
         // nothing
     }
 
-    public static boolean okResponseProcessing(HgtpCommonResponse hgtpOkResponse) {
+    public boolean okResponseProcessing(HgtpCommonResponse hgtpOkResponse) {
         HgtpHeader hgtpHeader = hgtpOkResponse.getHgtpHeader();
         log.debug("({}) () () RECV HGTP MSG [{}]", hgtpHeader.getUserId(), hgtpOkResponse);
 
@@ -32,13 +36,14 @@ public class HgtpResponseHandler {
         return true;
     }
 
-    public static boolean badRequestResponseProcessing(HgtpCommonResponse hgtpBadRequestResponse) {
+    public boolean badRequestResponseProcessing(HgtpCommonResponse hgtpBadRequestResponse) {
         log.debug("({}) () () RECV HGTP MSG [{}]", hgtpBadRequestResponse.getHgtpHeader().getUserId(), hgtpBadRequestResponse);
         return true;
     }
 
-    public static boolean unauthorizedResponseProcessing(HgtpUnauthorizedResponse hgtpUnauthorizedResponse) {
+    public boolean unauthorizedResponseProcessing(HgtpUnauthorizedResponse hgtpUnauthorizedResponse) {
         AppInstance appInstance = AppInstance.getInstance();
+        ConfigManager configManager = appInstance.getConfigManager();
 
         HgtpHeader hgtpHeader = hgtpUnauthorizedResponse.getHgtpHeader();
         HgtpUnauthorizedContent hgtpRegisterContent = hgtpUnauthorizedResponse.getHgtpContent();
@@ -54,33 +59,31 @@ public class HgtpResponseHandler {
             messageDigestRealm.update(digestRealm);
             String nonce = new String(messageDigestRealm.digest());
 
-            //todo 메소드 화 send second Register
-//            HgtpRegisterRequest hgtpRegisterRequest = new HgtpRegisterRequest(
-//                    AppInstance.MAGIC_COOKIE, HgtpMessageType.REGISTER, hgtpHeader.getUserId(),
-//                    hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, TimeStamp.getCurrentTime().getSeconds(),
-//                    appInstance.getConfigManager().getHgtpExpireTime(), AppInstance.getInstance().getConfigManager().getHgtpListenPort());
-//            hgtpRegisterRequest.getHgtpContent().setNonce(hgtpRegisterRequest.getHgtpHeader(), nonce);
-            return true; // todo send HgtpRegisterRequest
+            // Send Register
+            HgtpRegisterRequest hgtpRegisterRequest = new HgtpRegisterRequest(
+                    AppInstance.MAGIC_COOKIE, HgtpMessageType.REGISTER, appInstance.getUserId(),
+                    hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, TimeStamp.getCurrentTime().getSeconds(),
+                    configManager.getHgtpExpireTime(), configManager.getLocalListenIp(), configManager.getHgtpListenPort()
+            );
+            hgtpRequestHandler.sendRegisterRequest(hgtpRegisterRequest, nonce);
+            return true;
         } catch (Exception e) {
             log.error("HgtpResponseHandler.unauthorizedResponseProcessing ", e);
             return false;
         }
-
-
-
     }
 
-    public static boolean forbiddenResponseProcessing(HgtpCommonResponse hgtpForbiddenResponse) {
+    public boolean forbiddenResponseProcessing(HgtpCommonResponse hgtpForbiddenResponse) {
         log.debug("({}) () () RECV HGTP MSG [{}]", hgtpForbiddenResponse.getHgtpHeader().getUserId(), hgtpForbiddenResponse);
         return true;
     }
 
-    public static boolean serverUnavailableResponseProcessing(HgtpCommonResponse hgtpServerUnavailableResponse) {
+    public boolean serverUnavailableResponseProcessing(HgtpCommonResponse hgtpServerUnavailableResponse) {
         log.debug("({}) () () RECV HGTP MSG [{}]", hgtpServerUnavailableResponse.getHgtpHeader().getUserId(), hgtpServerUnavailableResponse);
         return true;
     }
 
-    public static boolean declineResponseProcessing(HgtpCommonResponse hgtpDeclineResponse) {
+    public boolean declineResponseProcessing(HgtpCommonResponse hgtpDeclineResponse) {
         log.debug("({}) () () RECV HGTP MSG [{}]", hgtpDeclineResponse.getHgtpHeader().getUserId(), hgtpDeclineResponse);
         return true;
     }
