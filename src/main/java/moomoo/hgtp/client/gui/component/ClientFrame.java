@@ -1,7 +1,6 @@
 package moomoo.hgtp.client.gui.component;
 
 import moomoo.hgtp.client.gui.component.panel.ControlPanel;
-import moomoo.hgtp.client.gui.listener.RegisterButtonListener;
 
 import javax.swing.*;
 import java.awt.*;
@@ -29,8 +28,9 @@ public class ClientFrame extends JFrame {
 
         add(controlPanel, BorderLayout.CENTER);
 
-
         // 보이게 설정
         setVisible(true);
     }
+
+    public ControlPanel getControlPanel() {return controlPanel;}
 }

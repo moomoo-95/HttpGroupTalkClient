@@ -1,13 +1,14 @@
 package moomoo.hgtp.client.gui;
 
 import moomoo.hgtp.client.gui.component.ClientFrame;
+import moomoo.hgtp.client.gui.component.panel.ControlPanel;
 import moomoo.hgtp.client.service.AppInstance;
 
 public class GuiManager {
 
     private static GuiManager guiManager = null;
 
-    private ClientFrame clientFrame = null;
+    private final ClientFrame clientFrame;
 
     public GuiManager() {
         clientFrame = new ClientFrame(AppInstance.getInstance().getUserId());
@@ -23,4 +24,6 @@ public class GuiManager {
     public ClientFrame getClientFrame() {
         return clientFrame;
     }
+
+    public ControlPanel getControlPanel() { return clientFrame.getControlPanel(); }
 }

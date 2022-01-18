@@ -1,6 +1,8 @@
 package moomoo.hgtp.client.protocol.hgtp.message.response.handler;
 
 import moomoo.hgtp.client.config.ConfigManager;
+import moomoo.hgtp.client.gui.GuiManager;
+import moomoo.hgtp.client.gui.component.panel.ControlPanel;
 import moomoo.hgtp.client.protocol.hgtp.message.base.HgtpHeader;
 import moomoo.hgtp.client.protocol.hgtp.message.base.HgtpMessageType;
 import moomoo.hgtp.client.protocol.hgtp.message.base.content.HgtpUnauthorizedContent;
@@ -32,12 +34,18 @@ public class HgtpResponseHandler {
     public void okResponseProcessing(HgtpCommonResponse hgtpOkResponse) {
         HgtpHeader hgtpHeader = hgtpOkResponse.getHgtpHeader();
         log.debug(LOG_FORMAT, hgtpHeader.getUserId(), hgtpOkResponse);
+        ControlPanel controlPanel = GuiManager.getInstance().getControlPanel();
 
         switch (hgtpHeader.getRequestType()){
             case HgtpMessageType.REGISTER:
-                // todo register 등록 상태
+                controlPanel.setRegisterButtonStatus();
                 break;
             case HgtpMessageType.CREATE_ROOM:
+                controlPanel.setCreateRoomButtonStatus();
+                break;
+            case HgtpMessageType.DELETE_ROOM:
+                controlPanel.setDeleteRoomButtonStatus();
+                appInstance.initRoomId();
                 break;
             default:
         }
@@ -52,8 +60,10 @@ public class HgtpResponseHandler {
                 // todo register 등록 실패 상태
                 break;
             case HgtpMessageType.CREATE_ROOM:
-                // todo room 생성 실패 상태
-                appInstance.setRoomId("");
+                appInstance.initRoomId();
+                break;
+            case HgtpMessageType.DELETE_ROOM:
+                // todo delete room 실패 상태
                 break;
             default:
         }
@@ -104,8 +114,10 @@ public class HgtpResponseHandler {
                 // todo register 등록 실패 상태
                 break;
             case HgtpMessageType.CREATE_ROOM:
-                // todo room 생성 실패 상태
-                appInstance.setRoomId("");
+                appInstance.initRoomId();
+                break;
+            case HgtpMessageType.DELETE_ROOM:
+                // todo delete room 실패 상태
                 break;
             default:
         }
