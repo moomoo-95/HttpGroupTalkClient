@@ -19,35 +19,52 @@ import java.security.MessageDigest;
 public class HgtpResponseHandler {
 
     private static final Logger log = LoggerFactory.getLogger(HgtpResponseHandler.class);
+    private static final String LOG_FORMAT = "({}) () () RECV HGTP MSG [{}]";
 
     private final HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();
+
+    private AppInstance appInstance = AppInstance.getInstance();
 
     public HgtpResponseHandler() {
         // nothing
     }
 
-    public boolean okResponseProcessing(HgtpCommonResponse hgtpOkResponse) {
+    public void okResponseProcessing(HgtpCommonResponse hgtpOkResponse) {
         HgtpHeader hgtpHeader = hgtpOkResponse.getHgtpHeader();
-        log.debug("({}) () () RECV HGTP MSG [{}]", hgtpHeader.getUserId(), hgtpOkResponse);
+        log.debug(LOG_FORMAT, hgtpHeader.getUserId(), hgtpOkResponse);
 
-        if (hgtpHeader.getRequestType() == HgtpMessageType.REGISTER) {
-            // nothing
+        switch (hgtpHeader.getRequestType()){
+            case HgtpMessageType.REGISTER:
+                // todo register 등록 상태
+                break;
+            case HgtpMessageType.CREATE_ROOM:
+                break;
+            default:
         }
-        return true;
     }
 
-    public boolean badRequestResponseProcessing(HgtpCommonResponse hgtpBadRequestResponse) {
-        log.debug("({}) () () RECV HGTP MSG [{}]", hgtpBadRequestResponse.getHgtpHeader().getUserId(), hgtpBadRequestResponse);
-        return true;
+    public void badRequestResponseProcessing(HgtpCommonResponse hgtpBadRequestResponse) {
+        HgtpHeader hgtpHeader = hgtpBadRequestResponse.getHgtpHeader();
+        log.debug(LOG_FORMAT, hgtpHeader.getUserId(), hgtpBadRequestResponse);
+
+        switch (hgtpHeader.getRequestType()) {
+            case HgtpMessageType.REGISTER:
+                // todo register 등록 실패 상태
+                break;
+            case HgtpMessageType.CREATE_ROOM:
+                // todo room 생성 실패 상태
+                appInstance.setRoomId("");
+                break;
+            default:
+        }
     }
 
     public boolean unauthorizedResponseProcessing(HgtpUnauthorizedResponse hgtpUnauthorizedResponse) {
-        AppInstance appInstance = AppInstance.getInstance();
         ConfigManager configManager = appInstance.getConfigManager();
 
         HgtpHeader hgtpHeader = hgtpUnauthorizedResponse.getHgtpHeader();
         HgtpUnauthorizedContent hgtpRegisterContent = hgtpUnauthorizedResponse.getHgtpContent();
-        log.debug("({}) () () RECV HGTP MSG [{}]", hgtpHeader.getUserId(), hgtpUnauthorizedResponse);
+        log.debug(LOG_FORMAT, hgtpHeader.getUserId(), hgtpUnauthorizedResponse);
 
         try {
             // Encoding realm -> nonce
@@ -74,17 +91,29 @@ public class HgtpResponseHandler {
     }
 
     public boolean forbiddenResponseProcessing(HgtpCommonResponse hgtpForbiddenResponse) {
-        log.debug("({}) () () RECV HGTP MSG [{}]", hgtpForbiddenResponse.getHgtpHeader().getUserId(), hgtpForbiddenResponse);
+        log.debug(LOG_FORMAT, hgtpForbiddenResponse.getHgtpHeader().getUserId(), hgtpForbiddenResponse);
         return true;
     }
 
     public boolean serverUnavailableResponseProcessing(HgtpCommonResponse hgtpServerUnavailableResponse) {
-        log.debug("({}) () () RECV HGTP MSG [{}]", hgtpServerUnavailableResponse.getHgtpHeader().getUserId(), hgtpServerUnavailableResponse);
+        HgtpHeader hgtpHeader = hgtpServerUnavailableResponse.getHgtpHeader();
+        log.debug(LOG_FORMAT, hgtpHeader.getUserId(), hgtpServerUnavailableResponse);
+
+        switch (hgtpHeader.getRequestType()) {
+            case HgtpMessageType.REGISTER:
+                // todo register 등록 실패 상태
+                break;
+            case HgtpMessageType.CREATE_ROOM:
+                // todo room 생성 실패 상태
+                appInstance.setRoomId("");
+                break;
+            default:
+        }
         return true;
     }
 
     public boolean declineResponseProcessing(HgtpCommonResponse hgtpDeclineResponse) {
-        log.debug("({}) () () RECV HGTP MSG [{}]", hgtpDeclineResponse.getHgtpHeader().getUserId(), hgtpDeclineResponse);
+        log.debug(LOG_FORMAT, hgtpDeclineResponse.getHgtpHeader().getUserId(), hgtpDeclineResponse);
         return true;
     }
 }

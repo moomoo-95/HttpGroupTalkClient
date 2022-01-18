@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 public class HgtpRequestHandler {
 
     private static final Logger log = LoggerFactory.getLogger(HgtpRequestHandler.class);
+    private static final String LOG_FORMAT = "({}) () () RECV HGTP MSG [{}]";
 
     private static AppInstance appInstance = AppInstance.getInstance();
 
@@ -21,38 +22,38 @@ public class HgtpRequestHandler {
 
     public boolean unregisterRequestProcessing(HgtpUnregisterRequest hgtpUnregisterRequest) {
         HgtpHeader hgtpHeader = hgtpUnregisterRequest.getHgtpHeader();
-        log.debug("({}) () () RECV HGTP MSG [{}]", hgtpHeader.getUserId(), hgtpUnregisterRequest);
+        log.debug(LOG_FORMAT, hgtpHeader.getUserId(), hgtpUnregisterRequest);
 
         return true;
     }
 
     public boolean createRoomRequestProcessing(HgtpCreateRoomRequest hgtpCreateRoomRequest) {
-        log.debug("({}) () () RECV HGTP MSG [{}]", hgtpCreateRoomRequest.getHgtpHeader().getUserId(), hgtpCreateRoomRequest);
+        log.debug(LOG_FORMAT, hgtpCreateRoomRequest.getHgtpHeader().getUserId(), hgtpCreateRoomRequest);
         return true;
     }
 
     public boolean deleteRoomRequestProcessing(HgtpDeleteRoomRequest hgtpDeleteRoomRequest) {
-        log.debug("({}) () () RECV HGTP MSG [{}]", hgtpDeleteRoomRequest.getHgtpHeader().getUserId(), hgtpDeleteRoomRequest);
+        log.debug(LOG_FORMAT, hgtpDeleteRoomRequest.getHgtpHeader().getUserId(), hgtpDeleteRoomRequest);
         return true;
     }
 
     public boolean joinRoomRequestProcessing(HgtpJoinRoomRequest hgtpJoinRoomRequest) {
-        log.debug("({}) () () RECV HGTP MSG [{}]", hgtpJoinRoomRequest.getHgtpHeader().getUserId(), hgtpJoinRoomRequest);
+        log.debug(LOG_FORMAT, hgtpJoinRoomRequest.getHgtpHeader().getUserId(), hgtpJoinRoomRequest);
         return true;
     }
 
     public boolean exitRoomRequestProcessing(HgtpExitRoomRequest hgtpExitRoomRequest) {
-        log.debug("({}) () () RECV HGTP MSG [{}]", hgtpExitRoomRequest.getHgtpHeader().getUserId(), hgtpExitRoomRequest);
+        log.debug(LOG_FORMAT, hgtpExitRoomRequest.getHgtpHeader().getUserId(), hgtpExitRoomRequest);
         return true;
     }
 
     public boolean inviteUserFromRoomRequestProcessing(HgtpInviteUserFromRoomRequest hgtpInviteUserFromRoomRequest) {
-        log.debug("({}) () () RECV HGTP MSG [{}]", hgtpInviteUserFromRoomRequest.getHgtpHeader().getUserId(), hgtpInviteUserFromRoomRequest);
+        log.debug(LOG_FORMAT, hgtpInviteUserFromRoomRequest.getHgtpHeader().getUserId(), hgtpInviteUserFromRoomRequest);
         return true;
     }
 
     public boolean removeUserFromRoomRequestProcessing(HgtpRemoveUserFromRoomRequest hgtpRemoveUserFromRoomRequest) {
-        log.debug("({}) () () RECV HGTP MSG [{}]", hgtpRemoveUserFromRoomRequest.getHgtpHeader().getUserId(), hgtpRemoveUserFromRoomRequest);
+        log.debug(LOG_FORMAT, hgtpRemoveUserFromRoomRequest.getHgtpHeader().getUserId(), hgtpRemoveUserFromRoomRequest);
         return true;
     }
 
@@ -69,7 +70,19 @@ public class HgtpRequestHandler {
         }
 
         destinationRecord.getNettyChannel().sendData(data, data.length);
-        log.debug("({}) () () [{}] SEND DATA {}", appInstance.getUserId(), HgtpMessageType.REQUEST_HASHMAP.get(HgtpMessageType.REGISTER), hgtpRegisterRequest);
+        log.debug("({}) () () [{}] SEND DATA {}", appInstance.getUserId(), HgtpMessageType.REQUEST_HASHMAP.get(hgtpRegisterRequest.getHgtpHeader().getMessageType()), hgtpRegisterRequest);
+    }
+
+    public void sendCreateRoomRequest(HgtpCreateRoomRequest hgtpCreateRoomRequest) {
+        byte[] data = hgtpCreateRoomRequest.getByteData();
+
+        DestinationRecord destinationRecord = NetworkManager.getInstance().getHgtpGroupSocket().getDestination(AppInstance.SERVER_SESSION_ID);
+        if (destinationRecord == null) {
+            log.warn("({}) () () DestinationRecord Channel is null.", appInstance.getUserId());
+        }
+
+        destinationRecord.getNettyChannel().sendData(data, data.length);
+        log.debug("({}) () () [{}] SEND DATA {}", appInstance.getUserId(), HgtpMessageType.REQUEST_HASHMAP.get(hgtpCreateRoomRequest.getHgtpHeader().getMessageType()), hgtpCreateRoomRequest);
     }
 
 }

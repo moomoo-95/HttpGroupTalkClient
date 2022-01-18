@@ -26,6 +26,7 @@ public class AppInstance {
     private static AppInstance appInstance = null;
 
     private final String userId;
+    private String roomId = "";
 
     private String configPath = "";
     private ConfigManager configManager = null;
@@ -59,6 +60,10 @@ public class AppInstance {
     }
 
     public String getUserId() {return userId;}
+
+    public String getRoomId() {return roomId;}
+    public void setRoomId(String roomId) {this.roomId = roomId;}
+    public void initRoomId() {this.roomId = "";}
 
     public String getConfigPath() {return configPath;}
 

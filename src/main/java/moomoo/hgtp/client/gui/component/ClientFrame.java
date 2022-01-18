@@ -1,5 +1,6 @@
 package moomoo.hgtp.client.gui.component;
 
+import moomoo.hgtp.client.gui.component.panel.ControlPanel;
 import moomoo.hgtp.client.gui.listener.RegisterButtonListener;
 
 import javax.swing.*;
@@ -10,7 +11,8 @@ public class ClientFrame extends JFrame {
     private static final int WIDTH = 1200;
     private static final int HEIGHT = 600;
 
-    private JButton registerButton = new JButton("REGISTER");
+    private final ControlPanel controlPanel = new ControlPanel();
+
 
     public ClientFrame(String title) {
         super(title);
@@ -25,9 +27,8 @@ public class ClientFrame extends JFrame {
         BorderLayout borderLayout = new BorderLayout();
         setLayout(borderLayout);
 
-        add(registerButton);
+        add(controlPanel, BorderLayout.CENTER);
 
-        registerButton.addActionListener(new RegisterButtonListener());
 
         // 보이게 설정
         setVisible(true);
