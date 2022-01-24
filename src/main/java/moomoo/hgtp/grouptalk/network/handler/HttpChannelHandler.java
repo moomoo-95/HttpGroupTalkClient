@@ -1,10 +1,8 @@
 package moomoo.hgtp.grouptalk.network.handler;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.*;
-import moomoo.hgtp.grouptalk.protocol.hgtp.HgtpManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

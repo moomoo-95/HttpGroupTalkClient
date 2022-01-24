@@ -59,8 +59,6 @@ public class NetworkManager {
 
         // HTTP local / target 주소 설정
         httpLocalAddress = new NetAddress(configManager.getLocalListenIp(), configManager.getHttpListenPort(), true, SocketProtocol.TCP);
-        // todo register 등록시 저장되도록 설정
-        //httpTargetAddress = new NetAddress(configManager.getTargetListenIp(), configManager.getHttpListenPort(), true, SocketProtocol.TCP);
 
         ChannelInitializer<NioDatagramChannel> hgtpChannelInitializer = new ChannelInitializer<NioDatagramChannel>() {
             @Override

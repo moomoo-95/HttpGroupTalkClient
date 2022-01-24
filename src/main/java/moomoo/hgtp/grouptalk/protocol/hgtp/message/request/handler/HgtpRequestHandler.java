@@ -116,6 +116,12 @@ public class HgtpRequestHandler {
 
             if (messageType == HgtpMessageType.FORBIDDEN) {
                 sessionManager.deleteUserInfo(userInfo.getUserId());
+            } else {
+                log.debug("({}) () () userInfo is 1", userId);
+                byte[] data = new byte[] {11, 12, 13, 14, 15, 16, 17};
+                log.debug("({}) () () userInfo is 2", userId);
+                NetworkManager.getInstance().getHttpGroupSocket().getDestination(userInfo.getSessionId()).getNettyChannel().sendData(data, data.length);
+                log.debug("({}) () () userInfo is 3", userId);
             }
         }
     }

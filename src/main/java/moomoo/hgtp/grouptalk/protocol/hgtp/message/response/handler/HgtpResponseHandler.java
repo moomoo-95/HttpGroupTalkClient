@@ -48,6 +48,10 @@ public class HgtpResponseHandler {
 
             switch (hgtpHeader.getRequestType()) {
                 case HgtpMessageType.REGISTER:
+                    // todo register 등록시 저장되도록 설정
+//                    httpTargetAddress = new NetAddress(appInstance.getConfigManager().getTargetListenIp(), configManager.getHttpListenPort(), true, SocketProtocol.TCP);
+//                    NetworkManager.getInstance().getHttpGroupSocket().getDestination()
+//                    hgtpGroupSocket.addDestination(hgtpTargetAddress, null, AppInstance.SERVER_SESSION_ID, hgtpChannelInitializer);
                     controlPanel.setRegisterButtonStatus();
                     break;
                 case HgtpMessageType.UNREGISTER:
@@ -115,7 +119,7 @@ public class HgtpResponseHandler {
             HgtpRegisterRequest hgtpRegisterRequest = new HgtpRegisterRequest(
                     AppInstance.MAGIC_COOKIE, HgtpMessageType.REGISTER, appInstance.getUserId(),
                     hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, TimeStamp.getCurrentTime().getSeconds(),
-                    configManager.getHgtpExpireTime(), configManager.getLocalListenIp(), configManager.getHgtpListenPort()
+                    configManager.getHgtpExpireTime(), configManager.getLocalListenIp(), configManager.getHttpListenPort()
             );
             HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();
             hgtpRequestHandler.sendRegisterRequest(hgtpRegisterRequest, nonce);
