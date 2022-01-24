@@ -43,6 +43,11 @@ public class HgtpConsumer implements Runnable {
         }
     }
 
+    /**
+     * @fn parseHgtpMessage
+     * @brief byte 형태로 들어온 hgtp 메시지의 타입을 분석하는 메서드
+     * @param data
+     */
     public void parseHgtpMessage(byte[] data) {
         try {
             HgtpHeader hgtpHeader = new HgtpHeader(data);
@@ -53,6 +58,10 @@ public class HgtpConsumer implements Runnable {
 
             log.debug("({}) () () RECV MSG TYPE : {}", hgtpHeader.getUserId(), HgtpMessageType.HGTP_HASHMAP.get(hgtpHeader.getMessageType()));
             switch (hgtpHeader.getMessageType()){
+                case HgtpMessageType.REGISTER:
+                    HgtpRegisterRequest hgtpRegisterRequest = new HgtpRegisterRequest(data);
+                    hgtpRequestHandler.registerRequestProcessing(hgtpRegisterRequest);
+                    break;
                 case HgtpMessageType.UNREGISTER:
                     HgtpUnregisterRequest hgtpUnregisterRequest = new HgtpUnregisterRequest(data);
                     hgtpRequestHandler.unregisterRequestProcessing(hgtpUnregisterRequest);

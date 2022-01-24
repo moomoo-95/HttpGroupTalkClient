@@ -1,6 +1,7 @@
 package moomoo.hgtp.client.gui.component;
 
 import moomoo.hgtp.client.gui.component.panel.ControlPanel;
+import moomoo.hgtp.client.gui.component.panel.RoomListPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,6 +12,7 @@ public class ClientFrame extends JFrame {
     private static final int HEIGHT = 600;
 
     private final ControlPanel controlPanel = new ControlPanel();
+    private final RoomListPanel roomListPanel = new RoomListPanel();
 
 
     public ClientFrame(String title) {
@@ -26,7 +28,8 @@ public class ClientFrame extends JFrame {
         BorderLayout borderLayout = new BorderLayout();
         setLayout(borderLayout);
 
-        add(controlPanel, BorderLayout.CENTER);
+        add(roomListPanel, BorderLayout.CENTER);
+        add(controlPanel, BorderLayout.EAST);
 
         // 보이게 설정
         setVisible(true);

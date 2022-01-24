@@ -19,6 +19,8 @@ import service.scheduler.schedule.ScheduleManager;
 
 public class NetworkManager {
 
+    private static AppInstance appInstance = AppInstance.getInstance();
+
     private static NetworkManager networkManager = null;
 
     // NetAddress 생성
@@ -81,7 +83,10 @@ public class NetworkManager {
 
         GroupSocket hgtpGroupSocket = socketManager.getSocket(hgtpLocalAddress);
         hgtpGroupSocket.getListenSocket().openListenChannel();
-        hgtpGroupSocket.addDestination(hgtpTargetAddress, null, AppInstance.SERVER_SESSION_ID, hgtpChannelInitializer);
+
+        if (appInstance.getMode() == AppInstance.CLIENT_MODE) {
+            hgtpGroupSocket.addDestination(hgtpTargetAddress, null, AppInstance.SERVER_SESSION_ID, hgtpChannelInitializer);
+        }
 
         GroupSocket httpGroupSocket = socketManager.getSocket(httpLocalAddress);
         httpGroupSocket.getListenSocket().openListenChannel();

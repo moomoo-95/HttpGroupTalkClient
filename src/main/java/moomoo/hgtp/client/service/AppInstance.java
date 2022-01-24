@@ -14,16 +14,23 @@ public class AppInstance {
 
     private static final Logger log = LoggerFactory.getLogger(AppInstance.class);
 
-    public static final long SERVER_SESSION_ID = 84;
-    public static final int USER_ID_SIZE = 8;
-    public static final int ROOM_ID_SIZE = 12;
-    public static final int SEQ_INCREMENT = 1;
-    public static final short MAGIC_COOKIE = 0x4853; // HS
     public static final String ALGORITHM = "MD5";
     public static final String MD5_REALM = "HGTP_SERVICE";
     public static final String MD5_HASH_KEY = "950817";
 
+    public static final short MAGIC_COOKIE = 0x4853; // HS
+    public static final int SERVER_MODE = 0;
+    public static final int CLIENT_MODE = 1;
+    public static final int PROXY_MODE = 2;
+    public static final int USER_ID_SIZE = 8;
+    public static final int ROOM_ID_SIZE = 12;
+    public static final int SEQ_INCREMENT = 1;
+    public static final long SERVER_SESSION_ID = 84;
+
     private static AppInstance appInstance = null;
+
+    // 프로그램 모드 -1 : init / 0 : server / 1 : client / 2 : proxy
+    private int mode = -1;
 
     private final String userId;
     private String roomId = "";
@@ -57,6 +64,26 @@ public class AppInstance {
             appInstance = new AppInstance();
         }
         return appInstance;
+    }
+
+    public int getMode() {return mode;}
+
+    public boolean setMode(String mode) {
+        if (this.mode != -1) { return false; }
+        switch (mode){
+            case "server":
+                this.mode = SERVER_MODE;
+                break;
+            case "client":
+                this.mode = CLIENT_MODE;
+                break;
+            case "proxy":
+                this.mode = PROXY_MODE;
+                break;
+            default:
+                return false;
+        }
+        return true;
     }
 
     public String getUserId() {return userId;}
