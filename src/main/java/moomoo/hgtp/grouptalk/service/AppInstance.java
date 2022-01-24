@@ -32,17 +32,27 @@ public class AppInstance {
     // 프로그램 모드 -1 : init / 0 : server / 1 : client / 2 : proxy
     private int mode = -1;
 
-    private final String userId;
-    private String roomId = "";
-
     private String configPath = "";
     private ConfigManager configManager = null;
 
+    // only client
+    private String userId = "";
+    private String roomId = "";
+
+    // only server
     private String serverNonce = "";
 
     public AppInstance() {
-        userId = CnameGenerator.generateCnameUserId();
+    }
 
+    public static AppInstance getInstance() {
+        if (appInstance == null) {
+            appInstance = new AppInstance();
+        }
+        return appInstance;
+    }
+
+    private void initServerInstance(){
         try {
             // Decoding nonce -> realm
             MessageDigest messageDigestNonce = MessageDigest.getInstance(ALGORITHM);
@@ -54,16 +64,13 @@ public class AppInstance {
 
             serverNonce = new String(messageDigestNonce.digest());
         } catch (Exception e) {
-            log.error("AppInstance ", e);
+            log.error("AppInstance.initServerInstance ", e);
             System.exit(1);
         }
     }
 
-    public static AppInstance getInstance() {
-        if (appInstance == null) {
-            appInstance = new AppInstance();
-        }
-        return appInstance;
+    private void initClientInstance() {
+        userId = CnameGenerator.generateCnameUserId();
     }
 
     public int getMode() {return mode;}
@@ -73,9 +80,11 @@ public class AppInstance {
         switch (mode){
             case "server":
                 this.mode = SERVER_MODE;
+                initServerInstance();
                 break;
             case "client":
                 this.mode = CLIENT_MODE;
+                initClientInstance();
                 break;
             case "proxy":
                 this.mode = PROXY_MODE;
@@ -86,14 +95,6 @@ public class AppInstance {
         return true;
     }
 
-    public String getUserId() {return userId;}
-
-    public String getRoomId() {return roomId;}
-    public void setRoomId(String roomId) {this.roomId = roomId;}
-    public void initRoomId() {this.roomId = "";}
-
-    public String getConfigPath() {return configPath;}
-
     public ConfigManager getConfigManager() {return configManager;}
 
     public void setConfigManager(String configPath) {
@@ -101,7 +102,16 @@ public class AppInstance {
         this.configManager = new ConfigManager(configPath);
     }
 
+    public long getTimeStamp() { return TimeStamp.getCurrentTime().getSeconds();}
+
+    // only server
     public String getServerNonce() {return serverNonce;}
 
-    public long getTimeStamp() { return TimeStamp.getCurrentTime().getSeconds();}
+    // only client
+    public String getUserId() {return userId;}
+
+    public String getRoomId() {return roomId;}
+    public void setRoomId(String roomId) {this.roomId = roomId;}
+    public void initRoomId() {this.roomId = "";}
+
 }

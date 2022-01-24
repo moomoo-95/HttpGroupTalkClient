@@ -3,8 +3,10 @@ package moomoo.hgtp.grouptalk.session;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.nio.NioDatagramChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
 import moomoo.hgtp.grouptalk.network.handler.HgtpChannelHandler;
+import moomoo.hgtp.grouptalk.network.handler.HttpChannelHandler;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.base.RoomInfo;
@@ -18,20 +20,31 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SessionManager {
 
     private static final Logger log = LoggerFactory.getLogger(SessionManager.class);
-    private static AppInstance appInstance = AppInstance.getInstance();
+
     private static SessionManager sessionManager = null;
 
     private final ConcurrentHashMap<String, UserInfo> userInfoHashMap = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, RoomInfo> roomInfoHashMap = new ConcurrentHashMap<>();
 
     // HGTP 통신을 위한 채널초기화 변수
-    private ChannelInitializer<NioDatagramChannel> channelInitializer = new ChannelInitializer<NioDatagramChannel>() {
+    private ChannelInitializer<NioDatagramChannel> hgtpchannelInitializer = new ChannelInitializer<NioDatagramChannel>() {
         @Override
         protected void initChannel(NioDatagramChannel datagramChannel) {
             final ChannelPipeline channelPipeline = datagramChannel.pipeline();
             channelPipeline.addLast(new HgtpChannelHandler());
         }
     };
+    // HTTP 통신을 위한 채널초기화 변수
+    private ChannelInitializer<NioSocketChannel> httpchannelInitializer = new ChannelInitializer<NioSocketChannel>() {
+        @Override
+        protected void initChannel(NioSocketChannel nioSocketChannel) {
+            final ChannelPipeline channelPipeline = nioSocketChannel.pipeline();
+            channelPipeline.addLast(new HttpChannelHandler());
+        }
+    };
+
+    private AppInstance appInstance = AppInstance.getInstance();
+    private NetworkManager networkManager = NetworkManager.getInstance();
 
     public SessionManager() {
         // nothing
@@ -45,20 +58,34 @@ public class SessionManager {
     }
 
 
-    public short addUserInfo(String userId, String userIp, short userPort, long expire) {
+    public short addUserInfo(String userId, String userIp, short hgtpPort, long expire) {
         if (userInfoHashMap.containsKey(userId)) {
             log.warn("({}) () () UserInfo already exist.", userId);
+            return HgtpMessageType.BAD_REQUEST;
+        }
+
+        // PortResourceManager에서 채널 할당
+        short httpPort = (short) networkManager.getBaseEnvironment().getPortResourceManager().takePort();
+
+        UserInfo userInfo = new UserInfo(userId, userIp, hgtpPort, httpPort, expire);
+        synchronized (userInfoHashMap) {
+            userInfoHashMap.put(userId, userInfo);
+        }
+        log.debug("({}) () () UserInfo is created.", userId);
+        networkManager.getHgtpGroupSocket().addDestination(userInfo.getHgtpNetAddress(), null, userInfo.getSessionId(), hgtpchannelInitializer);
+
+        if (httpPort < 0) {
+            log.warn("({}) () () PortResourceManager's port is not available.", userId);
+            return HgtpMessageType.SERVER_UNAVAILABLE;
+        } else {
+            networkManager.getHttpGroupSocket().addDestination(userInfo.getHttpNetAddress(), null, userInfo.getSessionId(), httpchannelInitializer);
         }
 
         if (appInstance.getConfigManager().getUserMaxSize() < userInfoHashMap.size()) {
             log.warn("({}) () () Unavailable add UserInfo", userId);
             return HgtpMessageType.SERVER_UNAVAILABLE;
         }
-        UserInfo userInfo = new UserInfo(userId, userIp, userPort, expire);
-        synchronized (userInfoHashMap) {
-            userInfoHashMap.put(userId, userInfo);
-        }
-        NetworkManager.getInstance().getHgtpGroupSocket().addDestination(userInfo.getUserNetAddress(), null, userInfo.getSessionId(), channelInitializer);
+
         return HgtpMessageType.OK;
     }
 
@@ -69,8 +96,14 @@ public class SessionManager {
                 userInfo = userInfoHashMap.remove(userId);
             }
             if (userInfo != null) {
-                NetworkManager.getInstance().getHgtpGroupSocket().removeDestination(userInfo.getSessionId());
+                if (networkManager.getHgtpGroupSocket().getDestination(userInfo.getSessionId()) != null) {
+                    networkManager.getHgtpGroupSocket().removeDestination(userInfo.getSessionId());
+                }
+                if (networkManager.getHttpGroupSocket().getDestination(userInfo.getSessionId()) != null){
+                    networkManager.getHttpGroupSocket().removeDestination(userInfo.getSessionId());
+                }
             }
+            log.debug("({}) () () UserInfo is deleted.", userId);
         }
     }
 
@@ -93,6 +126,7 @@ public class SessionManager {
         synchronized (roomInfoHashMap) {
             roomInfoHashMap.put(roomId, roomInfo);
         }
+        log.debug("({}) ({}) () RoomInfo is created.", managerId, roomId);
         return  HgtpMessageType.OK;
     }
 
@@ -114,7 +148,7 @@ public class SessionManager {
             synchronized (roomInfoHashMap) {
                 roomInfoHashMap.remove(roomId);
             }
-            log.debug("({}) ({}) () RoomInfo was delete.", managerId, roomId);
+            log.debug("({}) ({}) () RoomInfo is deleted.", managerId, roomId);
         }
         return HgtpMessageType.OK;
     }

@@ -5,6 +5,7 @@ import moomoo.hgtp.grouptalk.network.NetworkManager;
 import moomoo.hgtp.grouptalk.protocol.hgtp.HgtpManager;
 import moomoo.hgtp.grouptalk.service.scheduler.ScheduleManager;
 import moomoo.hgtp.grouptalk.session.SessionManager;
+import moomoo.hgtp.grouptalk.util.CnameGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,11 +65,12 @@ public class ServiceManager {
         networkManager = NetworkManager.getInstance();
         networkManager.startSocket();
 
-        // SessionManager
-        SessionManager.getInstance();
-
-        switch (AppInstance.getInstance().getMode()){
+        AppInstance appInstance = AppInstance.getInstance();
+        switch (appInstance.getMode()){
             case AppInstance.SERVER_MODE:
+                // SessionManager
+                SessionManager.getInstance();
+
                 scheduleManager = ScheduleManager.getInstance();
                 scheduleManager.start();
                 break;

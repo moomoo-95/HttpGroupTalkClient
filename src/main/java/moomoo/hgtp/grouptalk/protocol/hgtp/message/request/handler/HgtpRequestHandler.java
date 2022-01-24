@@ -60,7 +60,10 @@ public class HgtpRequestHandler {
 
         String userId = hgtpHeader.getUserId();
 
-
+        if (userId.equals("")) {
+            log.warn("({}) () () UserId is null", userId);
+            return;
+        }
 
         // 첫 번째 Register Request
         short messageType;
@@ -85,12 +88,19 @@ public class HgtpRequestHandler {
                         userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
 
                 hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
+                sessionManager.deleteUserInfo(userId);
             }
         }
         // 두 번째 Register Request
         else {
+            UserInfo userInfo = sessionManager.getUserInfo(userId);
+            if (userInfo == null) {
+                log.debug("({}) () () userInfo is null", userId);
+            }
+
             // nonce 일치하면 userInfo 유지
             if (hgtpRegisterContent.getNonce().equals(appInstance.getServerNonce())) {
+//                userInfo.getHgtpNetAddress().add
                 messageType = HgtpMessageType.OK;
             }
             // 불일치 시 userInfo 삭제
@@ -105,10 +115,7 @@ public class HgtpRequestHandler {
             hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
 
             if (messageType == HgtpMessageType.FORBIDDEN) {
-                UserInfo userInfo = sessionManager.getUserInfo(userId);
-                if (userInfo != null) {
-                    sessionManager.deleteUserInfo(userInfo.getUserId());
-                }
+                sessionManager.deleteUserInfo(userInfo.getUserId());
             }
         }
     }
@@ -139,6 +146,11 @@ public class HgtpRequestHandler {
 
         String userId = hgtpHeader.getUserId();
 
+        if (userId.equals("")) {
+            log.warn("({}) () () UserId is null", userId);
+            return;
+        }
+
         UserInfo userInfo = sessionManager.getUserInfo(userId);
         if (userInfo == null) {
             log.debug("{} UserInfo is unregister", userId);
@@ -149,7 +161,7 @@ public class HgtpRequestHandler {
         if (sessionManager.getRoomInfo(userInfo.getRoomId()) != null) {
             // userInfo 가 아직 roomInfo 에 존재
             messageType = HgtpMessageType.BAD_REQUEST;
-            log.debug("({}) () () UserInfo already exist.", userId);
+            log.debug("({}) ({}) () RoomInfo still exists.", userId, userInfo.getRoomId());
         } else {
             messageType = HgtpMessageType.OK;
         }

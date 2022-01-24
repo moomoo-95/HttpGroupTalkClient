@@ -48,7 +48,7 @@ public class NetworkManager {
         ConfigManager configManager = AppInstance.getInstance().getConfigManager();
 
         // 인스턴스 생성
-        baseEnvironment = new BaseEnvironment( new ScheduleManager(), new ResourceManager(0, 0), DebugLevel.DEBUG );
+        baseEnvironment = new BaseEnvironment( new ScheduleManager(), new ResourceManager(configManager.getHttpMinPort(), configManager.getHttpMaxPort()), DebugLevel.DEBUG );
 
         // SocketManager 생성
         socketManager = new SocketManager( baseEnvironment, true, 10, configManager.getSendBufSize(), configManager.getRecvBufSize() );

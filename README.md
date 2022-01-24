@@ -1,4 +1,4 @@
-# HttpGroupTalkClient
+# HttpGroupTalk
 
 ## Protocol
 ### HGTP (Http Group Talk Protocol)

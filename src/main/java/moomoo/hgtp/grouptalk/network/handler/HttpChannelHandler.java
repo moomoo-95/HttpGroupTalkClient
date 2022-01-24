@@ -1,7 +1,10 @@
 package moomoo.hgtp.grouptalk.network.handler;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.codec.http.*;
+import moomoo.hgtp.grouptalk.protocol.hgtp.HgtpManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,7 +13,8 @@ public class HttpChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg){
-//        if (msg instanceof DefaultHttpRequest) {
+
+        if (msg instanceof DefaultHttpRequest) {
 //            DefaultHttpRequest req = (DefaultHttpRequest) msg;
 //            DefaultFullHttpResponse res = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,  HttpResponseStatus.OK);
 //            if (req.decoderResult().isFailure()) {
@@ -18,13 +22,13 @@ public class HttpChannelHandler extends ChannelInboundHandlerAdapter {
 //                sendFailResponse(ctx, req, res, HttpResponseStatus.BAD_REQUEST);
 //                return;
 //            }
-//            log.debug("HTTP REQ MSG : {}", ((DefaultHttpRequest) msg).method().name());
-//        } else if (msg instanceof DefaultHttpResponse) {
-//            log.debug("HTTP RES MSG : {}", ((DefaultHttpResponse) msg).status().code());
-//
-//        } else {
-//            log.debug("Undefine message : {}", msg.toString());
-//        }
+            log.debug("HTTP REQ MSG : {}", msg);
+        } else if (msg instanceof DefaultHttpResponse) {
+            log.debug("HTTP RES MSG : {}", msg);
+
+        } else {
+            log.debug("Undefine message : {}", msg.toString());
+        }
     }
 
 //    public static void sendResponse(ChannelHandlerContext ctx, DefaultHttpRequest req, FullHttpResponse res) {
