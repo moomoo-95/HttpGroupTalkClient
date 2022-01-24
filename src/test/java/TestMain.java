@@ -1,6 +1,6 @@
-import moomoo.hgtp.client.protocol.hgtp.HgtpManager;
-import moomoo.hgtp.client.service.AppInstance;
-import moomoo.hgtp.client.util.CnameGenerator;
+import moomoo.hgtp.grouptalk.protocol.hgtp.HgtpManager;
+import moomoo.hgtp.grouptalk.service.AppInstance;
+import moomoo.hgtp.grouptalk.util.CnameGenerator;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

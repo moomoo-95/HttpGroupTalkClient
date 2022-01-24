@@ -1,18 +1,17 @@
 package protocol.hgtp;
 
-import moomoo.hgtp.client.protocol.hgtp.HgtpConsumer;
-import moomoo.hgtp.client.protocol.hgtp.HgtpManager;
-import moomoo.hgtp.client.protocol.hgtp.message.request.*;
-import moomoo.hgtp.client.service.AppInstance;
+import moomoo.hgtp.grouptalk.protocol.hgtp.HgtpManager;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.*;
+import moomoo.hgtp.grouptalk.service.AppInstance;
 import org.apache.commons.net.ntp.TimeStamp;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import moomoo.hgtp.client.protocol.hgtp.exception.HgtpException;
-import moomoo.hgtp.client.protocol.hgtp.message.base.HgtpHeader;
-import moomoo.hgtp.client.protocol.hgtp.message.base.HgtpMessageType;
-import moomoo.hgtp.client.protocol.hgtp.message.response.HgtpCommonResponse;
-import moomoo.hgtp.client.protocol.hgtp.message.response.HgtpUnauthorizedResponse;
+import moomoo.hgtp.grouptalk.protocol.hgtp.exception.HgtpException;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpHeader;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpCommonResponse;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpUnauthorizedResponse;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
