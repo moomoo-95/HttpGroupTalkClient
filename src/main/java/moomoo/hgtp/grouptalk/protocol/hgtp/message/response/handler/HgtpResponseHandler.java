@@ -27,8 +27,9 @@ public class HgtpResponseHandler {
     private static final Logger log = LoggerFactory.getLogger(HgtpResponseHandler.class);
     private static final String RECV_LOG = "({}) () () RECV HGTP MSG [{}]";
 
-    private AppInstance appInstance = AppInstance.getInstance();
-    private SessionManager sessionManager = SessionManager.getInstance();
+    private static AppInstance appInstance = AppInstance.getInstance();
+    private static SessionManager sessionManager = SessionManager.getInstance();
+    private static NetworkManager networkManager = NetworkManager.getInstance();
 
     public HgtpResponseHandler() {
         // nothing
@@ -50,7 +51,7 @@ public class HgtpResponseHandler {
                 case HgtpMessageType.REGISTER:
                     // todo register 등록시 저장되도록 설정
 //                    httpTargetAddress = new NetAddress(appInstance.getConfigManager().getTargetListenIp(), configManager.getHttpListenPort(), true, SocketProtocol.TCP);
-//                    NetworkManager.getInstance().getHttpGroupSocket().getDestination()
+//                    networkManager.getHttpGroupSocket().getDestination()
 //                    hgtpGroupSocket.addDestination(hgtpTargetAddress, null, AppInstance.SERVER_SESSION_ID, hgtpChannelInitializer);
                     controlPanel.setRegisterButtonStatus();
                     break;
@@ -62,7 +63,7 @@ public class HgtpResponseHandler {
                     break;
                 case HgtpMessageType.DELETE_ROOM:
                     controlPanel.setDeleteRoomButtonStatus();
-                    appInstance.initRoomId();
+                    sessionManager.getUserInfo(appInstance.getUserId()).initRoomId();
                     break;
                 default:
             }
@@ -87,7 +88,7 @@ public class HgtpResponseHandler {
                     // todo register 등록 해제 실패 상태
                     break;
                 case HgtpMessageType.CREATE_ROOM:
-                    appInstance.initRoomId();
+                    sessionManager.getUserInfo(appInstance.getUserId()).initRoomId();
                     break;
                 case HgtpMessageType.DELETE_ROOM:
                     // todo delete room 실패 상태
@@ -103,7 +104,26 @@ public class HgtpResponseHandler {
 
         HgtpHeader hgtpHeader = hgtpUnauthorizedResponse.getHgtpHeader();
         HgtpUnauthorizedContent hgtpRegisterContent = hgtpUnauthorizedResponse.getHgtpContent();
+
+        if (hgtpHeader == null || hgtpRegisterContent == null) {
+            log.debug("() () () header or content is null [{}]", hgtpUnauthorizedResponse);
+            return;
+        }
         log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpUnauthorizedResponse);
+
+        // server 일 경우 bad request 전송
+        if (appInstance.getMode() == AppInstance.SERVER_MODE) {
+            HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
+                    AppInstance.MAGIC_COOKIE, HgtpMessageType.BAD_REQUEST, hgtpHeader.getRequestType(),
+                    hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+
+            sendCommonResponse(hgtpCommonResponse);
+            return;
+        }
+
+        // http socket 설정 및 target address 설정
+        UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
+        userInfo.setHttpTargetNetAddress(configManager.getTargetListenIp(), hgtpRegisterContent.getListenPort());
 
         try {
             // Encoding realm -> nonce
@@ -119,7 +139,7 @@ public class HgtpResponseHandler {
             HgtpRegisterRequest hgtpRegisterRequest = new HgtpRegisterRequest(
                     AppInstance.MAGIC_COOKIE, HgtpMessageType.REGISTER, appInstance.getUserId(),
                     hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, TimeStamp.getCurrentTime().getSeconds(),
-                    configManager.getHgtpExpireTime(), configManager.getLocalListenIp(), configManager.getHttpListenPort()
+                    configManager.getHgtpExpireTime(), configManager.getLocalListenIp(), (short) userInfo.getHttpServerNetAddress().getPort()
             );
             HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();
             hgtpRequestHandler.sendRegisterRequest(hgtpRegisterRequest, nonce);
@@ -151,7 +171,7 @@ public class HgtpResponseHandler {
                     // todo register 등록 해제 실패 상태
                     break;
                 case HgtpMessageType.CREATE_ROOM:
-                    appInstance.initRoomId();
+                    sessionManager.getUserInfo(appInstance.getUserId()).initRoomId();
                     break;
                 case HgtpMessageType.DELETE_ROOM:
                     // todo delete room 실패 상태
@@ -178,7 +198,7 @@ public class HgtpResponseHandler {
             log.warn("({}) () () UserInfo is null.", userInfo.getUserId());
         }
 
-        DestinationRecord destinationRecord = NetworkManager.getInstance().getHgtpGroupSocket().getDestination(userInfo.getSessionId());
+        DestinationRecord destinationRecord = networkManager.getHgtpGroupSocket().getDestination(userInfo.getSessionId());
         if (destinationRecord == null) {
             log.warn("({}) () () DestinationRecord Channel is null.", userInfo.getUserId());
         }
@@ -201,7 +221,7 @@ public class HgtpResponseHandler {
             log.warn("({}) () () UserInfo is null.", userInfo.getUserId());
         }
 
-        DestinationRecord destinationRecord = NetworkManager.getInstance().getHgtpGroupSocket().getDestination(userInfo.getSessionId());
+        DestinationRecord destinationRecord = networkManager.getHgtpGroupSocket().getDestination(userInfo.getSessionId());
         if (destinationRecord == null) {
             log.warn("({}) () () DestinationRecord Channel is null.", userInfo.getUserId());
         }

@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 
 public class HgtpUnauthorizedContent implements HgtpContent {
 
+    private final short listenPort;         // 2 bytes
     private final int realmLength;          // 4 bytes
     private final String realm;             // realmLength bytes
 
@@ -13,6 +14,11 @@ public class HgtpUnauthorizedContent implements HgtpContent {
         if (data.length >= ByteUtil.NUM_BYTES_IN_INT) {
 
             int index = 0;
+            byte[] listenPortByteData = new byte[ByteUtil.NUM_BYTES_IN_SHORT];
+            System.arraycopy(data, index, listenPortByteData, 0, listenPortByteData.length);
+            listenPort = ByteUtil.bytesToShort(listenPortByteData, true);
+            index += listenPortByteData.length;
+
             byte[] realmLengthByteData = new byte[ByteUtil.NUM_BYTES_IN_INT];
             System.arraycopy(data, index, realmLengthByteData, 0, realmLengthByteData.length);
             realmLength = ByteUtil.bytesToInt(realmLengthByteData, true);
@@ -23,12 +29,14 @@ public class HgtpUnauthorizedContent implements HgtpContent {
             realm = new String(realmByteData, StandardCharsets.UTF_8);
 
         } else {
+            this.listenPort = 0;
             this.realmLength = 0;
             this.realm = null;
         }
     }
 
-    public HgtpUnauthorizedContent(String realm) {
+    public HgtpUnauthorizedContent(short listenPort, String realm) {
+        this.listenPort = listenPort;
         this.realmLength = realm.getBytes(StandardCharsets.UTF_8).length;
         this.realm = realm;
     }
@@ -37,6 +45,10 @@ public class HgtpUnauthorizedContent implements HgtpContent {
     public byte[] getByteData() {
         byte[] data = new byte[getBodyLength()];
         int index = 0;
+
+        byte[] listenPortByteData = ByteUtil.shortToBytes(listenPort, true);
+        System.arraycopy(listenPortByteData, 0, data, index, listenPortByteData.length);
+        index += listenPortByteData.length;
 
         byte[] realmLengthByteData = ByteUtil.intToBytes(realmLength, true);
         System.arraycopy(realmLengthByteData, 0, data, index, realmLengthByteData.length);
@@ -48,11 +60,9 @@ public class HgtpUnauthorizedContent implements HgtpContent {
         return data;
     }
 
-    public int getBodyLength() {
-        return ByteUtil.NUM_BYTES_IN_INT + realmLength;
-    }
+    public int getBodyLength() {return ByteUtil.NUM_BYTES_IN_SHORT + ByteUtil.NUM_BYTES_IN_INT + realmLength;}
 
-    public String getRealm() {
-        return realm;
-    }
+    public short getListenPort() {return listenPort;}
+
+    public String getRealm() {return realm;}
 }

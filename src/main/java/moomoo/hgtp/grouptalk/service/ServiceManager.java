@@ -1,11 +1,12 @@
 package moomoo.hgtp.grouptalk.service;
 
+import moomoo.hgtp.grouptalk.config.ConfigManager;
 import moomoo.hgtp.grouptalk.gui.GuiManager;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
 import moomoo.hgtp.grouptalk.protocol.hgtp.HgtpManager;
 import moomoo.hgtp.grouptalk.service.scheduler.ScheduleManager;
 import moomoo.hgtp.grouptalk.session.SessionManager;
-import moomoo.hgtp.grouptalk.util.CnameGenerator;
+import moomoo.hgtp.grouptalk.session.base.UserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +20,7 @@ public class ServiceManager {
 
     private HgtpManager hgtpManager;
     private NetworkManager networkManager;
+    private SessionManager sessionManager;
 
     // server, proxy
     private ScheduleManager scheduleManager;
@@ -61,6 +63,9 @@ public class ServiceManager {
         hgtpManager = HgtpManager.getInstance();
         hgtpManager.startHgtp();
 
+        // SessionManager
+        sessionManager = SessionManager.getInstance();
+
         // NetworkManager
         networkManager = NetworkManager.getInstance();
         networkManager.startSocket();
@@ -68,13 +73,15 @@ public class ServiceManager {
         AppInstance appInstance = AppInstance.getInstance();
         switch (appInstance.getMode()){
             case AppInstance.SERVER_MODE:
-                // SessionManager
-                SessionManager.getInstance();
-
                 scheduleManager = ScheduleManager.getInstance();
                 scheduleManager.start();
                 break;
             case AppInstance.CLIENT_MODE:
+                ConfigManager configManager = appInstance.getConfigManager();
+                sessionManager.addUserInfo(appInstance.getUserId(), 0);
+                UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
+                userInfo.setHgtpTargetNetAddress(configManager.getTargetListenIp(), configManager.getHgtpTargetPort());
+
                 GuiManager.getInstance();
                 break;
             case AppInstance.PROXY_MODE:

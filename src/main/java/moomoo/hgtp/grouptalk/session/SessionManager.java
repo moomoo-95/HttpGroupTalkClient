@@ -1,12 +1,7 @@
 package moomoo.hgtp.grouptalk.session;
 
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.socket.nio.NioDatagramChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
+import moomoo.hgtp.grouptalk.config.ConfigManager;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
-import moomoo.hgtp.grouptalk.network.handler.HgtpChannelHandler;
-import moomoo.hgtp.grouptalk.network.handler.HttpChannelHandler;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.base.RoomInfo;
@@ -26,23 +21,6 @@ public class SessionManager {
     private final ConcurrentHashMap<String, UserInfo> userInfoHashMap = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, RoomInfo> roomInfoHashMap = new ConcurrentHashMap<>();
 
-    // HGTP 통신을 위한 채널초기화 변수
-    private ChannelInitializer<NioDatagramChannel> hgtpchannelInitializer = new ChannelInitializer<NioDatagramChannel>() {
-        @Override
-        protected void initChannel(NioDatagramChannel datagramChannel) {
-            final ChannelPipeline channelPipeline = datagramChannel.pipeline();
-            channelPipeline.addLast(new HgtpChannelHandler());
-        }
-    };
-    // HTTP 통신을 위한 채널초기화 변수
-    private ChannelInitializer<NioSocketChannel> httpchannelInitializer = new ChannelInitializer<NioSocketChannel>() {
-        @Override
-        protected void initChannel(NioSocketChannel nioSocketChannel) {
-            final ChannelPipeline channelPipeline = nioSocketChannel.pipeline();
-            channelPipeline.addLast(new HttpChannelHandler());
-        }
-    };
-
     private AppInstance appInstance = AppInstance.getInstance();
     private NetworkManager networkManager = NetworkManager.getInstance();
 
@@ -58,27 +36,29 @@ public class SessionManager {
     }
 
 
-    public short addUserInfo(String userId, String userIp, short hgtpPort, long expire) {
+    public short addUserInfo(String userId, long expire) {
         if (userInfoHashMap.containsKey(userId)) {
             log.warn("({}) () () UserInfo already exist.", userId);
             return HgtpMessageType.BAD_REQUEST;
         }
 
         // PortResourceManager에서 채널 할당
-        short httpPort = (short) networkManager.getBaseEnvironment().getPortResourceManager().takePort();
+        short httpServerPort = (short) networkManager.getBaseEnvironment().getPortResourceManager().takePort();
+        short httpClientPort = (short) networkManager.getBaseEnvironment().getPortResourceManager().takePort();
 
-        UserInfo userInfo = new UserInfo(userId, userIp, hgtpPort, httpPort, expire);
+        ConfigManager configManager = appInstance.getConfigManager();
+        UserInfo userInfo = new UserInfo(userId, configManager.getLocalListenIp(), configManager.getHgtpListenPort(), httpServerPort, httpClientPort, expire);
         synchronized (userInfoHashMap) {
             userInfoHashMap.put(userId, userInfo);
         }
         log.debug("({}) () () UserInfo is created.", userId);
-        networkManager.getHgtpGroupSocket().addDestination(userInfo.getHgtpNetAddress(), null, userInfo.getSessionId(), hgtpchannelInitializer);
 
-        if (httpPort < 0) {
-            log.warn("({}) () () PortResourceManager's port is not available.", userId);
+        if (httpServerPort <= 0 || httpClientPort <= 0) {
+            log.warn("({}) () () PortResourceManager's port is not available. [RECV:{}/SEND:{}]", userId, httpServerPort, httpClientPort);
             return HgtpMessageType.SERVER_UNAVAILABLE;
         } else {
-            networkManager.getHttpGroupSocket().addDestination(userInfo.getHttpNetAddress(), null, userInfo.getSessionId(), httpchannelInitializer);
+            networkManager.addHttpSocket(userId, userInfo.getHttpServerNetAddress(), true);
+            networkManager.addHttpSocket(userId, userInfo.getHttpClientNetAddress(), false);
         }
 
         if (appInstance.getConfigManager().getUserMaxSize() < userInfoHashMap.size()) {
@@ -91,7 +71,7 @@ public class SessionManager {
 
     public void deleteUserInfo(String userId) {
         if (userInfoHashMap.containsKey(userId)) {
-            UserInfo userInfo = null;
+            UserInfo userInfo;
             synchronized (userInfoHashMap) {
                 userInfo = userInfoHashMap.remove(userId);
             }
@@ -99,8 +79,10 @@ public class SessionManager {
                 if (networkManager.getHgtpGroupSocket().getDestination(userInfo.getSessionId()) != null) {
                     networkManager.getHgtpGroupSocket().removeDestination(userInfo.getSessionId());
                 }
-                if (networkManager.getHttpGroupSocket().getDestination(userInfo.getSessionId()) != null){
-                    networkManager.getHttpGroupSocket().removeDestination(userInfo.getSessionId());
+
+                if (networkManager.getHttpSocket(userId) != null){
+                    networkManager.removeHttpSocket(userId, true);
+                    networkManager.removeHttpSocket(userId, false);
                 }
             }
             log.debug("({}) () () UserInfo is deleted.", userId);

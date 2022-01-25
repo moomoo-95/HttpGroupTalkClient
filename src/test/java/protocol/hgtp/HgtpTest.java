@@ -92,7 +92,7 @@ public class HgtpTest {
             HgtpUnauthorizedResponse sendHgtpUnauthorizedResponse = new HgtpUnauthorizedResponse(
                     recvReg1Header.getMagicCookie(), HgtpMessageType.UNAUTHORIZED,
                     recvReg1Header.getRequestType(), recvReg1Header.getUserId(),
-                    recvFirstHgtpRegisterRequest.getHgtpHeader().getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds(),
+                    recvFirstHgtpRegisterRequest.getHgtpHeader().getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds(), (short) 4000,
                     CLIENT_TEST_REALM);
             log.debug("URE SEND DATA : {}", sendHgtpUnauthorizedResponse);
 

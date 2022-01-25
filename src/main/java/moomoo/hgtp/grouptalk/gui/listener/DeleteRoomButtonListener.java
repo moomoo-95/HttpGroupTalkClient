@@ -4,6 +4,8 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.HgtpDeleteRoomRequest;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
+import moomoo.hgtp.grouptalk.session.SessionManager;
+import moomoo.hgtp.grouptalk.session.base.UserInfo;
 import org.apache.commons.net.ntp.TimeStamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,16 +17,20 @@ public class DeleteRoomButtonListener implements ActionListener {
 
     private static final Logger log = LoggerFactory.getLogger(DeleteRoomButtonListener.class);
 
+    private static SessionManager sessionManager = SessionManager.getInstance();
+
     private final HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();
 
     @Override
     public void actionPerformed(ActionEvent e) {
         AppInstance appInstance = AppInstance.getInstance();
 
-        if (appInstance.getRoomId().equals("")) {
-            log.debug("({}) ({}) () UserInfo has already exit the room.", appInstance.getUserId(), appInstance.getRoomId());
+        UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
+
+        if (userInfo.getRoomId().equals("")) {
+            log.debug("({}) ({}) () UserInfo has already exit the room.", userInfo.getUserId(), userInfo.getRoomId());
         } else {
-            String roomId = appInstance.getRoomId();
+            String roomId = userInfo.getRoomId();
 
             // Send create room
             HgtpDeleteRoomRequest hgtpDeleteRoomRequest = new HgtpDeleteRoomRequest(

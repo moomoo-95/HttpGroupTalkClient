@@ -9,6 +9,7 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.*;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpCommonResponse;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpUnauthorizedResponse;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.handler.HgtpResponseHandler;
+import moomoo.hgtp.grouptalk.protocol.http.HttpMessageHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
@@ -23,11 +24,13 @@ public class HgtpRequestHandler {
     private static final String SEND_LOG = "({}) () () [{}] SEND DATA {}";
     private static final String DEST_CH_NULL_LOG = "({}) () () DestinationRecord Channel is null.";
 
+    private static AppInstance appInstance = AppInstance.getInstance();
+    private static SessionManager sessionManager = SessionManager.getInstance();
+    private static NetworkManager networkManager = NetworkManager.getInstance();
 
     private HgtpResponseHandler hgtpResponseHandler = new HgtpResponseHandler();
 
-    private AppInstance appInstance = AppInstance.getInstance();
-    private SessionManager sessionManager = SessionManager.getInstance();
+
 
     public HgtpRequestHandler() {
         // nothing
@@ -69,15 +72,18 @@ public class HgtpRequestHandler {
         short messageType;
         if (hgtpRegisterContent.getNonce().equals("")) {
             // userInfo 생성
-            messageType = sessionManager.addUserInfo(
-                    userId, hgtpRegisterContent.getListenIp() , hgtpRegisterContent.getListenPort(), hgtpRegisterContent.getExpires()
-            );
+            messageType = sessionManager.addUserInfo( userId, hgtpRegisterContent.getExpires() );
 
-            // userInfo 생성 성공 시 UNAUTHORIZED 응답
+            // userInfo 생성 성공 시 UNAUTHORIZED 응답 (server의 http socket port 전송)
             if (messageType == HgtpMessageType.OK) {
+                UserInfo userInfo = sessionManager.getUserInfo(userId);
+
+                userInfo.setHgtpTargetNetAddress(hgtpRegisterContent.getListenIp(), hgtpRegisterContent.getListenPort());
+                short httpPort = (short) userInfo.getHttpServerNetAddress().getPort();
+
                 HgtpUnauthorizedResponse hgtpUnauthorizedResponse = new HgtpUnauthorizedResponse(
                         AppInstance.MAGIC_COOKIE, HgtpMessageType.UNAUTHORIZED, hgtpHeader.getRequestType(),
-                        userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp(), AppInstance.MD5_REALM);
+                        userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp(), httpPort, AppInstance.MD5_REALM);
 
                 hgtpResponseHandler.sendUnauthorizedResponse(hgtpUnauthorizedResponse);
             }
@@ -100,7 +106,7 @@ public class HgtpRequestHandler {
 
             // nonce 일치하면 userInfo 유지
             if (hgtpRegisterContent.getNonce().equals(appInstance.getServerNonce())) {
-//                userInfo.getHgtpNetAddress().add
+                userInfo.setHttpTargetNetAddress(hgtpRegisterContent.getListenIp(), hgtpRegisterContent.getListenPort());
                 messageType = HgtpMessageType.OK;
             }
             // 불일치 시 userInfo 삭제
@@ -117,11 +123,9 @@ public class HgtpRequestHandler {
             if (messageType == HgtpMessageType.FORBIDDEN) {
                 sessionManager.deleteUserInfo(userInfo.getUserId());
             } else {
-                log.debug("({}) () () userInfo is 1", userId);
-                byte[] data = new byte[] {11, 12, 13, 14, 15, 16, 17};
-                log.debug("({}) () () userInfo is 2", userId);
-                NetworkManager.getInstance().getHttpGroupSocket().getDestination(userInfo.getSessionId()).getNettyChannel().sendData(data, data.length);
-                log.debug("({}) () () userInfo is 3", userId);
+                // todo http
+//                HttpMessageHandler httpMessageHandler = new HttpMessageHandler();
+//                httpMessageHandler.sendRoomListRequest(userInfo);
             }
         }
     }
@@ -289,13 +293,23 @@ public class HgtpRequestHandler {
     }
 
     public void sendRegisterRequest(HgtpRegisterRequest hgtpRegisterRequest, String nonce) {
+        if (hgtpRegisterRequest.getHgtpHeader() == null || hgtpRegisterRequest.getHgtpContent() == null) {
+            log.warn("({}) () () header or content is null [{}]", hgtpRegisterRequest);
+            return;
+        }
+        if (appInstance.getMode() == AppInstance.SERVER_MODE) {
+            log.warn("({}) () () The server cannot request register.", hgtpRegisterRequest.getHgtpHeader().getUserId());
+            return;
+        }
+
         if (nonce != null) {
             hgtpRegisterRequest.getHgtpContent().setNonce(hgtpRegisterRequest.getHgtpHeader(), nonce);
         }
 
         byte[] data = hgtpRegisterRequest.getByteData();
 
-        DestinationRecord destinationRecord = NetworkManager.getInstance().getHgtpGroupSocket().getDestination(AppInstance.SERVER_SESSION_ID);
+        UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
+        DestinationRecord destinationRecord = networkManager.getHgtpGroupSocket().getDestination(userInfo.getSessionId());
         if (destinationRecord == null) {
             log.warn(DEST_CH_NULL_LOG, appInstance.getUserId());
         }
@@ -307,7 +321,8 @@ public class HgtpRequestHandler {
     public void sendUnregisterRequest(HgtpUnregisterRequest hgtpUnregisterRequest) {
         byte[] data = hgtpUnregisterRequest.getByteData();
 
-        DestinationRecord destinationRecord = NetworkManager.getInstance().getHgtpGroupSocket().getDestination(AppInstance.SERVER_SESSION_ID);
+        UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
+        DestinationRecord destinationRecord = networkManager.getHgtpGroupSocket().getDestination(userInfo.getSessionId());
         if (destinationRecord == null) {
             log.warn(DEST_CH_NULL_LOG, appInstance.getUserId());
         }
@@ -319,7 +334,8 @@ public class HgtpRequestHandler {
     public void sendCreateRoomRequest(HgtpCreateRoomRequest hgtpCreateRoomRequest) {
         byte[] data = hgtpCreateRoomRequest.getByteData();
 
-        DestinationRecord destinationRecord = NetworkManager.getInstance().getHgtpGroupSocket().getDestination(AppInstance.SERVER_SESSION_ID);
+        UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
+        DestinationRecord destinationRecord = networkManager.getHgtpGroupSocket().getDestination(userInfo.getSessionId());
         if (destinationRecord == null) {
             log.warn(DEST_CH_NULL_LOG, appInstance.getUserId());
         }
@@ -331,7 +347,8 @@ public class HgtpRequestHandler {
     public void sendDeleteRoomRequest(HgtpDeleteRoomRequest hgtpDeleteRoomRequest) {
         byte[] data = hgtpDeleteRoomRequest.getByteData();
 
-        DestinationRecord destinationRecord = NetworkManager.getInstance().getHgtpGroupSocket().getDestination(AppInstance.SERVER_SESSION_ID);
+        UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
+        DestinationRecord destinationRecord = networkManager.getHgtpGroupSocket().getDestination(userInfo.getSessionId());
         if (destinationRecord == null) {
             log.warn(DEST_CH_NULL_LOG, appInstance.getUserId());
         }

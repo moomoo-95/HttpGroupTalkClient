@@ -36,7 +36,6 @@ public class ConfigManager {
     private static final String FIELD_HGTP_THREAD_SIZE = "HGTP_THREAD_SIZE";
     private static final String FIELD_HGTP_EXPIRE_TIME = "HGTP_EXPIRE_TIME";
     // HTTP
-    private static final String FIELD_HTTP_LISTEN_PORT = "HTTP_LISTEN_PORT";
     private static final String FIELD_HTTP_MIN_PORT = "HTTP_MIN_PORT";
     private static final String FIELD_HTTP_MAX_PORT = "HTTP_MAX_PORT";
 
@@ -54,7 +53,6 @@ public class ConfigManager {
     private int  hgtpThreadSize = 0;
     private long hgtpExpireTime = 0;
     // HTTP
-    private short httpListenPort = 0;
     private int  httpMinPort = 0;
     private int  httpMaxPort = 0;
 
@@ -141,12 +139,6 @@ public class ConfigManager {
     }
 
     private void loadHttpConfig() {
-        this.httpListenPort = Short.parseShort(getIniValue(SECTION_HTTP, FIELD_HTTP_LISTEN_PORT));
-        if (httpListenPort < 1024 || httpListenPort > 32767) {
-            log.error(PORT_RANGE_LOG, SECTION_HTTP, FIELD_HTTP_LISTEN_PORT, httpListenPort);
-            System.exit(1);
-        }
-
         this.httpMinPort = Short.parseShort(getIniValue(SECTION_HTTP, FIELD_HTTP_MIN_PORT));
         if (httpMinPort < 1024 || httpMinPort > 32767) {
             log.error(PORT_RANGE_LOG, SECTION_HTTP, FIELD_HTTP_MIN_PORT, httpMinPort);
@@ -208,7 +200,6 @@ public class ConfigManager {
     public long getHgtpExpireTime() {return hgtpExpireTime;}
 
     // http
-    public short getHttpListenPort() {return httpListenPort;}
     public int getHttpMinPort() {return httpMinPort;}
     public int getHttpMaxPort() {return httpMaxPort;}
 }

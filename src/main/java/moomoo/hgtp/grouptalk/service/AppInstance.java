@@ -29,15 +29,13 @@ public class AppInstance {
 
     private static AppInstance appInstance = null;
 
-    // 프로그램 모드 -1 : init / 0 : server / 1 : client / 2 : proxy
+    // 프로그램 모드 init (-1) , server (0) , client (1) , proxy (2)
     private int mode = -1;
 
-    private String configPath = "";
     private ConfigManager configManager = null;
 
     // only client
     private String userId = "";
-    private String roomId = "";
 
     // only server
     private String serverNonce = "";
@@ -98,7 +96,6 @@ public class AppInstance {
     public ConfigManager getConfigManager() {return configManager;}
 
     public void setConfigManager(String configPath) {
-        this.configPath = configPath;
         this.configManager = new ConfigManager(configPath);
     }
 
@@ -109,9 +106,4 @@ public class AppInstance {
 
     // only client
     public String getUserId() {return userId;}
-
-    public String getRoomId() {return roomId;}
-    public void setRoomId(String roomId) {this.roomId = roomId;}
-    public void initRoomId() {this.roomId = "";}
-
 }
