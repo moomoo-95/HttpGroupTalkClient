@@ -6,8 +6,7 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.http.HttpClientCodec;
-import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.*;
 import moomoo.hgtp.grouptalk.config.ConfigManager;
 import moomoo.hgtp.grouptalk.network.handler.HgtpChannelHandler;
 import moomoo.hgtp.grouptalk.network.handler.HttpChannelHandler;
@@ -77,6 +76,7 @@ public class NetworkManager {
             protected void initChannel(NioSocketChannel socketChannel) {
                 final ChannelPipeline channelPipeline = socketChannel.pipeline();
                 channelPipeline.addLast("codec", new HttpServerCodec());
+                channelPipeline.addLast("deflater", new HttpContentDecompressor());
                 channelPipeline.addLast(new HttpChannelHandler());
             }
         };
@@ -86,6 +86,7 @@ public class NetworkManager {
             protected void initChannel(NioSocketChannel socketChannel) {
                 final ChannelPipeline channelPipeline = socketChannel.pipeline();
                 channelPipeline.addLast("codec", new HttpClientCodec());
+                channelPipeline.addLast("deflater", new HttpContentDecompressor());
                 channelPipeline.addLast(new HttpChannelHandler());
             }
         };
@@ -208,7 +209,7 @@ public class NetworkManager {
     public void addDestinationHttpSocket(UserInfo userInfo) {
         GroupSocket httpGroupSocket = getHttpGroupSocket(userInfo.getUserId(), false);
 
-        httpGroupSocket.addDestination(userInfo.getHttpTargetNetAddress(), null, userInfo.getSessionId(), httpServerChannelInitializer);
+        httpGroupSocket.addDestination(userInfo.getHttpTargetNetAddress(), null, userInfo.getSessionId(), httpClientChannelInitializer);
         log.debug("({}) () () add Destination ok. [{}] -> [{}]", userInfo.getUserId(), httpGroupSocket.getListenSocket().getNetAddress().getPort(), httpGroupSocket.getDestination(userInfo.getSessionId()).getGroupEndpointId().getGroupAddress().getPort());
     }
 

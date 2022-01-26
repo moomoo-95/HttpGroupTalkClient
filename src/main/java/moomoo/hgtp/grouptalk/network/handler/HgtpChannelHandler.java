@@ -9,7 +9,6 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.HgtpManager;
 public class HgtpChannelHandler extends SimpleChannelInboundHandler<DatagramPacket> {
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, DatagramPacket datagramPacket) {
-
         ByteBuf buf = datagramPacket.content();
         if (buf == null) {
             return;
