@@ -10,6 +10,8 @@ public class RoomListPanel extends JPanel {
     private final JList<String> playlistView = new JList<>();
     private final DefaultListModel<String> model = new DefaultListModel<>();
 
+    private String focusRoomId = "";
+
     public RoomListPanel() {
         BorderLayout borderLayout = new BorderLayout();
         borderLayout.setVgap(3);
@@ -36,8 +38,7 @@ public class RoomListPanel extends JPanel {
                     int index = playlistView.locationToIndex(e.getPoint());
                     playlistView.setSelectedIndex(index);
                     if (index >= 0 && index < model.size()) {
-                        String roomId = model.get(index);
-                        // todo 입장 처리
+                        focusRoomId = model.get(index);
                     }
                 }
             }
@@ -56,4 +57,6 @@ public class RoomListPanel extends JPanel {
         }
 
     }
+
+    public String getFocusRoomId() { return focusRoomId; }
 }
