@@ -6,6 +6,8 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.http.HttpClientCodec;
+import io.netty.handler.codec.http.HttpServerCodec;
 import moomoo.hgtp.grouptalk.config.ConfigManager;
 import moomoo.hgtp.grouptalk.network.handler.HgtpChannelHandler;
 import moomoo.hgtp.grouptalk.network.handler.HttpChannelHandler;
@@ -43,10 +45,12 @@ public class NetworkManager {
 
     private final NetAddress hgtpLocalAddress;
 
-    private final ConcurrentHashMap<String, NetAddress> httpAddressMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, NetAddress> httpServerAddressMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, NetAddress> httpClientAddressMap = new ConcurrentHashMap<>();
 
     private final ChannelInitializer<NioDatagramChannel> hgtpChannelInitializer;
-    private final ChannelInitializer<NioSocketChannel> httpChannelInitializer;
+    private final ChannelInitializer<NioSocketChannel> httpServerChannelInitializer;
+    private final ChannelInitializer<NioSocketChannel> httpClientChannelInitializer;
 
     public NetworkManager() {
         // 인스턴스 생성
@@ -68,10 +72,20 @@ public class NetworkManager {
             }
         };
 
-        httpChannelInitializer = new ChannelInitializer<NioSocketChannel>() {
+        httpServerChannelInitializer = new ChannelInitializer<NioSocketChannel>() {
             @Override
             protected void initChannel(NioSocketChannel socketChannel) {
                 final ChannelPipeline channelPipeline = socketChannel.pipeline();
+                channelPipeline.addLast("codec", new HttpServerCodec());
+                channelPipeline.addLast(new HttpChannelHandler());
+            }
+        };
+
+        httpClientChannelInitializer = new ChannelInitializer<NioSocketChannel>() {
+            @Override
+            protected void initChannel(NioSocketChannel socketChannel) {
+                final ChannelPipeline channelPipeline = socketChannel.pipeline();
+                channelPipeline.addLast("codec", new HttpClientCodec());
                 channelPipeline.addLast(new HttpChannelHandler());
             }
         };
@@ -86,7 +100,10 @@ public class NetworkManager {
 
     public void startSocket(){
         // socketManager에 추가 및 listen
-        udpSocketManager.addSocket(hgtpLocalAddress, hgtpChannelInitializer);
+        if ( !udpSocketManager.addSocket(hgtpLocalAddress, hgtpChannelInitializer) ) {
+            log.error("{} port is unavailable.", hgtpLocalAddress.getPort());
+            System.exit(1);
+        }
 
         GroupSocket hgtpGroupSocket = udpSocketManager.getSocket(hgtpLocalAddress);
         hgtpGroupSocket.getListenSocket().openListenChannel();
@@ -99,17 +116,26 @@ public class NetworkManager {
                 udpSocketManager.removeSocket(hgtpLocalAddress);
             }
         }
-        if (tcpClientSocketManager != null && tcpServerSocketManager != null) {
-            if (httpAddressMap.size() > 0) {
-                httpAddressMap.forEach( (key, address) -> {
-                    if (tcpClientSocketManager.getSocket(address) != null) {
-                        tcpClientSocketManager.removeSocket(address);
-                    } else if (tcpServerSocketManager.getSocket(address) != null) {
+        if (tcpServerSocketManager != null) {
+            if (httpServerAddressMap.size() > 0) {
+                httpServerAddressMap.forEach( (key, address) -> {
+                    if (tcpServerSocketManager.getSocket(address) != null) {
                         tcpServerSocketManager.removeSocket(address);
                     }
                 });
 
-                httpAddressMap.clear();
+                httpServerAddressMap.clear();
+            }
+        }
+        if (tcpClientSocketManager != null) {
+            if (httpClientAddressMap.size() > 0) {
+                httpClientAddressMap.forEach( (key, address) -> {
+                    if (tcpClientSocketManager.getSocket(address) != null) {
+                        tcpClientSocketManager.removeSocket(address);
+                    }
+                });
+
+                httpClientAddressMap.clear();
             }
         }
 
@@ -119,33 +145,45 @@ public class NetworkManager {
         }
     }
 
-    public NetAddress getHttpSocket(String userId) {
-        return httpAddressMap.get(userId);
+    public NetAddress getHttpSocket(String userId, boolean isServerSocket) {
+        return isServerSocket ? httpServerAddressMap.get(userId) : httpClientAddressMap.get(userId);
     }
 
-    public void addHttpSocket(String userId, NetAddress httpAddress, boolean isServerSocket) {
-        if (isServerSocket) {
-            tcpServerSocketManager.addSocket(httpAddress, httpChannelInitializer);
-        } else {
-            tcpClientSocketManager.addSocket(httpAddress, httpChannelInitializer);
-        }
-
+    public boolean addHttpSocket(String userId, NetAddress httpAddress, boolean isServerSocket) {
         GroupSocket httpGroupSocket;
-        httpGroupSocket = isServerSocket ? tcpServerSocketManager.getSocket(httpAddress) : tcpClientSocketManager.getSocket(httpAddress);
-        httpGroupSocket.getListenSocket().openListenChannel();
-
-        synchronized (httpAddressMap) {
-            httpAddressMap.put(userId, httpAddress);
+        if (isServerSocket) {
+            if (tcpServerSocketManager.addSocket(httpAddress, httpServerChannelInitializer)) {
+                httpGroupSocket = tcpServerSocketManager.getSocket(httpAddress);
+                if (httpGroupSocket.getListenSocket().openListenChannel()) {
+                    synchronized (httpServerAddressMap) {
+                        httpServerAddressMap.put(userId, httpAddress);
+                    }
+                    return true;
+                }
+            }
+        } else {
+            if (tcpClientSocketManager.addSocket(httpAddress, httpClientChannelInitializer)){
+                httpGroupSocket = tcpClientSocketManager.getSocket(httpAddress);
+                if (httpGroupSocket.getListenSocket().openListenChannel()) {
+                    synchronized (httpClientAddressMap) {
+                        httpClientAddressMap.put(userId, httpAddress);
+                    }
+                    return true;
+                }
+            }
         }
+        removeHttpSocket(userId, isServerSocket);
+        return false;
     }
 
     public void removeHttpSocket(String userId, boolean isServerSocket){
-        NetAddress httpAddress = httpAddressMap.get(userId);
+        NetAddress httpAddress = isServerSocket ? httpServerAddressMap.get(userId) : httpClientAddressMap.get(userId);
 
         if (httpAddress == null) {
             log.debug("({}) () () httpAddress already removed.", userId);
             return;
         }
+        getBaseEnvironment().getPortResourceManager().restorePort(httpAddress.getPort());
 
         if (isServerSocket && tcpServerSocketManager.getSocket(httpAddress) != null) {
             tcpServerSocketManager.removeSocket(httpAddress);
@@ -155,8 +193,8 @@ public class NetworkManager {
             tcpClientSocketManager.removeSocket(httpAddress);
         }
 
-        synchronized (httpAddressMap) {
-            httpAddressMap.remove(userId);
+        synchronized (httpServerAddressMap) {
+            httpServerAddressMap.remove(userId);
         }
     }
 
@@ -164,14 +202,14 @@ public class NetworkManager {
         GroupSocket hgtpGroupSocket = getHgtpGroupSocket();
 
         hgtpGroupSocket.addDestination(userInfo.getHgtpTargetNetAddress(), null, userInfo.getSessionId(), hgtpChannelInitializer);
-        log.debug("({}) () () add Destination ok. [{}] -> [{}]", userInfo.getUserId(), hgtpGroupSocket.getListenSocket().getNetAddress().getPort(), hgtpGroupSocket.getDestination(userInfo.getSessionId()).toString());
+        log.debug("({}) () () add Destination ok. [{}] -> [{}]", userInfo.getUserId(), hgtpGroupSocket.getListenSocket().getNetAddress().getPort(), hgtpGroupSocket.getDestination(userInfo.getSessionId()).getGroupEndpointId().getGroupAddress().getPort());
     }
 
     public void addDestinationHttpSocket(UserInfo userInfo) {
         GroupSocket httpGroupSocket = getHttpGroupSocket(userInfo.getUserId(), false);
 
-        httpGroupSocket.addDestination(userInfo.getHttpTargetNetAddress(), null, userInfo.getSessionId(), httpChannelInitializer);
-        log.debug("({}) () () add Destination ok. [{}] -> [{}]", userInfo.getUserId(), httpGroupSocket.getListenSocket().getNetAddress().getPort(), httpGroupSocket.getDestination(userInfo.getSessionId()).toString());
+        httpGroupSocket.addDestination(userInfo.getHttpTargetNetAddress(), null, userInfo.getSessionId(), httpServerChannelInitializer);
+        log.debug("({}) () () add Destination ok. [{}] -> [{}]", userInfo.getUserId(), httpGroupSocket.getListenSocket().getNetAddress().getPort(), httpGroupSocket.getDestination(userInfo.getSessionId()).getGroupEndpointId().getGroupAddress().getPort());
     }
 
 
@@ -180,10 +218,10 @@ public class NetworkManager {
     public GroupSocket getHgtpGroupSocket() {return udpSocketManager.getSocket(hgtpLocalAddress);}
 
     public GroupSocket getHttpGroupSocket(String userId, boolean isServerSocket) {
-        if (httpAddressMap.get(userId) == null) {
+        if (httpServerAddressMap.get(userId) == null) {
             log.warn("({}) () () httpAddress do not exist.", userId);
             return null;
         }
-        return isServerSocket ? tcpServerSocketManager.getSocket(httpAddressMap.get(userId)) : tcpClientSocketManager.getSocket(httpAddressMap.get(userId));
+        return isServerSocket ? tcpServerSocketManager.getSocket(httpServerAddressMap.get(userId)) : tcpClientSocketManager.getSocket(httpClientAddressMap.get(userId));
     }
 }

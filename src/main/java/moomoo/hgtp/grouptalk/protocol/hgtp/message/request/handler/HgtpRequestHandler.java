@@ -123,9 +123,9 @@ public class HgtpRequestHandler {
             if (messageType == HgtpMessageType.FORBIDDEN) {
                 sessionManager.deleteUserInfo(userInfo.getUserId());
             } else {
-                // todo http
-//                HttpMessageHandler httpMessageHandler = new HttpMessageHandler();
-//                httpMessageHandler.sendRoomListRequest(userInfo);
+                //현재 User, room list 전송
+                HttpMessageHandler httpMessageHandler = new HttpMessageHandler();
+                httpMessageHandler.sendRoomListRequest(userInfo);
             }
         }
     }

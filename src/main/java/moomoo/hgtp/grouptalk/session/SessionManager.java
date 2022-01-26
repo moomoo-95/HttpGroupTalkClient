@@ -6,8 +6,11 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.base.RoomInfo;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
+import network.definition.NetAddress;
+import network.socket.SocketProtocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import service.ResourceManager;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,23 +46,49 @@ public class SessionManager {
         }
 
         // PortResourceManager에서 채널 할당
-        short httpServerPort = (short) networkManager.getBaseEnvironment().getPortResourceManager().takePort();
-        short httpClientPort = (short) networkManager.getBaseEnvironment().getPortResourceManager().takePort();
-
         ConfigManager configManager = appInstance.getConfigManager();
+        ResourceManager resourceManager = networkManager.getBaseEnvironment().getPortResourceManager();
+
+        // 포트가 정상적으로 할당될 수 있는 경우 할당받을 때 까지 반복
+        short httpServerPort = 0;
+        short httpClientPort = 0 ;
+        NetAddress serverNetAddress = new NetAddress(configManager.getLocalListenIp(), httpServerPort, true, SocketProtocol.TCP);
+        NetAddress clientNetAddress = new NetAddress(configManager.getLocalListenIp(), httpClientPort, true, SocketProtocol.TCP);
+
+        boolean isTaken = false;
+        while (!isTaken) {
+            if (httpServerPort > 0) {
+                networkManager.removeHttpSocket(userId, true);
+            }
+            httpServerPort = (short) resourceManager.takePort();
+            if (httpServerPort <= 0) {
+                log.warn("({}) () () PortResourceManager's port is not available. [RECV:{}]", userId, httpServerPort);
+                return HgtpMessageType.SERVER_UNAVAILABLE;
+            }
+            serverNetAddress.setPort(httpServerPort);
+            isTaken = networkManager.addHttpSocket(userId, serverNetAddress, true);
+        }
+        isTaken = false;
+        while (!isTaken) {
+            if (httpClientPort > 0) {
+                networkManager.removeHttpSocket(userId, false);
+            }
+            httpClientPort = (short) resourceManager.takePort();
+            if (httpClientPort <= 0) {
+                log.warn("({}) () () PortResourceManager's port is not available. [SEND:{}]", userId, httpClientPort);
+                return HgtpMessageType.SERVER_UNAVAILABLE;
+            }
+            clientNetAddress.setPort(httpClientPort);
+            isTaken = networkManager.addHttpSocket(userId, clientNetAddress, false);
+        }
+
         UserInfo userInfo = new UserInfo(userId, configManager.getLocalListenIp(), configManager.getHgtpListenPort(), httpServerPort, httpClientPort, expire);
         synchronized (userInfoHashMap) {
             userInfoHashMap.put(userId, userInfo);
         }
         log.debug("({}) () () UserInfo is created.", userId);
 
-        if (httpServerPort <= 0 || httpClientPort <= 0) {
-            log.warn("({}) () () PortResourceManager's port is not available. [RECV:{}/SEND:{}]", userId, httpServerPort, httpClientPort);
-            return HgtpMessageType.SERVER_UNAVAILABLE;
-        } else {
-            networkManager.addHttpSocket(userId, userInfo.getHttpServerNetAddress(), true);
-            networkManager.addHttpSocket(userId, userInfo.getHttpClientNetAddress(), false);
-        }
+
 
         if (appInstance.getConfigManager().getUserMaxSize() < userInfoHashMap.size()) {
             log.warn("({}) () () Unavailable add UserInfo", userId);
@@ -80,8 +109,10 @@ public class SessionManager {
                     networkManager.getHgtpGroupSocket().removeDestination(userInfo.getSessionId());
                 }
 
-                if (networkManager.getHttpSocket(userId) != null){
-                    networkManager.removeHttpSocket(userId, true);
+                if (networkManager.getHttpSocket(userId, true) != null){
+                    networkManager.removeHttpSocket(userId, false);
+                }
+                if (networkManager.getHttpSocket(userId, false) != null){
                     networkManager.removeHttpSocket(userId, false);
                 }
             }

@@ -80,12 +80,15 @@ public class HgtpResponseHandler {
         }
 
         if (appInstance.getMode() == AppInstance.CLIENT_MODE) {
+            ControlPanel controlPanel = GuiManager.getInstance().getControlPanel();
+
             switch (hgtpHeader.getRequestType()) {
                 case HgtpMessageType.REGISTER:
                     // todo register 등록 실패 상태
                     break;
                 case HgtpMessageType.UNREGISTER:
                     // todo register 등록 해제 실패 상태
+                    controlPanel.setInitButtonStatus();
                     break;
                 case HgtpMessageType.CREATE_ROOM:
                     sessionManager.getUserInfo(appInstance.getUserId()).initRoomId();
@@ -163,12 +166,15 @@ public class HgtpResponseHandler {
         }
 
         if (appInstance.getMode() == AppInstance.CLIENT_MODE) {
+            ControlPanel controlPanel = GuiManager.getInstance().getControlPanel();
+
             switch (hgtpHeader.getRequestType()) {
                 case HgtpMessageType.REGISTER:
                     // todo register 등록 실패 상태
                     break;
                 case HgtpMessageType.UNREGISTER:
                     // todo register 등록 해제 실패 상태
+                    controlPanel.setInitButtonStatus();
                     break;
                 case HgtpMessageType.CREATE_ROOM:
                     sessionManager.getUserInfo(appInstance.getUserId()).initRoomId();

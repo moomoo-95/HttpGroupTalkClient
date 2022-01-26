@@ -20,7 +20,6 @@ public class ServiceManager {
 
     private HgtpManager hgtpManager;
     private NetworkManager networkManager;
-    private SessionManager sessionManager;
 
     // server, proxy
     private ScheduleManager scheduleManager;
@@ -64,7 +63,7 @@ public class ServiceManager {
         hgtpManager.startHgtp();
 
         // SessionManager
-        sessionManager = SessionManager.getInstance();
+        SessionManager sessionManager = SessionManager.getInstance();
 
         // NetworkManager
         networkManager = NetworkManager.getInstance();
