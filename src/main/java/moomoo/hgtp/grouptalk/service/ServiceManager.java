@@ -4,6 +4,7 @@ import moomoo.hgtp.grouptalk.config.ConfigManager;
 import moomoo.hgtp.grouptalk.gui.GuiManager;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
 import moomoo.hgtp.grouptalk.protocol.hgtp.HgtpManager;
+import moomoo.hgtp.grouptalk.protocol.http.HttpManager;
 import moomoo.hgtp.grouptalk.service.scheduler.ScheduleManager;
 import moomoo.hgtp.grouptalk.session.SessionManager;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
@@ -19,6 +20,7 @@ public class ServiceManager {
     private static ServiceManager serviceManager = null;
 
     private HgtpManager hgtpManager;
+    private HttpManager httpManager;
     private NetworkManager networkManager;
 
     // server, proxy
@@ -61,6 +63,9 @@ public class ServiceManager {
         // HgtpManager
         hgtpManager = HgtpManager.getInstance();
         hgtpManager.startHgtp();
+        // HttpManager
+        httpManager = HttpManager.getInstance();
+        httpManager.startHttp();
 
         // SessionManager
         SessionManager sessionManager = SessionManager.getInstance();
@@ -94,6 +99,7 @@ public class ServiceManager {
 
     public void stop() {
         hgtpManager.stopHgtp();
+        httpManager.stopHttp();
         networkManager.stopSocket();
 
         switch (AppInstance.getInstance().getMode()){

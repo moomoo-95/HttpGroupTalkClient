@@ -11,8 +11,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import moomoo.hgtp.grouptalk.network.handler.HttpChannelHandler;
-import moomoo.hgtp.grouptalk.protocol.http.HttpMessageHandler;
-import moomoo.hgtp.grouptalk.session.base.UserInfo;
+import moomoo.hgtp.grouptalk.protocol.http.handler.HttpRequestMessageHandler;
 import network.definition.NetAddress;
 import network.socket.GroupSocket;
 import network.socket.SocketManager;
@@ -91,7 +90,7 @@ public class frameworkTest {
         localSocket.addDestination(httpTargetAddress, null, 111L, httpChannelInitializer);
 
         log.debug("{}", localSocket.getDestination(111L).toString());
-        HttpMessageHandler httpMessageHandler = new HttpMessageHandler();
+        HttpRequestMessageHandler httpRequestMessageHandler = new HttpRequestMessageHandler();
 //        UserInfo userInfo = new UserInfo("dlagustjd", LOCAL_IP, (short)LOCAL_PORT, (short) 5070, 3600L);
 //        httpMessageHandler.sendRoomListRequest(userInfo, "192.168.2.163:5040");
 

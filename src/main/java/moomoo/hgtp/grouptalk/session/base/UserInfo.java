@@ -1,7 +1,6 @@
 package moomoo.hgtp.grouptalk.session.base;
 
 import moomoo.hgtp.grouptalk.network.NetworkManager;
-import moomoo.hgtp.grouptalk.service.AppInstance;
 import network.definition.NetAddress;
 import network.socket.SocketProtocol;
 import util.module.ByteUtil;

@@ -191,4 +191,8 @@ public class SessionManager {
     public Map<String, UserInfo> getUserInfoHashMap() {
         return userInfoHashMap;
     }
+
+    public Map<String, RoomInfo> getRoomInfoHashMap() {
+        return roomInfoHashMap;
+    }
 }

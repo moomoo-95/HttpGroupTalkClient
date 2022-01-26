@@ -48,7 +48,7 @@ public class HgtpConsumer implements Runnable {
      * @brief byte 형태로 들어온 hgtp 메시지의 타입을 분석하는 메서드
      * @param data
      */
-    public void parseHgtpMessage(byte[] data) {
+    private void parseHgtpMessage(byte[] data) {
         try {
             HgtpHeader hgtpHeader = new HgtpHeader(data);
             if (hgtpHeader == null) {

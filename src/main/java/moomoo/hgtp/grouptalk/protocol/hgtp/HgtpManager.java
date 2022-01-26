@@ -17,7 +17,6 @@ public class HgtpManager {
 
     private ConfigManager configManager = AppInstance.getInstance().getConfigManager();
 
-
     public HgtpManager() {
         this.executorService = Executors.newFixedThreadPool(configManager.getHgtpThreadSize());
         this.hgtpQueue = new ConcurrentCyclicFIFO<>();

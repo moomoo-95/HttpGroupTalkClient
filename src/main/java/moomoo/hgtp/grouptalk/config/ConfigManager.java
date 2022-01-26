@@ -38,6 +38,7 @@ public class ConfigManager {
     // HTTP
     private static final String FIELD_HTTP_MIN_PORT = "HTTP_MIN_PORT";
     private static final String FIELD_HTTP_MAX_PORT = "HTTP_MAX_PORT";
+    private static final String FIELD_HTTP_THREAD_SIZE = "HTTP_THREAD_SIZE";
 
     // COMMON
     private int userMaxSize = 0;
@@ -55,6 +56,7 @@ public class ConfigManager {
     // HTTP
     private int  httpMinPort = 0;
     private int  httpMaxPort = 0;
+    private int  httpThreadSize = 0;
 
     public ConfigManager(String configPath) {
         File iniFile = new File(configPath);
@@ -126,8 +128,8 @@ public class ConfigManager {
 
         this.hgtpThreadSize = Integer.parseInt(getIniValue(SECTION_HGTP, FIELD_HGTP_THREAD_SIZE));
         if (hgtpThreadSize <= 0) {
-            log.warn("[{}] config [{}] : [{} -> 3] Warn", SECTION_HGTP, FIELD_HGTP_THREAD_SIZE, hgtpThreadSize);
-            hgtpThreadSize = 3;
+            log.warn("[{}] config [{}] : [{} -> 5] Warn", SECTION_HGTP, FIELD_HGTP_THREAD_SIZE, hgtpThreadSize);
+            hgtpThreadSize = 5;
         }
 
         this.hgtpExpireTime = Long.parseLong(getIniValue(SECTION_HGTP, FIELD_HGTP_EXPIRE_TIME));
@@ -154,6 +156,12 @@ public class ConfigManager {
         if (httpMinPort > httpMaxPort) {
             log.error("[{}] config [{} > {}] Error. {} > {}", SECTION_HTTP, FIELD_HTTP_MIN_PORT, FIELD_HTTP_MAX_PORT, httpMinPort, httpMaxPort);
             System.exit(1);
+        }
+
+        this.httpThreadSize = Integer.parseInt(getIniValue(SECTION_HTTP, FIELD_HTTP_THREAD_SIZE));
+        if (httpThreadSize <= 0) {
+            log.warn("[{}] config [{}] : [{} -> 10] Warn", SECTION_HTTP, FIELD_HTTP_THREAD_SIZE, httpThreadSize);
+            httpThreadSize = 10;
         }
 
         log.debug(CONFIG_LOG, SECTION_HGTP);
@@ -202,4 +210,5 @@ public class ConfigManager {
     // http
     public int getHttpMinPort() {return httpMinPort;}
     public int getHttpMaxPort() {return httpMaxPort;}
+    public int getHttpThreadSize() {return httpThreadSize;}
 }

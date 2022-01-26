@@ -36,4 +36,6 @@ public class ClientFrame extends JFrame {
     }
 
     public ControlPanel getControlPanel() {return controlPanel;}
+
+    public RoomListPanel getRoomListPanel() {return roomListPanel;}
 }

@@ -2,6 +2,7 @@ package moomoo.hgtp.grouptalk.gui;
 
 import moomoo.hgtp.grouptalk.gui.component.ClientFrame;
 import moomoo.hgtp.grouptalk.gui.component.panel.ControlPanel;
+import moomoo.hgtp.grouptalk.gui.component.panel.RoomListPanel;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 
 public class GuiManager {
@@ -26,4 +27,6 @@ public class GuiManager {
     }
 
     public ControlPanel getControlPanel() { return clientFrame.getControlPanel(); }
+
+    public RoomListPanel getRoomListPanel() { return clientFrame.getRoomListPanel(); }
 }

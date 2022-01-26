@@ -9,7 +9,7 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.*;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpCommonResponse;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpUnauthorizedResponse;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.handler.HgtpResponseHandler;
-import moomoo.hgtp.grouptalk.protocol.http.HttpMessageHandler;
+import moomoo.hgtp.grouptalk.protocol.http.handler.HttpRequestMessageHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
@@ -124,8 +124,8 @@ public class HgtpRequestHandler {
                 sessionManager.deleteUserInfo(userInfo.getUserId());
             } else {
                 //현재 User, room list 전송
-                HttpMessageHandler httpMessageHandler = new HttpMessageHandler();
-                httpMessageHandler.sendRoomListRequest(userInfo);
+                HttpRequestMessageHandler httpRequestMessageHandler = new HttpRequestMessageHandler();
+                httpRequestMessageHandler.sendRoomListRequest(userInfo);
             }
         }
     }
@@ -228,6 +228,12 @@ public class HgtpRequestHandler {
                 userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
 
         hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
+
+        if (messageType == HgtpMessageType.OK) {
+            //현재 User, room list 전송
+            HttpRequestMessageHandler httpRequestMessageHandler = new HttpRequestMessageHandler();
+            sessionManager.getUserInfoHashMap().forEach( (key, userInfo) -> httpRequestMessageHandler.sendRoomListRequest(userInfo));
+        }
     }
 
     /**
@@ -270,6 +276,12 @@ public class HgtpRequestHandler {
                 userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
 
         hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
+
+        if (messageType == HgtpMessageType.OK) {
+            //현재 User, room list 전송
+            HttpRequestMessageHandler httpRequestMessageHandler = new HttpRequestMessageHandler();
+            sessionManager.getUserInfoHashMap().forEach( (key, userInfo) -> httpRequestMessageHandler.sendRoomListRequest(userInfo));
+        }
     }
 
     public boolean joinRoomRequestProcessing(HgtpJoinRoomRequest hgtpJoinRoomRequest) {
