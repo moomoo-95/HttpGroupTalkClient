@@ -86,8 +86,5 @@ public class HttpConsumer implements Runnable {
                 log.warn("({}) () () Undefined message cannot be processed. {}", userId, httpResponse);
             }
         }
-        else {
-            log.warn("() () () Undefined message cannot be processed. {}", httpObject);
-        }
     }
 }
