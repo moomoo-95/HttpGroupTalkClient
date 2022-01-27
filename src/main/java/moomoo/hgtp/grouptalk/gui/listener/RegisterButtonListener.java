@@ -1,7 +1,6 @@
 package moomoo.hgtp.grouptalk.gui.listener;
 
 import moomoo.hgtp.grouptalk.config.ConfigManager;
-import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.HgtpRegisterRequest;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
@@ -23,9 +22,9 @@ public class RegisterButtonListener implements ActionListener {
         AppInstance appInstance = AppInstance.getInstance();
         ConfigManager configManager = appInstance.getConfigManager();
 
-        // Send Register
+        // create request Register
         HgtpRegisterRequest hgtpRegisterRequest = new HgtpRegisterRequest(
-                AppInstance.MAGIC_COOKIE, HgtpMessageType.REGISTER, appInstance.getUserId(),
+                AppInstance.MAGIC_COOKIE, appInstance.getUserId(),
                 AppInstance.SEQ_INCREMENT, TimeStamp.getCurrentTime().getSeconds(),
                 configManager.getHgtpExpireTime(), configManager.getLocalListenIp(), configManager.getHgtpListenPort()
         );

@@ -3,6 +3,7 @@ package moomoo.hgtp.grouptalk.protocol.hgtp.message.request;
 import moomoo.hgtp.grouptalk.protocol.hgtp.exception.HgtpException;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpHeader;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessage;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
 
 public class HgtpUnregisterRequest extends HgtpMessage {
 
@@ -21,8 +22,8 @@ public class HgtpUnregisterRequest extends HgtpMessage {
         }
     }
 
-    public HgtpUnregisterRequest(short magicCookie, short messageType, String userId, int seqNumber, long timeStamp) {
-        this.hgtpHeader = new HgtpHeader(magicCookie, messageType, messageType, userId, seqNumber, timeStamp, 0);
+    public HgtpUnregisterRequest(short magicCookie, String userId, int seqNumber, long timeStamp) {
+        this.hgtpHeader = new HgtpHeader(magicCookie, HgtpMessageType.UNREGISTER, HgtpMessageType.UNREGISTER, userId, seqNumber, timeStamp, 0);
     }
 
     @Override

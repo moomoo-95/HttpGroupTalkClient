@@ -54,10 +54,6 @@ public class HgtpResponseHandler {
 
             switch (hgtpHeader.getRequestType()) {
                 case HgtpMessageType.REGISTER:
-                    // todo register 등록시 저장되도록 설정
-//                    httpTargetAddress = new NetAddress(appInstance.getConfigManager().getTargetListenIp(), configManager.getHttpListenPort(), true, SocketProtocol.TCP);
-//                    networkManager.getHttpGroupSocket().getDestination()
-//                    hgtpGroupSocket.addDestination(hgtpTargetAddress, null, AppInstance.SERVER_SESSION_ID, hgtpChannelInitializer);
                     controlPanel.setRegisterButtonStatus();
                     break;
                 case HgtpMessageType.CREATE_ROOM:
@@ -65,6 +61,13 @@ public class HgtpResponseHandler {
                     break;
                 case HgtpMessageType.DELETE_ROOM:
                     controlPanel.setDeleteRoomButtonStatus();
+                    sessionManager.getUserInfo(appInstance.getUserId()).initRoomId();
+                    break;
+                case HgtpMessageType.JOIN_ROOM:
+                    controlPanel.setJoinRoomButtonStatus();
+                    break;
+                case HgtpMessageType.EXIT_ROOM:
+                    controlPanel.setExitRoomButtonStatus();
                     sessionManager.getUserInfo(appInstance.getUserId()).initRoomId();
                     break;
                 default:
@@ -91,17 +94,19 @@ public class HgtpResponseHandler {
 
             switch (hgtpHeader.getRequestType()) {
                 case HgtpMessageType.REGISTER:
-                    // todo register 등록 실패 상태
                     break;
                 case HgtpMessageType.UNREGISTER:
-                    // todo register 등록 해제 실패 상태
                     controlPanel.setInitButtonStatus();
                     break;
                 case HgtpMessageType.CREATE_ROOM:
                     sessionManager.getUserInfo(appInstance.getUserId()).initRoomId();
                     break;
                 case HgtpMessageType.DELETE_ROOM:
-                    // todo delete room 실패 상태
+                    break;
+                case HgtpMessageType.JOIN_ROOM:
+                    sessionManager.getUserInfo(appInstance.getUserId()).initRoomId();
+                    break;
+                case HgtpMessageType.EXIT_ROOM:
                     break;
                 default:
             }
@@ -152,7 +157,7 @@ public class HgtpResponseHandler {
 
             // Send Register
             HgtpRegisterRequest hgtpRegisterRequest = new HgtpRegisterRequest(
-                    AppInstance.MAGIC_COOKIE, HgtpMessageType.REGISTER, appInstance.getUserId(),
+                    AppInstance.MAGIC_COOKIE, appInstance.getUserId(),
                     hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, TimeStamp.getCurrentTime().getSeconds(),
                     configManager.getHgtpExpireTime(), configManager.getLocalListenIp(), (short) userInfo.getHttpServerNetAddress().getPort()
             );
@@ -182,17 +187,19 @@ public class HgtpResponseHandler {
 
             switch (hgtpHeader.getRequestType()) {
                 case HgtpMessageType.REGISTER:
-                    // todo register 등록 실패 상태
                     break;
                 case HgtpMessageType.UNREGISTER:
-                    // todo register 등록 해제 실패 상태
                     controlPanel.setInitButtonStatus();
                     break;
                 case HgtpMessageType.CREATE_ROOM:
                     sessionManager.getUserInfo(appInstance.getUserId()).initRoomId();
                     break;
                 case HgtpMessageType.DELETE_ROOM:
-                    // todo delete room 실패 상태
+                    break;
+                case HgtpMessageType.JOIN_ROOM:
+                    sessionManager.getUserInfo(appInstance.getUserId()).initRoomId();
+                    break;
+                case HgtpMessageType.EXIT_ROOM:
                     break;
                 default:
             }

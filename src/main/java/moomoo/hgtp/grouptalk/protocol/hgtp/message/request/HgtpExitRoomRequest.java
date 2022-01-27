@@ -3,6 +3,7 @@ package moomoo.hgtp.grouptalk.protocol.hgtp.message.request;
 import moomoo.hgtp.grouptalk.protocol.hgtp.exception.HgtpException;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpHeader;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessage;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.content.HgtpRoomContent;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 
@@ -30,9 +31,9 @@ public class HgtpExitRoomRequest extends HgtpMessage {
         }
     }
 
-    public HgtpExitRoomRequest(short magicCookie, short messageType, String userId, int seqNumber, long timeStamp, String roomId) {
+    public HgtpExitRoomRequest(short magicCookie, String userId, int seqNumber, long timeStamp, String roomId) {
         this.hgtpContent = new HgtpRoomContent(roomId);
-        this.hgtpHeader = new HgtpHeader(magicCookie, messageType, messageType, userId, seqNumber, timeStamp, hgtpContent.getBodyLength());
+        this.hgtpHeader = new HgtpHeader(magicCookie, HgtpMessageType.EXIT_ROOM, HgtpMessageType.EXIT_ROOM, userId, seqNumber, timeStamp, hgtpContent.getBodyLength());
     }
 
     @Override

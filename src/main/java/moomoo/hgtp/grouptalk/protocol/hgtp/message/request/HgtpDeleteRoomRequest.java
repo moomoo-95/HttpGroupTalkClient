@@ -3,6 +3,7 @@ package moomoo.hgtp.grouptalk.protocol.hgtp.message.request;
 import moomoo.hgtp.grouptalk.protocol.hgtp.exception.HgtpException;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpHeader;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessage;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.content.HgtpRoomContent;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 
@@ -30,9 +31,9 @@ public class HgtpDeleteRoomRequest extends HgtpMessage {
         }
     }
 
-    public HgtpDeleteRoomRequest(short magicCookie, short messageType, String userId, int seqNumber, long timeStamp, String roomId) {
+    public HgtpDeleteRoomRequest(short magicCookie, String userId, int seqNumber, long timeStamp, String roomId) {
         this.hgtpContent = new HgtpRoomContent(roomId);
-        this.hgtpHeader = new HgtpHeader(magicCookie, messageType, messageType, userId, seqNumber, timeStamp, hgtpContent.getBodyLength());
+        this.hgtpHeader = new HgtpHeader(magicCookie, HgtpMessageType.DELETE_ROOM, HgtpMessageType.DELETE_ROOM, userId, seqNumber, timeStamp, hgtpContent.getBodyLength());
 
     }
 

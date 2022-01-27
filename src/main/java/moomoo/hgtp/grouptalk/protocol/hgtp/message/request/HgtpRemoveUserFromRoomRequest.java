@@ -3,6 +3,7 @@ package moomoo.hgtp.grouptalk.protocol.hgtp.message.request;
 import moomoo.hgtp.grouptalk.protocol.hgtp.exception.HgtpException;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpHeader;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessage;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.content.HgtpRoomManagerContent;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 
@@ -30,9 +31,9 @@ public class HgtpRemoveUserFromRoomRequest extends HgtpMessage {
         }
     }
 
-    public HgtpRemoveUserFromRoomRequest(short magicCookie, short messageType, String userId, int seqNumber, long timeStamp, String roomId, String peerUserId) {
+    public HgtpRemoveUserFromRoomRequest(short magicCookie, String userId, int seqNumber, long timeStamp, String roomId, String peerUserId) {
         this.hgtpContent = new HgtpRoomManagerContent(roomId, peerUserId);
-        this.hgtpHeader = new HgtpHeader(magicCookie, messageType, messageType, userId, seqNumber, timeStamp, hgtpContent.getBodyLength());
+        this.hgtpHeader = new HgtpHeader(magicCookie, HgtpMessageType.REMOVE_USER_FROM_ROOM, HgtpMessageType.REMOVE_USER_FROM_ROOM, userId, seqNumber, timeStamp, hgtpContent.getBodyLength());
     }
 
     @Override

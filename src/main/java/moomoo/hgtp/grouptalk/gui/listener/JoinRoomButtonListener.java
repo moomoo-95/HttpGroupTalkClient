@@ -1,8 +1,12 @@
 package moomoo.hgtp.grouptalk.gui.listener;
 
-import moomoo.hgtp.grouptalk.config.ConfigManager;
+import moomoo.hgtp.grouptalk.gui.GuiManager;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.HgtpJoinRoomRequest;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
+import moomoo.hgtp.grouptalk.session.SessionManager;
+import moomoo.hgtp.grouptalk.session.base.UserInfo;
+import org.apache.commons.net.ntp.TimeStamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,11 +17,33 @@ public class JoinRoomButtonListener implements ActionListener {
 
     private static final Logger log = LoggerFactory.getLogger(JoinRoomButtonListener.class);
 
+    private static SessionManager sessionManager = SessionManager.getInstance();
+
     private final HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();
 
     @Override
     public void actionPerformed(ActionEvent e) {
         AppInstance appInstance = AppInstance.getInstance();
-        ConfigManager configManager = appInstance.getConfigManager();
+
+        UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
+
+        if (!userInfo.getRoomId().equals("")) {
+            log.warn("({}) ({}) () UserInfo has already join the room.", userInfo.getUserId(), userInfo.getRoomId());
+            return;
+        }
+
+        String roomId = GuiManager.getInstance().getRoomListPanel().getFocusRoomId();
+        if (roomId.equals("")) {
+            log.debug("({}) () () UserInfo haven't chosen a room yet.", userInfo.getUserId());
+            return;
+        }
+
+        // create request join room
+        HgtpJoinRoomRequest hgtpJoinRoomRequest = new HgtpJoinRoomRequest(
+                AppInstance.MAGIC_COOKIE, appInstance.getUserId(),
+                AppInstance.SEQ_INCREMENT, TimeStamp.getCurrentTime().getSeconds(), roomId
+        );
+
+        hgtpRequestHandler.sendJoinRoomRequest(hgtpJoinRoomRequest);
     }
 }

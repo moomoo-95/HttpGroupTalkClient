@@ -72,7 +72,7 @@ public class ControlPanel extends JPanel {
         createRoomButton.setEnabled(false);
         deleteRoomButton.setEnabled(true);
         joinRoomButton.setEnabled(false);
-        exitRoomButton.setEnabled(true);
+        exitRoomButton.setEnabled(false);
         inviteUserFromRoomButton.setEnabled(true);
         removeUserFromRoomButton.setEnabled(true);
     }
@@ -95,6 +95,17 @@ public class ControlPanel extends JPanel {
         deleteRoomButton.setEnabled(false);
         joinRoomButton.setEnabled(false);
         exitRoomButton.setEnabled(true);
+        inviteUserFromRoomButton.setEnabled(false);
+        removeUserFromRoomButton.setEnabled(false);
+    }
+
+    public void setExitRoomButtonStatus(){
+        registerButton.setEnabled(false);
+        unregisterButton.setEnabled(false);
+        createRoomButton.setEnabled(true);
+        deleteRoomButton.setEnabled(false);
+        joinRoomButton.setEnabled(true);
+        exitRoomButton.setEnabled(false);
         inviteUserFromRoomButton.setEnabled(false);
         removeUserFromRoomButton.setEnabled(false);
     }

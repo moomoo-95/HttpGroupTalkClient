@@ -139,6 +139,9 @@ public class SessionManager {
         synchronized (roomInfoHashMap) {
             roomInfoHashMap.put(roomId, roomInfo);
         }
+        UserInfo userInfo = getUserInfo(managerId);
+        userInfo.setRoomId(roomId);
+
         log.debug("({}) ({}) () RoomInfo is created.", managerId, roomId);
         return  HgtpMessageType.OK;
     }
@@ -153,22 +156,29 @@ public class SessionManager {
             log.warn("({}) ({}) () RoomInfo already deleted.", managerId, roomId);
             return HgtpMessageType.BAD_REQUEST;
         }
-        if (!roomInfoHashMap.get(roomId).getManagerId().equals(managerId)) {
+        RoomInfo roomInfo = roomInfoHashMap.get(roomId);
+        if (!roomInfo.getManagerId().equals(managerId)) {
             log.warn("({}) ({}) () UserInfo is not room manager.", managerId, roomId);
             return HgtpMessageType.BAD_REQUEST;
         }
+        if (!roomInfo.isUserGroupSetEmpty()) {
+            log.warn("({}) ({}) () UserInfo is not empty", managerId, roomId);
+            return HgtpMessageType.BAD_REQUEST;
+        }
+
         if (roomInfoHashMap.containsKey(roomId)) {
             synchronized (roomInfoHashMap) {
                 roomInfoHashMap.remove(roomId);
             }
             log.debug("({}) ({}) () RoomInfo is deleted.", managerId, roomId);
         }
+        UserInfo userInfo = getUserInfo(managerId);
+        userInfo.initRoomId();
+
         return HgtpMessageType.OK;
     }
 
-    public int getUserInfoSize() {
-        return userInfoHashMap.size();
-    }
+    public int getUserInfoSize() { return userInfoHashMap.size(); }
 
     public int getRoomInfoSize() { return roomInfoHashMap.size(); }
 

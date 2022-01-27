@@ -76,7 +76,7 @@ public class HgtpTest {
 
             // send first Register
             HgtpRegisterRequest sendFirstHgtpRegisterRequest = new HgtpRegisterRequest(
-                    AppInstance.MAGIC_COOKIE, HgtpMessageType.REGISTER, userId, 4, TimeStamp.getCurrentTime().getSeconds(),
+                    AppInstance.MAGIC_COOKIE, userId, 4, TimeStamp.getCurrentTime().getSeconds(),
                     3600L, AppInstance.getInstance ().getConfigManager().getLocalListenIp(), (short) 5060);
             log.debug("RG1 SEND DATA : {}", sendFirstHgtpRegisterRequest);
 
@@ -113,7 +113,7 @@ public class HgtpTest {
             // send second Register
             HgtpHeader recvUnauthHeader = recvHgtpUnauthorizedResponse.getHgtpHeader();
             HgtpRegisterRequest sendSecondHgtpRegisterRequest = new HgtpRegisterRequest(
-                    AppInstance.MAGIC_COOKIE, HgtpMessageType.REGISTER, recvUnauthHeader.getUserId(),
+                    AppInstance.MAGIC_COOKIE, recvUnauthHeader.getUserId(),
                     recvUnauthHeader.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds(),
                     3600L, AppInstance.getInstance ().getConfigManager().getLocalListenIp(), (short) 5060);
             sendSecondHgtpRegisterRequest.getHgtpContent().setNonce(sendSecondHgtpRegisterRequest.getHgtpHeader(), nonce);
@@ -176,7 +176,7 @@ public class HgtpTest {
         try {
             // send Unregister
             HgtpUnregisterRequest sendHgtpUnregisterRequest = new HgtpUnregisterRequest(
-                    AppInstance.MAGIC_COOKIE, HgtpMessageType.UNREGISTER, userId, 7, TimeStamp.getCurrentTime().getSeconds());
+                    AppInstance.MAGIC_COOKIE, userId, 7, TimeStamp.getCurrentTime().getSeconds());
             log.debug("SEND DATA : {}", sendHgtpUnregisterRequest);
             // recv Unregister
             byte[] recvRequestUnregister = sendHgtpUnregisterRequest.getByteData();
@@ -219,7 +219,7 @@ public class HgtpTest {
         try {
             // send Create room
             HgtpCreateRoomRequest sendHgtpCreateRoomReqeust = new HgtpCreateRoomRequest(
-                    AppInstance.MAGIC_COOKIE, HgtpMessageType.CREATE_ROOM, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId
+                    AppInstance.MAGIC_COOKIE, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId
             );
             log.debug("SEND DATA : {}", sendHgtpCreateRoomReqeust);
 
@@ -264,7 +264,7 @@ public class HgtpTest {
         try {
             // send Delete room
             HgtpDeleteRoomRequest sendHgtpDeleteRoomReqeust = new HgtpDeleteRoomRequest(
-                    AppInstance.MAGIC_COOKIE, HgtpMessageType.DELETE_ROOM, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId
+                    AppInstance.MAGIC_COOKIE, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId
             );
             log.debug("SEND DATA : {}", sendHgtpDeleteRoomReqeust);
 
@@ -309,7 +309,7 @@ public class HgtpTest {
         try {
             // send Join room
             HgtpJoinRoomRequest sendHgtpJoinRoomReqeust = new HgtpJoinRoomRequest(
-                    AppInstance.MAGIC_COOKIE, HgtpMessageType.JOIN_ROOM, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId
+                    AppInstance.MAGIC_COOKIE, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId
             );
             log.debug("SEND DATA : {}", sendHgtpJoinRoomReqeust);
 
@@ -353,7 +353,7 @@ public class HgtpTest {
         try {
             // send Exit room
             HgtpExitRoomRequest sendHgtpExitRoomReqeust = new HgtpExitRoomRequest(
-                    AppInstance.MAGIC_COOKIE, HgtpMessageType.EXIT_ROOM, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId
+                    AppInstance.MAGIC_COOKIE, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId
             );
             log.debug("SEND DATA : {}", sendHgtpExitRoomReqeust);
 
@@ -397,7 +397,7 @@ public class HgtpTest {
         try {
             // send Exit room
             HgtpInviteUserFromRoomRequest sendHgtpInviteUserFromRoomRequest = new HgtpInviteUserFromRoomRequest(
-                    AppInstance.MAGIC_COOKIE, HgtpMessageType.INVITE_USER_FROM_ROOM, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId, peerUserId
+                    AppInstance.MAGIC_COOKIE, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId, peerUserId
             );
             log.debug("SEND DATA : {}", sendHgtpInviteUserFromRoomRequest);
 
@@ -443,7 +443,7 @@ public class HgtpTest {
         try {
             // send Exit room
             HgtpRemoveUserFromRoomRequest sendHgtpRemoveUserFromRoomRequest = new HgtpRemoveUserFromRoomRequest(
-                    AppInstance.MAGIC_COOKIE, HgtpMessageType.REMOVE_USER_FROM_ROOM, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId, peerUserId
+                    AppInstance.MAGIC_COOKIE, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId, peerUserId
             );
             log.debug("SEND DATA : {}", sendHgtpRemoveUserFromRoomRequest);
 

@@ -1,6 +1,5 @@
 package moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler;
 
-import moomoo.hgtp.grouptalk.gui.GuiManager;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpHeader;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
@@ -13,6 +12,7 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.handler.HgtpResponse
 import moomoo.hgtp.grouptalk.protocol.http.handler.HttpRequestMessageHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
+import moomoo.hgtp.grouptalk.session.base.RoomInfo;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
 import network.definition.DestinationRecord;
 import org.slf4j.Logger;
@@ -26,6 +26,7 @@ public class HgtpRequestHandler {
     private static final String DATA_NULL_LOG = "() () () header or content is null [{}]";
     private static final String DEST_CH_NULL_LOG = "({}) () () DestinationRecord Channel is null.";
     private static final String USER_UNREG_LOG = "{} UserInfo is unregister";
+    private static final String ROOM_DEL_LOG = "{} RoomInfo is deleted";
 
     private static AppInstance appInstance = AppInstance.getInstance();
     private static SessionManager sessionManager = SessionManager.getInstance();
@@ -289,14 +290,112 @@ public class HgtpRequestHandler {
         }
     }
 
-    public boolean joinRoomRequestProcessing(HgtpJoinRoomRequest hgtpJoinRoomRequest) {
-        log.debug(RECV_LOG, hgtpJoinRoomRequest.getHgtpHeader().getUserId(), hgtpJoinRoomRequest);
-        return true;
+    /**
+     * @fn joinRoomRequestProcessing
+     * @brief join room 수신시 처리하는 메서드 (server, proxy는 처리, client 는 오류메시지 전송)
+     * @param hgtpJoinRoomRequest
+     */
+    public void joinRoomRequestProcessing(HgtpJoinRoomRequest hgtpJoinRoomRequest) {
+        HgtpHeader hgtpHeader = hgtpJoinRoomRequest.getHgtpHeader();
+        HgtpRoomContent hgtpRoomContent = hgtpJoinRoomRequest.getHgtpContent();
+
+        if (hgtpHeader == null || hgtpRoomContent == null) {
+            log.debug(DATA_NULL_LOG, hgtpJoinRoomRequest);
+            return;
+        }
+        log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpJoinRoomRequest);
+
+        // client 일 경우 bad request 전송
+        if (appInstance.getMode() == AppInstance.CLIENT_MODE) {
+            HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
+                    AppInstance.MAGIC_COOKIE, HgtpMessageType.BAD_REQUEST, hgtpHeader.getRequestType(),
+                    hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+
+            hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
+            return;
+        }
+
+        String roomId = hgtpRoomContent.getRoomId();
+        String userId = hgtpHeader.getUserId();
+
+        UserInfo userInfo = sessionManager.getUserInfo(userId);
+        if (userInfo == null) {
+            log.debug(USER_UNREG_LOG, userId);
+            return;
+        }
+
+        RoomInfo roomInfo = sessionManager.getRoomInfo(roomId);
+        if (roomInfo == null) {
+            log.debug(ROOM_DEL_LOG, roomId);
+            return;
+        }
+
+        short messageType = userInfo.getRoomId().equals("") ? HgtpMessageType.OK : HgtpMessageType.BAD_REQUEST;
+
+        HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
+                AppInstance.MAGIC_COOKIE, messageType, hgtpHeader.getRequestType(),
+                userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+
+        hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
+
+        if (messageType == HgtpMessageType.OK) {
+            roomInfo.addUserGroupSet(userId);
+        }
     }
 
-    public boolean exitRoomRequestProcessing(HgtpExitRoomRequest hgtpExitRoomRequest) {
-        log.debug(RECV_LOG, hgtpExitRoomRequest.getHgtpHeader().getUserId(), hgtpExitRoomRequest);
-        return true;
+    /**
+     * @fn exitRoomRequestProcessing
+     * @brief exit room 수신시 처리하는 메서드 (server, proxy는 처리, client 는 오류메시지 전송)
+     * @param hgtpExitRoomRequest
+     */
+    public void exitRoomRequestProcessing(HgtpExitRoomRequest hgtpExitRoomRequest) {
+        HgtpHeader hgtpHeader = hgtpExitRoomRequest.getHgtpHeader();
+        HgtpRoomContent hgtpRoomContent = hgtpExitRoomRequest.getHgtpContent();
+
+        if (hgtpHeader == null || hgtpRoomContent == null) {
+            log.debug(DATA_NULL_LOG, hgtpExitRoomRequest);
+            return;
+        }
+        log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpExitRoomRequest);
+
+        // client 일 경우 bad request 전송
+        if (appInstance.getMode() == AppInstance.CLIENT_MODE) {
+            HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
+                    AppInstance.MAGIC_COOKIE, HgtpMessageType.BAD_REQUEST, hgtpHeader.getRequestType(),
+                    hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+
+            hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
+            return;
+        }
+
+        String roomId = hgtpRoomContent.getRoomId();
+        String userId = hgtpHeader.getUserId();
+
+        UserInfo userInfo = sessionManager.getUserInfo(userId);
+        if (userInfo == null) {
+            log.debug(USER_UNREG_LOG, userId);
+            return;
+        }
+
+        RoomInfo roomInfo = sessionManager.getRoomInfo(roomId);
+        if (roomInfo == null) {
+            log.debug(ROOM_DEL_LOG, roomId);
+            return;
+        }
+
+        // 방에 입장해 있을 때 && manager 가 아닐 때
+        short messageType = ( userInfo.getRoomId().equals("") || roomInfo.getManagerId().equals(userInfo) ) ? HgtpMessageType.BAD_REQUEST : HgtpMessageType.OK;
+
+
+        HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
+                AppInstance.MAGIC_COOKIE, messageType, hgtpHeader.getRequestType(),
+                userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+
+        hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
+
+        if (messageType == HgtpMessageType.OK) {
+            roomInfo.removeUserGroupSet(userId);
+        }
     }
 
     public boolean inviteUserFromRoomRequestProcessing(HgtpInviteUserFromRoomRequest hgtpInviteUserFromRoomRequest) {
@@ -330,14 +429,7 @@ public class HgtpRequestHandler {
         }
 
         byte[] data = hgtpRegisterRequest.getByteData();
-
-        UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
-        DestinationRecord destinationRecord = networkManager.getHgtpGroupSocket().getDestination(userInfo.getSessionId());
-        if (destinationRecord == null) {
-            log.warn(DEST_CH_NULL_LOG, appInstance.getUserId());
-        }
-
-        destinationRecord.getNettyChannel().sendData(data, data.length);
+        sendRequest(data);
         log.debug(SEND_LOG, appInstance.getUserId(), HgtpMessageType.REQUEST_HASHMAP.get(hgtpRegisterRequest.getHgtpHeader().getMessageType()), hgtpRegisterRequest);
     }
 
@@ -357,22 +449,13 @@ public class HgtpRequestHandler {
         }
 
         byte[] data = hgtpUnregisterRequest.getByteData();
-
-        UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
-        DestinationRecord destinationRecord = networkManager.getHgtpGroupSocket().getDestination(userInfo.getSessionId());
-        if (destinationRecord == null) {
-            log.warn(DEST_CH_NULL_LOG, appInstance.getUserId());
-        }
-
-        destinationRecord.getNettyChannel().sendData(data, data.length);
-
-        GuiManager.getInstance().getClientFrame().clientFrameInit();
+        sendRequest(data);
         log.debug(SEND_LOG, appInstance.getUserId(), HgtpMessageType.REQUEST_HASHMAP.get(hgtpUnregisterRequest.getHgtpHeader().getMessageType()), hgtpUnregisterRequest);
     }
 
     /**
      * @fn sendCreateRoomRequest
-     * @brief unregister 요청을 전송하는 메서드 (client, proxy 만 처리)
+     * @brief create room 요청을 전송하는 메서드 (client, proxy 만 처리)
      * @param hgtpCreateRoomRequest
      */
     public void sendCreateRoomRequest(HgtpCreateRoomRequest hgtpCreateRoomRequest) {
@@ -385,23 +468,16 @@ public class HgtpRequestHandler {
             return;
         }
 
+        sessionManager.getUserInfo(appInstance.getUserId()).setRoomId(hgtpCreateRoomRequest.getHgtpContent().getRoomId());
+
         byte[] data = hgtpCreateRoomRequest.getByteData();
-
-        UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
-        DestinationRecord destinationRecord = networkManager.getHgtpGroupSocket().getDestination(userInfo.getSessionId());
-        if (destinationRecord == null) {
-            log.warn(DEST_CH_NULL_LOG, appInstance.getUserId());
-        }
-
-        destinationRecord.getNettyChannel().sendData(data, data.length);
-
-        userInfo.setRoomId(hgtpCreateRoomRequest.getHgtpContent().getRoomId());
+        sendRequest(data);
         log.debug(SEND_LOG, appInstance.getUserId(), HgtpMessageType.REQUEST_HASHMAP.get(hgtpCreateRoomRequest.getHgtpHeader().getMessageType()), hgtpCreateRoomRequest);
     }
 
     /**
      * @fn sendDeleteRoomRequest
-     * @brief unregister 요청을 전송하는 메서드 (client, proxy 만 처리)
+     * @brief delete room 요청을 전송하는 메서드 (client, proxy 만 처리)
      * @param hgtpDeleteRoomRequest
      */
     public void sendDeleteRoomRequest(HgtpDeleteRoomRequest hgtpDeleteRoomRequest) {
@@ -415,7 +491,58 @@ public class HgtpRequestHandler {
         }
 
         byte[] data = hgtpDeleteRoomRequest.getByteData();
+        sendRequest(data);
+        log.debug(SEND_LOG, appInstance.getUserId(), HgtpMessageType.REQUEST_HASHMAP.get(hgtpDeleteRoomRequest.getHgtpHeader().getMessageType()), hgtpDeleteRoomRequest);
+    }
 
+    /**
+     * @fn sendJoinRoomRequest
+     * @brief join room 요청을 전송하는 메서드 (client, proxy 만 처리)
+     * @param hgtpJoinRoomRequest
+     */
+    public void sendJoinRoomRequest(HgtpJoinRoomRequest hgtpJoinRoomRequest) {
+        if (hgtpJoinRoomRequest.getHgtpHeader() == null || hgtpJoinRoomRequest.getHgtpContent() == null) {
+            log.warn(DATA_NULL_LOG, hgtpJoinRoomRequest);
+            return;
+        }
+        if (appInstance.getMode() == AppInstance.SERVER_MODE) {
+            log.warn("({}) () () The server cannot request create room.", hgtpJoinRoomRequest.getHgtpHeader().getUserId());
+            return;
+        }
+
+        sessionManager.getUserInfo(appInstance.getUserId()).setRoomId(hgtpJoinRoomRequest.getHgtpContent().getRoomId());
+
+        byte[] data = hgtpJoinRoomRequest.getByteData();
+        sendRequest(data);
+        log.debug(SEND_LOG, appInstance.getUserId(), HgtpMessageType.REQUEST_HASHMAP.get(hgtpJoinRoomRequest.getHgtpHeader().getMessageType()), hgtpJoinRoomRequest);
+    }
+
+    /**
+     * @fn sendExitRoomRequest
+     * @brief exit room 요청을 전송하는 메서드 (client, proxy 만 처리)
+     * @param hgtpExitRoomRequest
+     */
+    public void sendExitRoomRequest(HgtpExitRoomRequest hgtpExitRoomRequest) {
+        if (hgtpExitRoomRequest.getHgtpHeader() == null || hgtpExitRoomRequest.getHgtpContent() == null) {
+            log.warn(DATA_NULL_LOG, hgtpExitRoomRequest);
+            return;
+        }
+        if (appInstance.getMode() == AppInstance.SERVER_MODE) {
+            log.warn("({}) () () The server cannot request create room.", hgtpExitRoomRequest.getHgtpHeader().getUserId());
+            return;
+        }
+
+        byte[] data = hgtpExitRoomRequest.getByteData();
+        sendRequest(data);
+        log.debug(SEND_LOG, appInstance.getUserId(), HgtpMessageType.REQUEST_HASHMAP.get(hgtpExitRoomRequest.getHgtpHeader().getMessageType()), hgtpExitRoomRequest);
+    }
+
+    /**
+     * @fn sendRequest
+     * @brief byte array data 를 전송하는 메서드
+     * @param data
+     */
+    private void sendRequest(byte[] data) {
         UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
         DestinationRecord destinationRecord = networkManager.getHgtpGroupSocket().getDestination(userInfo.getSessionId());
         if (destinationRecord == null) {
@@ -423,7 +550,6 @@ public class HgtpRequestHandler {
         }
 
         destinationRecord.getNettyChannel().sendData(data, data.length);
-        log.debug(SEND_LOG, appInstance.getUserId(), HgtpMessageType.REQUEST_HASHMAP.get(hgtpDeleteRoomRequest.getHgtpHeader().getMessageType()), hgtpDeleteRoomRequest);
     }
 
 }
