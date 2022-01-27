@@ -5,20 +5,24 @@ import java.awt.*;
 
 public class ListPanel extends JPanel {
 
-    private final RoomListPanel roomListPanel = new RoomListPanel();
     private final UserListPanel userListPanel = new UserListPanel();
+    private final RoomListPanel roomListPanel = new RoomListPanel();
+    private final RoomUserListPanel roomUserListPanel = new RoomUserListPanel();
 
     public ListPanel() {
-        GridLayout gridLayout = new GridLayout(2, 1);
+        GridLayout gridLayout = new GridLayout(3, 1);
         gridLayout.setVgap(10);
         gridLayout.setHgap(5);
         setLayout(gridLayout);
 
-        this.add(roomListPanel);
         this.add(userListPanel);
+        this.add(roomListPanel);
+        this.add(roomUserListPanel);
     }
+
+    public UserListPanel getUserListPanel() { return userListPanel; }
 
     public RoomListPanel getRoomListPanel() { return roomListPanel; }
 
-    public UserListPanel getUserListPanel() { return userListPanel; }
+    public RoomUserListPanel getRoomUserListPanel() {return roomUserListPanel;}
 }

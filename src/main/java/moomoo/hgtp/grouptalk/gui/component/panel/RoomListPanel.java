@@ -8,7 +8,7 @@ import java.util.HashSet;
 
 public class RoomListPanel extends JPanel {
 
-    private final JList<String> playlistView = new JList<>();
+    private final JList<String> roomListView = new JList<>();
     private final DefaultListModel<String> model = new DefaultListModel<>();
 
     private String focusRoomId = "";
@@ -30,14 +30,14 @@ public class RoomListPanel extends JPanel {
 
 
     private void initRoomListView() {
-        playlistView.setModel(model);
-        playlistView.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        playlistView.addMouseListener(new MouseInputAdapter() {
+        roomListView.setModel(model);
+        roomListView.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        roomListView.addMouseListener(new MouseInputAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
-                    int index = playlistView.locationToIndex(e.getPoint());
-                    playlistView.setSelectedIndex(index);
+                    int index = roomListView.locationToIndex(e.getPoint());
+                    roomListView.setSelectedIndex(index);
                     if (index >= 0 && index < model.size()) {
                         focusRoomId = model.get(index);
                     }
@@ -45,7 +45,7 @@ public class RoomListPanel extends JPanel {
             }
         });
 
-        this.add(new JScrollPane(playlistView), BorderLayout.CENTER);
+        this.add(new JScrollPane(roomListView), BorderLayout.CENTER);
     }
 
     public void setRoomList(HashSet<String> roomList) {

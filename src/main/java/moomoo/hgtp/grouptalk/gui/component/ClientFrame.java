@@ -44,8 +44,9 @@ public class ClientFrame extends JFrame {
     }
 
 
-    public RoomListPanel getRoomListPanel() {return listPanel.getRoomListPanel(); }
     public UserListPanel getUserListPanel() {return listPanel.getUserListPanel(); }
+    public RoomListPanel getRoomListPanel() {return listPanel.getRoomListPanel(); }
+    public RoomUserListPanel getRoomUserListPanel() {return listPanel.getRoomUserListPanel(); }
 
     public RoomPanel getRoomPanel() { return roomPanel; }
 

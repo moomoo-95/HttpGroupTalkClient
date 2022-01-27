@@ -6,56 +6,54 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
 
-public class UserListPanel extends JPanel {
+public class RoomUserListPanel extends JPanel {
 
-    private final JList<String> userListView = new JList<>();
+    private final JList<String> roomUserListView = new JList<>();
     private final DefaultListModel<String> model = new DefaultListModel<>();
 
-    private String focusUserId = "";
+    private String focusRoomUserId = "";
 
-    public UserListPanel() {
+    public RoomUserListPanel() {
         BorderLayout borderLayout = new BorderLayout();
         borderLayout.setVgap(3);
         borderLayout.setHgap(3);
         setLayout(borderLayout);
 
-        JLabel roomlistName = new JLabel("USER LIST");
+        JLabel roomlistName = new JLabel("ROOM USER LIST");
         roomlistName.setHorizontalAlignment(JLabel.CENTER);
         roomlistName.setPreferredSize(new Dimension(this.getWidth(), 20));
         this.add(roomlistName, BorderLayout.NORTH);
 
         initUserListView();
-
     }
 
 
     private void initUserListView() {
-        userListView.setModel(model);
-        userListView.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        userListView.addMouseListener(new MouseInputAdapter() {
+        roomUserListView.setModel(model);
+        roomUserListView.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        roomUserListView.addMouseListener(new MouseInputAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
-                    int index = userListView.locationToIndex(e.getPoint());
-                    userListView.setSelectedIndex(index);
+                    int index = roomUserListView.locationToIndex(e.getPoint());
+                    roomUserListView.setSelectedIndex(index);
                     if (index >= 0 && index < model.size()) {
-                        focusUserId = model.get(index);
+                        focusRoomUserId = model.get(index);
                     }
                 }
             }
         });
 
-        this.add(new JScrollPane(userListView), BorderLayout.CENTER);
+        this.add(new JScrollPane(roomUserListView), BorderLayout.CENTER);
     }
 
-    public void setUserList(HashSet<String> userList) {
+    public void setRoomUserList(HashSet<String> groupUserList) {
         model.clear();
 
-        if (userList != null) {
-            userList.forEach( value -> model.addElement(value));
+        if (groupUserList != null) {
+            groupUserList.forEach( value -> model.addElement(value));
         }
-
     }
 
-    public String getFocusUserId() { return focusUserId; }
+    public String getFocusRoomUserId() { return focusRoomUserId; }
 }
