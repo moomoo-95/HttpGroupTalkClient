@@ -5,6 +5,7 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.handler.HgtpResponse
 import moomoo.hgtp.grouptalk.protocol.http.handler.HttpRequestMessageHandler;
 import moomoo.hgtp.grouptalk.protocol.http.message.HttpMessageFactory;
 import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpRoomListContent;
+import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpUserListContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.module.ConcurrentCyclicFIFO;
@@ -65,6 +66,8 @@ public class HttpConsumer implements Runnable {
                     httpRequestMessageHandler.receiveRoomListRequest(roomListContent);
                     break;
                 case USER_LIST:
+                    HttpUserListContent userListContent = HttpMessageFactory.createHttpUserListContent(httpContent);
+                    httpRequestMessageHandler.receiveUserListRequest(userListContent);
                     break;
                 case NOTICE:
                     break;

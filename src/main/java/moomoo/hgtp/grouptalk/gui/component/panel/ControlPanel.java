@@ -13,8 +13,8 @@ public class ControlPanel extends JPanel {
     private JButton deleteRoomButton = new JButton("DELETE ROOM");
     private JButton joinRoomButton = new JButton("JOIN ROOM");
     private JButton exitRoomButton = new JButton("EXIT ROOM");
-    private JButton inviteUserFromRoomButton = new JButton("INVITE USER FROM ROOM");
-    private JButton removeUserFromRoomButton = new JButton("REMOVE USER FROM ROOM");
+    private JButton inviteUserFromRoomButton = new JButton("INVITE USER");
+    private JButton removeUserFromRoomButton = new JButton("REMOVE USER");
 
     public ControlPanel() {
         GridLayout gridLayout = new GridLayout(4, 2);

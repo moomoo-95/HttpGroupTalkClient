@@ -32,7 +32,6 @@ public class CreateRoomButtonListener implements ActionListener {
             log.debug("({}) ({}) () UserInfo are already in the room.", userInfo.getUserId(), userInfo.getRoomId());
         } else {
             String roomId = CnameGenerator.generateCnameRoomId();
-            userInfo.setRoomId(roomId);
 
             // Send create room
             HgtpCreateRoomRequest hgtpCreateRoomRequest = new HgtpCreateRoomRequest(

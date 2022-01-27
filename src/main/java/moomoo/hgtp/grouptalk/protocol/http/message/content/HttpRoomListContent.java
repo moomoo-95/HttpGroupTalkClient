@@ -15,9 +15,6 @@ public class HttpRoomListContent extends HttpMessage {
     public void addAllRoomList(HashSet<String> roomKeySet) {
         roomListSet.addAll(roomKeySet);
     }
-    public void addRoomList(String roomId) {
-        roomListSet.add(roomId);
-    }
 
     public boolean isEmpty() { return roomListSet.isEmpty(); }
     public HashSet<String> getRoomListSet() { return roomListSet; }

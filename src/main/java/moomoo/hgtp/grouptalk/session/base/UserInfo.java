@@ -1,5 +1,6 @@
 package moomoo.hgtp.grouptalk.session.base;
 
+import moomoo.hgtp.grouptalk.gui.GuiManager;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
 import network.definition.NetAddress;
 import network.socket.SocketProtocol;
@@ -71,6 +72,13 @@ public class UserInfo {
     public void setRegister() {isRegister = true;}
 
     public String getRoomId() {return roomId;}
-    public void setRoomId(String roomId) {this.roomId = roomId;}
-    public void initRoomId() { this.roomId = ""; }
+    public void setRoomId(String roomId) {
+        this.roomId = roomId;
+        GuiManager.getInstance().getRoomPanel().setRoomName(roomId);
+    }
+
+    public void initRoomId() {
+        this.roomId = "";
+        GuiManager.getInstance().getRoomPanel().setRoomName("");
+    }
 }

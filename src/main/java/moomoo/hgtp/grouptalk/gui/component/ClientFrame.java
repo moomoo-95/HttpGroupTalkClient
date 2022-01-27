@@ -1,7 +1,6 @@
 package moomoo.hgtp.grouptalk.gui.component;
 
-import moomoo.hgtp.grouptalk.gui.component.panel.ControlPanel;
-import moomoo.hgtp.grouptalk.gui.component.panel.RoomListPanel;
+import moomoo.hgtp.grouptalk.gui.component.panel.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,8 +10,9 @@ public class ClientFrame extends JFrame {
     private static final int WIDTH = 1200;
     private static final int HEIGHT = 600;
 
+    private final ListPanel listPanel = new ListPanel();
+    private final RoomPanel roomPanel = new RoomPanel();
     private final ControlPanel controlPanel = new ControlPanel();
-    private final RoomListPanel roomListPanel = new RoomListPanel();
 
 
     public ClientFrame(String title) {
@@ -28,14 +28,26 @@ public class ClientFrame extends JFrame {
         BorderLayout borderLayout = new BorderLayout();
         setLayout(borderLayout);
 
-        add(roomListPanel, BorderLayout.CENTER);
+        add(listPanel, BorderLayout.WEST);
+        add(roomPanel, BorderLayout.CENTER);
         add(controlPanel, BorderLayout.EAST);
 
         // 보이게 설정
         setVisible(true);
     }
 
-    public ControlPanel getControlPanel() {return controlPanel;}
+    public void clientFrameInit() {
+        getRoomListPanel().setRoomList(null);
+        getUserListPanel().setUserList(null);
+        getControlPanel().setInitButtonStatus();
 
-    public RoomListPanel getRoomListPanel() {return roomListPanel;}
+    }
+
+
+    public RoomListPanel getRoomListPanel() {return listPanel.getRoomListPanel(); }
+    public UserListPanel getUserListPanel() {return listPanel.getUserListPanel(); }
+
+    public RoomPanel getRoomPanel() { return roomPanel; }
+
+    public ControlPanel getControlPanel() {return controlPanel;}
 }

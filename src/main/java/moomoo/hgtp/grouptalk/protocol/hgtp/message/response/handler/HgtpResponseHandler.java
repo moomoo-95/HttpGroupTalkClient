@@ -35,6 +35,11 @@ public class HgtpResponseHandler {
         // nothing
     }
 
+    /**
+     * @fn okResponseProcessing
+     * @brief ok 수신시 처리하는 메서드
+     * @param hgtpOkResponse
+     */
     public void okResponseProcessing(HgtpCommonResponse hgtpOkResponse) {
         HgtpHeader hgtpHeader = hgtpOkResponse.getHgtpHeader();
         log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpOkResponse);
@@ -55,9 +60,6 @@ public class HgtpResponseHandler {
 //                    hgtpGroupSocket.addDestination(hgtpTargetAddress, null, AppInstance.SERVER_SESSION_ID, hgtpChannelInitializer);
                     controlPanel.setRegisterButtonStatus();
                     break;
-                case HgtpMessageType.UNREGISTER:
-                    controlPanel.setInitButtonStatus();
-                    break;
                 case HgtpMessageType.CREATE_ROOM:
                     controlPanel.setCreateRoomButtonStatus();
                     break;
@@ -70,6 +72,11 @@ public class HgtpResponseHandler {
         }
     }
 
+    /**
+     * @fn badRequestResponseProcessing
+     * @brief badRequest 수신시 처리하는 메서드
+     * @param hgtpBadRequestResponse
+     */
     public void badRequestResponseProcessing(HgtpCommonResponse hgtpBadRequestResponse) {
         HgtpHeader hgtpHeader = hgtpBadRequestResponse.getHgtpHeader();
         log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpBadRequestResponse);
@@ -102,6 +109,11 @@ public class HgtpResponseHandler {
 
     }
 
+    /**
+     * @fn unauthorizedResponseProcessing
+     * @brief unauthorized 수신시 처리하는 메서드
+     * @param hgtpUnauthorizedResponse
+     */
     public void unauthorizedResponseProcessing(HgtpUnauthorizedResponse hgtpUnauthorizedResponse) {
         ConfigManager configManager = appInstance.getConfigManager();
 
