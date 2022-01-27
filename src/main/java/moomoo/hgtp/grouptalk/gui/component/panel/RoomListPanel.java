@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.util.HashSet;
 
 public class RoomListPanel extends JPanel {
 
@@ -47,13 +48,11 @@ public class RoomListPanel extends JPanel {
         this.add(new JScrollPane(playlistView), BorderLayout.CENTER);
     }
 
-    public void setRoomList(String[] roomList) {
+    public void setRoomList(HashSet<String> roomList) {
         model.clear();
 
         if (roomList != null) {
-            for (int index = 0; index < roomList.length; index++) {
-                model.addElement(roomList[index]);
-            }
+            roomList.forEach( value -> model.addElement(value));
         }
 
     }

@@ -1,9 +1,10 @@
 package moomoo.hgtp.grouptalk.protocol.http;
 
-
-import io.netty.handler.codec.http.HttpObject;
 import moomoo.hgtp.grouptalk.config.ConfigManager;
+import moomoo.hgtp.grouptalk.protocol.http.base.HttpMessageType;
 import moomoo.hgtp.grouptalk.service.AppInstance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import util.module.ConcurrentCyclicFIFO;
 
 import java.util.concurrent.ExecutorService;
@@ -11,10 +12,12 @@ import java.util.concurrent.Executors;
 
 public class HttpManager {
 
+    private static final Logger log = LoggerFactory.getLogger(HttpManager.class);
+
     private static HttpManager httpManager = null;
 
     private final ExecutorService executorService;
-    private final ConcurrentCyclicFIFO<HttpObject> httpQueue;
+    private final ConcurrentCyclicFIFO<Object[]> httpQueue;
 
     private ConfigManager configManager = AppInstance.getInstance().getConfigManager();
 
@@ -41,7 +44,11 @@ public class HttpManager {
     }
 
 
-    public void putMessage(HttpObject httpObject) {
+    public void putMessage(Object[] httpObject) {
+        if (httpObject.length != HttpMessageType.PARSE_SIZE) {
+            log.warn("HttpMessage is too long. ({}) {}", httpObject.length, httpObject);
+            return;
+        }
         this.httpQueue.offer(httpObject);
     }
 }
