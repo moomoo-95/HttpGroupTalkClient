@@ -1,5 +1,6 @@
 package moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler;
 
+import moomoo.hgtp.grouptalk.gui.GuiManager;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpHeader;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
@@ -222,7 +223,8 @@ public class HgtpRequestHandler {
         String roomId = hgtpRoomContent.getRoomId();
         String userId = hgtpHeader.getUserId();
 
-        if (sessionManager.getUserInfo(userId) == null) {
+        UserInfo userInfo = sessionManager.getUserInfo(userId);
+        if (userInfo == null) {
             log.debug(USER_UNREG_LOG, userId);
             return;
         }
@@ -238,7 +240,8 @@ public class HgtpRequestHandler {
         if (messageType == HgtpMessageType.OK) {
             //현재 room list 전송
             HttpRequestMessageHandler httpRequestMessageHandler = new HttpRequestMessageHandler();
-            sessionManager.getUserInfoHashMap().forEach( (key, userInfo) -> httpRequestMessageHandler.sendRoomListRequest(userInfo));
+            sessionManager.getUserInfoHashMap().forEach( (key, value) -> httpRequestMessageHandler.sendRoomListRequest(value));
+            httpRequestMessageHandler.sendRoomUserListRequest(userInfo);
         }
     }
 
@@ -340,6 +343,14 @@ public class HgtpRequestHandler {
 
         if (messageType == HgtpMessageType.OK) {
             roomInfo.addUserGroupSet(userId);
+
+            HttpRequestMessageHandler httpRequestMessageHandler = new HttpRequestMessageHandler();
+            roomInfo.getUserGroupSet().forEach(roomUserId -> {
+                UserInfo roomUserInfo = sessionManager.getUserInfo(roomUserId);
+                if (roomUserInfo != null) {
+                    httpRequestMessageHandler.sendRoomUserListRequest(roomUserInfo);
+                }
+            });
         }
     }
 
@@ -395,6 +406,14 @@ public class HgtpRequestHandler {
 
         if (messageType == HgtpMessageType.OK) {
             roomInfo.removeUserGroupSet(userId);
+
+            HttpRequestMessageHandler httpRequestMessageHandler = new HttpRequestMessageHandler();
+            roomInfo.getUserGroupSet().forEach(roomUserId -> {
+                UserInfo roomUserInfo = sessionManager.getUserInfo(roomUserId);
+                if (roomUserInfo != null) {
+                    httpRequestMessageHandler.sendRoomUserListRequest(roomUserInfo);
+                }
+            });
         }
     }
 
@@ -429,7 +448,7 @@ public class HgtpRequestHandler {
         }
 
         byte[] data = hgtpRegisterRequest.getByteData();
-        sendRequest(data);
+        sendHgtpRequest(data);
         log.debug(SEND_LOG, appInstance.getUserId(), HgtpMessageType.REQUEST_HASHMAP.get(hgtpRegisterRequest.getHgtpHeader().getMessageType()), hgtpRegisterRequest);
     }
 
@@ -449,7 +468,9 @@ public class HgtpRequestHandler {
         }
 
         byte[] data = hgtpUnregisterRequest.getByteData();
-        sendRequest(data);
+        sendHgtpRequest(data);
+
+        GuiManager.getInstance().getClientFrame().clientFrameInit();
         log.debug(SEND_LOG, appInstance.getUserId(), HgtpMessageType.REQUEST_HASHMAP.get(hgtpUnregisterRequest.getHgtpHeader().getMessageType()), hgtpUnregisterRequest);
     }
 
@@ -471,7 +492,7 @@ public class HgtpRequestHandler {
         sessionManager.getUserInfo(appInstance.getUserId()).setRoomId(hgtpCreateRoomRequest.getHgtpContent().getRoomId());
 
         byte[] data = hgtpCreateRoomRequest.getByteData();
-        sendRequest(data);
+        sendHgtpRequest(data);
         log.debug(SEND_LOG, appInstance.getUserId(), HgtpMessageType.REQUEST_HASHMAP.get(hgtpCreateRoomRequest.getHgtpHeader().getMessageType()), hgtpCreateRoomRequest);
     }
 
@@ -491,7 +512,8 @@ public class HgtpRequestHandler {
         }
 
         byte[] data = hgtpDeleteRoomRequest.getByteData();
-        sendRequest(data);
+        sendHgtpRequest(data);
+
         log.debug(SEND_LOG, appInstance.getUserId(), HgtpMessageType.REQUEST_HASHMAP.get(hgtpDeleteRoomRequest.getHgtpHeader().getMessageType()), hgtpDeleteRoomRequest);
     }
 
@@ -513,7 +535,7 @@ public class HgtpRequestHandler {
         sessionManager.getUserInfo(appInstance.getUserId()).setRoomId(hgtpJoinRoomRequest.getHgtpContent().getRoomId());
 
         byte[] data = hgtpJoinRoomRequest.getByteData();
-        sendRequest(data);
+        sendHgtpRequest(data);
         log.debug(SEND_LOG, appInstance.getUserId(), HgtpMessageType.REQUEST_HASHMAP.get(hgtpJoinRoomRequest.getHgtpHeader().getMessageType()), hgtpJoinRoomRequest);
     }
 
@@ -533,16 +555,18 @@ public class HgtpRequestHandler {
         }
 
         byte[] data = hgtpExitRoomRequest.getByteData();
-        sendRequest(data);
+        sendHgtpRequest(data);
+
+        GuiManager.getInstance().getRoomUserListPanel().setRoomUserList(null);
         log.debug(SEND_LOG, appInstance.getUserId(), HgtpMessageType.REQUEST_HASHMAP.get(hgtpExitRoomRequest.getHgtpHeader().getMessageType()), hgtpExitRoomRequest);
     }
 
     /**
-     * @fn sendRequest
+     * @fn sendHgtpRequest
      * @brief byte array data 를 전송하는 메서드
      * @param data
      */
-    private void sendRequest(byte[] data) {
+    private void sendHgtpRequest(byte[] data) {
         UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
         DestinationRecord destinationRecord = networkManager.getHgtpGroupSocket().getDestination(userInfo.getSessionId());
         if (destinationRecord == null) {

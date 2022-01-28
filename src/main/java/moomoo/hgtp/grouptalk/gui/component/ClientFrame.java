@@ -37,8 +37,9 @@ public class ClientFrame extends JFrame {
     }
 
     public void clientFrameInit() {
-        getRoomListPanel().setRoomList(null);
         getUserListPanel().setUserList(null);
+        getRoomListPanel().setRoomList(null);
+        getRoomUserListPanel().setRoomUserList(null);
         getControlPanel().setInitButtonStatus();
 
     }

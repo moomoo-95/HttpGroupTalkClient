@@ -11,6 +11,7 @@ public class HttpMessageType {
     // header value
     public static final String ROOM_LIST = "room_list";
     public static final String USER_LIST = "user_list";
+    public static final String ROOM_USER_LIST = "room_user_list";
     public static final String MESSAGE = "message";
     public static final String NOTICE = "notice";
 

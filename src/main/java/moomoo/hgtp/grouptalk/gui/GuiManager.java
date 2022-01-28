@@ -27,7 +27,7 @@ public class GuiManager {
 
     public UserListPanel getUserListPanel() { return clientFrame.getUserListPanel(); }
     public RoomListPanel getRoomListPanel() { return clientFrame.getRoomListPanel(); }
-    public RoomUserListPanel getRoomUSerListPanel() { return clientFrame.getRoomUserListPanel(); }
+    public RoomUserListPanel getRoomUserListPanel() { return clientFrame.getRoomUserListPanel(); }
 
     public RoomPanel getRoomPanel() { return clientFrame.getRoomPanel(); }
 

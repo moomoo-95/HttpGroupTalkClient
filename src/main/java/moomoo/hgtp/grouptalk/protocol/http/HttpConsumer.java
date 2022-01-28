@@ -5,6 +5,7 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.handler.HgtpResponse
 import moomoo.hgtp.grouptalk.protocol.http.handler.HttpRequestMessageHandler;
 import moomoo.hgtp.grouptalk.protocol.http.message.HttpMessageFactory;
 import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpRoomListContent;
+import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpRoomUserListContent;
 import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpUserListContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,6 +69,10 @@ public class HttpConsumer implements Runnable {
                 case USER_LIST:
                     HttpUserListContent userListContent = HttpMessageFactory.createHttpUserListContent(httpContent);
                     httpRequestMessageHandler.receiveUserListRequest(userListContent);
+                    break;
+                case ROOM_USER_LIST:
+                    HttpRoomUserListContent roomUserListContent = HttpMessageFactory.createHttpRoomUserListContent(httpContent);
+                    httpRequestMessageHandler.receiveRoomUserListRequest(roomUserListContent);
                     break;
                 case NOTICE:
                     break;

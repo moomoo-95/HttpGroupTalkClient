@@ -5,12 +5,15 @@ import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.*;
 import moomoo.hgtp.grouptalk.gui.GuiManager;
 import moomoo.hgtp.grouptalk.gui.component.panel.RoomListPanel;
+import moomoo.hgtp.grouptalk.gui.component.panel.RoomUserListPanel;
 import moomoo.hgtp.grouptalk.gui.component.panel.UserListPanel;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
 import moomoo.hgtp.grouptalk.protocol.http.base.HttpMessageType;
 import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpRoomListContent;
+import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpRoomUserListContent;
 import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpUserListContent;
 import moomoo.hgtp.grouptalk.session.SessionManager;
+import moomoo.hgtp.grouptalk.session.base.RoomInfo;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
 import network.socket.GroupSocket;
 import network.socket.netty.tcp.NettyTcpClientChannel;
@@ -47,21 +50,7 @@ public class HttpRequestMessageHandler {
         request.headers().set(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes());
         request.content().writeBytes(byteBuf);
 
-        GroupSocket groupSocket = NetworkManager.getInstance().getHttpGroupSocket(userInfo.getUserId(), false);
-        if (groupSocket == null) {
-            return;
-        }
-        NettyTcpClientChannel clientChannel = (NettyTcpClientChannel) groupSocket.getDestination(userInfo.getSessionId()).getNettyChannel();
-        if (request != null) {
-            clientChannel.sendHttpRequest(request);
-            log.debug("[{}] -> [{}] -> [{}\n\n{}]",
-                    groupSocket.getListenSocket().getNetAddress().getPort(),
-                    groupSocket.getDestination(userInfo.getSessionId()).getGroupEndpointId().getGroupAddress().getPort(),
-                    request.headers().toString(), request.content().toString(StandardCharsets.UTF_8));
-            }
-
-        clientChannel.closeConnectChannel();
-        clientChannel.openConnectChannel(userInfo.getHttpTargetNetAddress().getInet4Address().getHostAddress(), userInfo.getHttpTargetNetAddress().getPort());
+        sendHttpRequest(request, userInfo);
     }
 
     /**
@@ -70,7 +59,7 @@ public class HttpRequestMessageHandler {
      * @param userInfo
      */
     public void sendUserListRequest(UserInfo userInfo) {
-        DefaultFullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, HttpMessageType.ROOM_LIST);
+        DefaultFullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, HttpMessageType.USER_LIST);
         HttpUserListContent httpUserListContent = new HttpUserListContent();
 
         setRequestHeader(request, userInfo, HttpMessageType.USER_LIST);
@@ -87,21 +76,35 @@ public class HttpRequestMessageHandler {
         request.headers().set(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes());
         request.content().writeBytes(byteBuf);
 
-        GroupSocket groupSocket = NetworkManager.getInstance().getHttpGroupSocket(userInfo.getUserId(), false);
-        if (groupSocket == null) {
-            return;
-        }
-        NettyTcpClientChannel clientChannel = (NettyTcpClientChannel) groupSocket.getDestination(userInfo.getSessionId()).getNettyChannel();
-        if (request != null) {
-            clientChannel.sendHttpRequest(request);
-            log.debug("[{}] -> [{}] -> [{}\n\n{}]",
-                    groupSocket.getListenSocket().getNetAddress().getPort(),
-                    groupSocket.getDestination(userInfo.getSessionId()).getGroupEndpointId().getGroupAddress().getPort(),
-                    request.headers().toString(), request.content().toString(StandardCharsets.UTF_8));
+        sendHttpRequest(request, userInfo);
+    }
+
+    /**
+     * @fn sendRoomUserListRequest
+     * @brief room 내 user list 정보를 client 에게 전송하는 메서드, user의 방 입장 퇴장 시 마다 해당 방의 클라이언트에게 전송
+     * @param userInfo
+     */
+    public void sendRoomUserListRequest(UserInfo userInfo) {
+        DefaultFullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, HttpMessageType.ROOM_USER_LIST);
+        HttpRoomUserListContent roomUserListContent = new HttpRoomUserListContent();
+
+        setRequestHeader(request, userInfo, HttpMessageType.ROOM_USER_LIST);
+        SessionManager sessionManager = SessionManager.getInstance();
+
+        RoomInfo roomInfo = sessionManager.getRoomInfo(userInfo.getRoomId());
+
+        if (roomInfo.getUserGroupSetSize() > 0) {
+            HashSet<String> userGroupSet = new HashSet<>(roomInfo.getUserGroupSet());
+            roomUserListContent.addAllRoomUserList(userGroupSet);
         }
 
-        clientChannel.closeConnectChannel();
-        clientChannel.openConnectChannel(userInfo.getHttpTargetNetAddress().getInet4Address().getHostAddress(), userInfo.getHttpTargetNetAddress().getPort());
+        String content = roomUserListContent.toString();
+
+        ByteBuf byteBuf = Unpooled.copiedBuffer(content, StandardCharsets.UTF_8);
+        request.headers().set(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes());
+        request.content().writeBytes(byteBuf);
+
+        sendHttpRequest(request, userInfo);
     }
 
     /**
@@ -134,10 +137,53 @@ public class HttpRequestMessageHandler {
         }
     }
 
+    /**
+     * @fn receiveRoomUserListRequest
+     * @brief server로 부터 받은 room 내 user list 정보를 통해 user list를 갱신하는 메서드
+     * @param roomUserListContent
+     */
+    public void receiveRoomUserListRequest(HttpRoomUserListContent roomUserListContent) {
+        RoomUserListPanel roomUserListPanel = GuiManager.getInstance().getRoomUserListPanel();
+
+        if (roomUserListContent.isEmpty()) {
+            roomUserListPanel.setRoomUserList(null);
+        } else {
+            roomUserListPanel.setRoomUserList(roomUserListContent.getRoomUserListSet());
+        }
+    }
+
+    /**
+     * @fn setRequestHeader
+     * @brief Http request message header를 설정하는 메서드
+     * @param request
+     * @param userInfo
+     * @param messageType
+     */
     private void setRequestHeader(DefaultFullHttpRequest request, UserInfo userInfo, String messageType) {
         request.headers().set(HttpHeaderNames.HOST, userInfo.getHttpClientNetAddress().getInet4Address().getHostAddress());
         request.headers().set(HttpHeaderNames.USER_AGENT, userInfo.getUserId());
         request.headers().set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
         request.headers().set(HttpMessageType.MESSAGE_TYPE, messageType);
+    }
+
+    /**
+     * @fn sendHttpRequest
+     * @brief byte array data 를 전송하는 메서드
+     * @param request
+     */
+    private void sendHttpRequest(DefaultFullHttpRequest request, UserInfo userInfo) {
+        GroupSocket groupSocket = NetworkManager.getInstance().getHttpGroupSocket(userInfo.getUserId(), false);
+        if (groupSocket == null) {
+            return;
+        }
+        NettyTcpClientChannel clientChannel = (NettyTcpClientChannel) groupSocket.getDestination(userInfo.getSessionId()).getNettyChannel();
+
+        clientChannel.sendHttpRequest(request);
+        log.debug("[{}] -> [{}] -> [{}\n\n{}]",
+                groupSocket.getListenSocket().getNetAddress().getPort(),
+                groupSocket.getDestination(userInfo.getSessionId()).getGroupEndpointId().getGroupAddress().getPort(),
+                request.headers().toString(), request.content().toString(StandardCharsets.UTF_8));
+        clientChannel.closeConnectChannel();
+        clientChannel.openConnectChannel(userInfo.getHttpTargetNetAddress().getInet4Address().getHostAddress(), userInfo.getHttpTargetNetAddress().getPort());
     }
 }

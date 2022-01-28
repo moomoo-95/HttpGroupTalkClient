@@ -50,11 +50,15 @@ public class HgtpResponseHandler {
         }
 
         if (appInstance.getMode() == AppInstance.CLIENT_MODE) {
-            ControlPanel controlPanel = GuiManager.getInstance().getControlPanel();
+            GuiManager guiManager = GuiManager.getInstance();
+            ControlPanel controlPanel = guiManager.getControlPanel();
 
             switch (hgtpHeader.getRequestType()) {
                 case HgtpMessageType.REGISTER:
                     controlPanel.setRegisterButtonStatus();
+                    break;
+                case HgtpMessageType.UNREGISTER:
+                    controlPanel.setInitButtonStatus();
                     break;
                 case HgtpMessageType.CREATE_ROOM:
                     controlPanel.setCreateRoomButtonStatus();
@@ -62,6 +66,7 @@ public class HgtpResponseHandler {
                 case HgtpMessageType.DELETE_ROOM:
                     controlPanel.setDeleteRoomButtonStatus();
                     sessionManager.getUserInfo(appInstance.getUserId()).initRoomId();
+                    guiManager.getRoomUserListPanel().setRoomUserList(null);
                     break;
                 case HgtpMessageType.JOIN_ROOM:
                     controlPanel.setJoinRoomButtonStatus();

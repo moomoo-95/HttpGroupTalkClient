@@ -61,7 +61,7 @@ public class RoomInfo {
         return userGroupSet.isEmpty();
     }
 
-    public int userGroupSetSize() {
+    public int getUserGroupSetSize() {
         return userGroupSet.size() + 1;
     }
 
