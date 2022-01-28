@@ -34,7 +34,7 @@ public class JoinRoomButtonListener implements ActionListener {
 
         String roomId = GuiManager.getInstance().getRoomListPanel().getFocusRoomId();
         if (roomId.equals("")) {
-            log.debug("({}) () () UserInfo haven't chosen a room yet.", userInfo.getUserId());
+            log.warn("({}) () () UserInfo haven't chosen a room yet.", userInfo.getUserId());
             return;
         }
 

@@ -66,7 +66,7 @@ public class HgtpResponseHandler {
                 case HgtpMessageType.DELETE_ROOM:
                     controlPanel.setDeleteRoomButtonStatus();
                     sessionManager.getUserInfo(appInstance.getUserId()).initRoomId();
-                    guiManager.getRoomUserListPanel().setRoomUserList(null);
+                    guiManager.roomInit();
                     break;
                 case HgtpMessageType.JOIN_ROOM:
                     controlPanel.setJoinRoomButtonStatus();

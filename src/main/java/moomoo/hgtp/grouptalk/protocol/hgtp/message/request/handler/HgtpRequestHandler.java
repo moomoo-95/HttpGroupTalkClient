@@ -470,7 +470,7 @@ public class HgtpRequestHandler {
         byte[] data = hgtpUnregisterRequest.getByteData();
         sendHgtpRequest(data);
 
-        GuiManager.getInstance().getClientFrame().clientFrameInit();
+        GuiManager.getInstance().clientFrameInit();
         log.debug(SEND_LOG, appInstance.getUserId(), HgtpMessageType.REQUEST_HASHMAP.get(hgtpUnregisterRequest.getHgtpHeader().getMessageType()), hgtpUnregisterRequest);
     }
 
@@ -557,7 +557,7 @@ public class HgtpRequestHandler {
         byte[] data = hgtpExitRoomRequest.getByteData();
         sendHgtpRequest(data);
 
-        GuiManager.getInstance().getRoomUserListPanel().setRoomUserList(null);
+        GuiManager.getInstance().roomInit();
         log.debug(SEND_LOG, appInstance.getUserId(), HgtpMessageType.REQUEST_HASHMAP.get(hgtpExitRoomRequest.getHgtpHeader().getMessageType()), hgtpExitRoomRequest);
     }
 

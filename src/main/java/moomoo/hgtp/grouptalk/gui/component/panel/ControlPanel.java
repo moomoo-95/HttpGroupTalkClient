@@ -1,5 +1,6 @@
 package moomoo.hgtp.grouptalk.gui.component.panel;
 
+import moomoo.hgtp.grouptalk.gui.GuiManager;
 import moomoo.hgtp.grouptalk.gui.listener.*;
 
 import javax.swing.*;
@@ -7,20 +8,23 @@ import java.awt.*;
 
 public class ControlPanel extends JPanel {
 
-    private JButton registerButton = new JButton("REGISTER");
-    private JButton unregisterButton = new JButton("UNREGISTER");
-    private JButton createRoomButton = new JButton("CREATE ROOM");
-    private JButton deleteRoomButton = new JButton("DELETE ROOM");
-    private JButton joinRoomButton = new JButton("JOIN ROOM");
-    private JButton exitRoomButton = new JButton("EXIT ROOM");
-    private JButton inviteUserFromRoomButton = new JButton("INVITE USER");
-    private JButton removeUserFromRoomButton = new JButton("REMOVE USER");
+    private final JButton registerButton = new JButton("REGISTER");
+    private final JButton unregisterButton = new JButton("UNREGISTER");
+    private final JButton createRoomButton = new JButton("CREATE ROOM");
+    private final JButton deleteRoomButton = new JButton("DELETE ROOM");
+    private final JButton joinRoomButton = new JButton("JOIN ROOM");
+    private final JButton exitRoomButton = new JButton("EXIT ROOM");
+    private final JButton inviteUserFromRoomButton = new JButton("INVITE USER");
+    private final JButton removeUserFromRoomButton = new JButton("REMOVE USER");
+    private final JButton exitButton = new JButton("EXIT");
 
-    public ControlPanel() {
-        GridLayout gridLayout = new GridLayout(4, 2);
-        gridLayout.setVgap(10);
-        gridLayout.setHgap(5);
+    public ControlPanel(Dimension dimension) {
+        GridLayout gridLayout = new GridLayout(9, 1);
+        gridLayout.setVgap(3);
+        gridLayout.setHgap(1);
         setLayout(gridLayout);
+
+        setPreferredSize(dimension);
 
         add(registerButton);
         add(unregisterButton);
@@ -30,6 +34,7 @@ public class ControlPanel extends JPanel {
         add(exitRoomButton);
         add(inviteUserFromRoomButton);
         add(removeUserFromRoomButton);
+        add(exitButton);
 
 
         registerButton.addActionListener(new RegisterButtonListener());
@@ -40,8 +45,17 @@ public class ControlPanel extends JPanel {
         exitRoomButton.addActionListener(new ExitRoomButtonListener());
         inviteUserFromRoomButton.addActionListener(new InviteUserFromRoomButtonListener());
         removeUserFromRoomButton.addActionListener(new RemoveUserFromRoomButtonListener());
+        exitButton.addActionListener(new ExitButtonListener());
 
-        setInitButtonStatus();
+        registerButton.setEnabled(true);
+        unregisterButton.setEnabled(false);
+        createRoomButton.setEnabled(false);
+        deleteRoomButton.setEnabled(false);
+        joinRoomButton.setEnabled(false);
+        exitRoomButton.setEnabled(false);
+        inviteUserFromRoomButton.setEnabled(false);
+        removeUserFromRoomButton.setEnabled(false);
+        exitButton.setEnabled(true);
     }
 
     public void setInitButtonStatus(){
@@ -53,6 +67,9 @@ public class ControlPanel extends JPanel {
         exitRoomButton.setEnabled(false);
         inviteUserFromRoomButton.setEnabled(false);
         removeUserFromRoomButton.setEnabled(false);
+        exitButton.setEnabled(true);
+
+        GuiManager.getInstance().getMessagePanel().setEnableSendButton(false);
     }
 
     public void setRegisterButtonStatus(){
@@ -64,6 +81,9 @@ public class ControlPanel extends JPanel {
         exitRoomButton.setEnabled(false);
         inviteUserFromRoomButton.setEnabled(false);
         removeUserFromRoomButton.setEnabled(false);
+        exitButton.setEnabled(false);
+
+        GuiManager.getInstance().getMessagePanel().setEnableSendButton(false);
     }
 
     public void setCreateRoomButtonStatus(){
@@ -75,6 +95,9 @@ public class ControlPanel extends JPanel {
         exitRoomButton.setEnabled(false);
         inviteUserFromRoomButton.setEnabled(true);
         removeUserFromRoomButton.setEnabled(true);
+        exitButton.setEnabled(false);
+
+        GuiManager.getInstance().getMessagePanel().setEnableSendButton(true);
     }
 
     public void setDeleteRoomButtonStatus(){
@@ -86,6 +109,9 @@ public class ControlPanel extends JPanel {
         exitRoomButton.setEnabled(false);
         inviteUserFromRoomButton.setEnabled(false);
         removeUserFromRoomButton.setEnabled(false);
+        exitButton.setEnabled(false);
+
+        GuiManager.getInstance().getMessagePanel().setEnableSendButton(false);
     }
 
     public void setJoinRoomButtonStatus(){
@@ -97,17 +123,24 @@ public class ControlPanel extends JPanel {
         exitRoomButton.setEnabled(true);
         inviteUserFromRoomButton.setEnabled(false);
         removeUserFromRoomButton.setEnabled(false);
+        exitButton.setEnabled(false);
+        exitButton.setEnabled(false);
+
+        GuiManager.getInstance().getMessagePanel().setEnableSendButton(true);
     }
 
     public void setExitRoomButtonStatus(){
         registerButton.setEnabled(false);
-        unregisterButton.setEnabled(false);
+        unregisterButton.setEnabled(true);
         createRoomButton.setEnabled(true);
         deleteRoomButton.setEnabled(false);
         joinRoomButton.setEnabled(true);
         exitRoomButton.setEnabled(false);
         inviteUserFromRoomButton.setEnabled(false);
         removeUserFromRoomButton.setEnabled(false);
+        exitButton.setEnabled(false);
+
+        GuiManager.getInstance().getMessagePanel().setEnableSendButton(false);
     }
 
 }

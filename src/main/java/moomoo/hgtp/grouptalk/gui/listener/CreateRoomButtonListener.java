@@ -28,7 +28,7 @@ public class CreateRoomButtonListener implements ActionListener {
         UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
 
         if (!userInfo.getRoomId().equals("")) {
-            log.debug("({}) ({}) () UserInfo are already in the room.", userInfo.getUserId(), userInfo.getRoomId());
+            log.warn("({}) ({}) () UserInfo are already in the room.", userInfo.getUserId(), userInfo.getRoomId());
         } else {
             String roomId = CnameGenerator.generateCnameRoomId();
 
@@ -40,7 +40,5 @@ public class CreateRoomButtonListener implements ActionListener {
 
             hgtpRequestHandler.sendCreateRoomRequest(hgtpCreateRoomRequest);
         }
-
-
     }
 }

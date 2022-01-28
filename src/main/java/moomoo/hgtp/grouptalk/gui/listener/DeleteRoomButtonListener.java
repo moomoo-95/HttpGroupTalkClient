@@ -27,7 +27,7 @@ public class DeleteRoomButtonListener implements ActionListener {
         UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
 
         if (userInfo.getRoomId().equals("")) {
-            log.debug("({}) ({}) () UserInfo has already exit the room.", userInfo.getUserId(), userInfo.getRoomId());
+            log.warn("({}) ({}) () UserInfo has already exit the room.", userInfo.getUserId(), userInfo.getRoomId());
         } else {
             String roomId = userInfo.getRoomId();
 

@@ -21,16 +21,27 @@ public class GuiManager {
         return guiManager;
     }
 
-    public ClientFrame getClientFrame() {
-        return clientFrame;
+    public void clientFrameInit() {
+        getUserListPanel().setUserList(null);
+        getRoomListPanel().setRoomList(null);
+        getControlPanel().setInitButtonStatus();
     }
+
+    public void roomInit() {
+        getRoomPanel().initMessage();
+        getRoomUserListPanel().setRoomUserList(null);
+    }
+
+    public ClientFrame getClientFrame() { return clientFrame;}
 
     public UserListPanel getUserListPanel() { return clientFrame.getUserListPanel(); }
     public RoomListPanel getRoomListPanel() { return clientFrame.getRoomListPanel(); }
     public RoomUserListPanel getRoomUserListPanel() { return clientFrame.getRoomUserListPanel(); }
 
     public RoomPanel getRoomPanel() { return clientFrame.getRoomPanel(); }
+    public MessagePanel getMessagePanel() { return clientFrame.getMessagePanel(); }
 
     public ControlPanel getControlPanel() { return clientFrame.getControlPanel(); }
+
 
 }
