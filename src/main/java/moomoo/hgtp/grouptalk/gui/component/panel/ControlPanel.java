@@ -10,7 +10,6 @@ public class ControlPanel extends JPanel {
 
     private final JButton registerButton = new JButton("REGISTER");
     private final JButton createRoomButton = new JButton("CREATE ROOM");
-    private final JButton joinRoomButton = new JButton("JOIN ROOM");
     private final JButton exitRoomButton = new JButton("EXIT ROOM");
     private final JButton deleteRoomButton = new JButton("DELETE ROOM");
     private final JButton unregisterButton = new JButton("UNREGISTER");
@@ -26,7 +25,6 @@ public class ControlPanel extends JPanel {
 
         add(registerButton);
         add(createRoomButton);
-        add(joinRoomButton);
         add(exitRoomButton);
         add(deleteRoomButton);
         add(unregisterButton);
@@ -37,7 +35,6 @@ public class ControlPanel extends JPanel {
         unregisterButton.addActionListener(new UnregisterButtonListener());
         createRoomButton.addActionListener(new CreateRoomButtonListener());
         deleteRoomButton.addActionListener(new DeleteRoomButtonListener());
-        joinRoomButton.addActionListener(new JoinRoomButtonListener());
         exitRoomButton.addActionListener(new ExitRoomButtonListener());
         exitButton.addActionListener(new ExitButtonListener());
 
@@ -45,7 +42,6 @@ public class ControlPanel extends JPanel {
         unregisterButton.setEnabled(false);
         createRoomButton.setEnabled(false);
         deleteRoomButton.setEnabled(false);
-        joinRoomButton.setEnabled(false);
         exitRoomButton.setEnabled(false);
         exitButton.setEnabled(true);
     }
@@ -55,7 +51,6 @@ public class ControlPanel extends JPanel {
         unregisterButton.setEnabled(false);
         createRoomButton.setEnabled(false);
         deleteRoomButton.setEnabled(false);
-        joinRoomButton.setEnabled(false);
         exitRoomButton.setEnabled(false);
         exitButton.setEnabled(true);
 
@@ -67,7 +62,6 @@ public class ControlPanel extends JPanel {
         unregisterButton.setEnabled(true);
         createRoomButton.setEnabled(true);
         deleteRoomButton.setEnabled(false);
-        joinRoomButton.setEnabled(true);
         exitRoomButton.setEnabled(false);
         exitButton.setEnabled(false);
 
@@ -79,7 +73,6 @@ public class ControlPanel extends JPanel {
         unregisterButton.setEnabled(false);
         createRoomButton.setEnabled(false);
         deleteRoomButton.setEnabled(true);
-        joinRoomButton.setEnabled(false);
         exitRoomButton.setEnabled(false);
         exitButton.setEnabled(false);
 
@@ -91,7 +84,6 @@ public class ControlPanel extends JPanel {
         unregisterButton.setEnabled(true);
         createRoomButton.setEnabled(true);
         deleteRoomButton.setEnabled(false);
-        joinRoomButton.setEnabled(true);
         exitRoomButton.setEnabled(false);
         exitButton.setEnabled(false);
 
@@ -103,7 +95,6 @@ public class ControlPanel extends JPanel {
         unregisterButton.setEnabled(false);
         createRoomButton.setEnabled(false);
         deleteRoomButton.setEnabled(false);
-        joinRoomButton.setEnabled(false);
         exitRoomButton.setEnabled(true);
         exitButton.setEnabled(false);
         exitButton.setEnabled(false);
@@ -116,7 +107,6 @@ public class ControlPanel extends JPanel {
         unregisterButton.setEnabled(true);
         createRoomButton.setEnabled(true);
         deleteRoomButton.setEnabled(false);
-        joinRoomButton.setEnabled(true);
         exitRoomButton.setEnabled(false);
         exitButton.setEnabled(false);
 

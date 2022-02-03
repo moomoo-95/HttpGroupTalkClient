@@ -1,6 +1,5 @@
 package moomoo.hgtp.grouptalk.gui.component.panel;
 
-import moomoo.hgtp.grouptalk.gui.GuiManager;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.HgtpRemoveUserFromRoomRequest;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
@@ -18,12 +17,8 @@ import java.util.HashSet;
 
 public class RoomUserListPanel extends JPanel {
 
-    private static final Logger log = LoggerFactory.getLogger(RoomUserListPanel.class);
-
     private final JList<String> roomUserListView = new JList<>();
     private final DefaultListModel<String> model = new DefaultListModel<>();
-
-    private String focusRoomUserId = "";
 
     public RoomUserListPanel() {
         BorderLayout borderLayout = new BorderLayout();
@@ -86,17 +81,6 @@ public class RoomUserListPanel extends JPanel {
 
         UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
 
-        if (userInfo.getRoomId().equals("")) {
-            log.warn("({}) ({}) () UserInfo has already exit the room.", userInfo.getUserId(), userInfo.getRoomId());
-            return;
-        }
-
-        if (removeUserId.equals("") || removeUserId.equals(userInfo.getUserId())) {
-            log.warn("({}) () () UserInfo haven't chosen a invite userId yet.", userInfo.getUserId());
-            return;
-        }
-
-        HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();
         // create request remove user from room
         HgtpRemoveUserFromRoomRequest hgtpRemoveUserFromRoomRequest = new HgtpRemoveUserFromRoomRequest(
                 AppInstance.MAGIC_COOKIE, appInstance.getUserId(),
@@ -104,6 +88,7 @@ public class RoomUserListPanel extends JPanel {
                 userInfo.getRoomId(), removeUserId
         );
 
+        HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();
         hgtpRequestHandler.sendRemoveUserFromRoomRequest(hgtpRemoveUserFromRoomRequest);
     }
 

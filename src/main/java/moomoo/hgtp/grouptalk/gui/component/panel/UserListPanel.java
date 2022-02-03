@@ -19,8 +19,6 @@ import java.util.HashSet;
 
 public class UserListPanel extends JPanel {
 
-    private static final Logger log = LoggerFactory.getLogger(UserListPanel.class);
-
     private final JList<String> userListView = new JList<>();
     private final DefaultListModel<String> model = new DefaultListModel<>();
 
@@ -86,17 +84,6 @@ public class UserListPanel extends JPanel {
 
         UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
 
-        if (userInfo.getRoomId().equals("")) {
-            log.warn("({}) ({}) () UserInfo has already exit the room.", userInfo.getUserId(), userInfo.getRoomId());
-            return;
-        }
-
-        if (inviteUserId.equals("") || inviteUserId.equals(userInfo.getUserId())) {
-            log.warn("({}) () () UserInfo haven't chosen a invite userId yet.", userInfo.getUserId());
-            return;
-        }
-
-        HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();
         // create request invite user from room
         HgtpInviteUserFromRoomRequest hgtpInviteUserFromRoomRequest = new HgtpInviteUserFromRoomRequest(
                 AppInstance.MAGIC_COOKIE, appInstance.getUserId(),
@@ -104,6 +91,7 @@ public class UserListPanel extends JPanel {
                 userInfo.getRoomId(), inviteUserId
         );
 
+        HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();
         hgtpRequestHandler.sendInviteUserFromRoomRequest(hgtpInviteUserFromRoomRequest);
     }
 

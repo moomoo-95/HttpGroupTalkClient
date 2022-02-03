@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
-
 public class AppInstance {
 
     private static final Logger log = LoggerFactory.getLogger(AppInstance.class);
