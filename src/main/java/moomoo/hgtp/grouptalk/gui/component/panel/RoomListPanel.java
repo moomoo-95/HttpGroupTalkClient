@@ -43,6 +43,9 @@ public class RoomListPanel extends JPanel {
                     }
                 }
             }
+
+
+
         });
 
         this.add(new JScrollPane(roomListView), BorderLayout.CENTER);

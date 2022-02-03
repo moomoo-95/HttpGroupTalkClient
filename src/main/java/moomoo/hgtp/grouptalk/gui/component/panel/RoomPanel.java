@@ -13,6 +13,7 @@ public class RoomPanel extends JPanel {
     private static final String BLACK = "black";
     private static final String BLUE = "blue";
     private static final String DARK_GRAY = "dark_gray";
+    private static final String LINE = "--------------------------------------------\n";
 
 
     private final JLabel roomName = new JLabel("");
@@ -69,9 +70,18 @@ public class RoomPanel extends JPanel {
             } else {
                 document.insertString(document.getLength(), message, document.getStyle(BLACK));
             }
-            document.insertString(document.getLength(), "--------------------------------------------\n", document.getStyle(DARK_GRAY));
+            document.insertString(document.getLength(), LINE, document.getStyle(DARK_GRAY));
         } catch (BadLocationException e) {
             log.error("RoomPanel.addMessage ", e);
+        }
+    }
+
+    public void addNotice(String notice) {
+        try {
+            document.insertString(document.getLength(), notice, document.getStyle(DARK_GRAY));
+            document.insertString(document.getLength(), LINE, document.getStyle(DARK_GRAY));
+        } catch (BadLocationException e) {
+            log.error("RoomPanel.addNotice ", e);
         }
     }
 

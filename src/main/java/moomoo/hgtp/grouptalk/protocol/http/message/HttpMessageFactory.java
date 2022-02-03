@@ -2,10 +2,7 @@ package moomoo.hgtp.grouptalk.protocol.http.message;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpMessageContent;
-import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpRoomListContent;
-import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpRoomUserListContent;
-import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpUserListContent;
+import moomoo.hgtp.grouptalk.protocol.http.message.content.*;
 
 public class HttpMessageFactory {
 
@@ -55,6 +52,18 @@ public class HttpMessageFactory {
      */
     public static HttpMessageContent createHttpMessageContent(String jsonString) {
         HttpMessageContent messageContent = gson.fromJson(jsonString, HttpMessageContent.class);
+
+        return messageContent;
+    }
+
+    /**
+     * @fn createHttpNoticeContent
+     * @brief string 형태의 json 데이터를 createHttpNoticeContent 클래스로 변환하는 메서드
+     * @param jsonString
+     * @return
+     */
+    public static HttpNoticeContent createHttpNoticeContent(String jsonString) {
+        HttpNoticeContent messageContent = gson.fromJson(jsonString, HttpNoticeContent.class);
 
         return messageContent;
     }

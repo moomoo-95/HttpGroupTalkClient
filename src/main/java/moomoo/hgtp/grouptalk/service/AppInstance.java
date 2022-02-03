@@ -25,7 +25,6 @@ public class AppInstance {
     public static final int USER_ID_SIZE = 8;
     public static final int ROOM_ID_SIZE = 12;
     public static final int SEQ_INCREMENT = 1;
-    public static final long SERVER_SESSION_ID = 84;
 
     private static AppInstance appInstance = null;
 
@@ -36,6 +35,7 @@ public class AppInstance {
 
     // only client
     private String userId = "";
+    private boolean isManager = false;
 
     // only server
     private String serverNonce = "";
@@ -106,4 +106,8 @@ public class AppInstance {
 
     // only client
     public String getUserId() {return userId;}
+
+    public boolean isManager() {return isManager;}
+
+    public void setManager(boolean manager) {isManager = manager;}
 }

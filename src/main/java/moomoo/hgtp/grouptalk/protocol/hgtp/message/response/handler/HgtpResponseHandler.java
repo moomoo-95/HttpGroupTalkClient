@@ -52,33 +52,43 @@ public class HgtpResponseHandler {
         }
 
         if (appInstance.getMode() == AppInstance.SERVER_MODE) {
+            UserInfo userInfo = sessionManager.getUserInfo(hgtpHeader.getUserId());
+            short messageType = HgtpMessageType.OK;
+            if (userInfo == null) {
+                return;
+            }
+            RoomInfo roomInfo = sessionManager.getRoomInfo(userInfo.getRoomId());
+            if (roomInfo == null) {
+                return;
+            }
+            final String processResult;
             switch (hgtpHeader.getRequestType()) {
                 case HgtpMessageType.INVITE_USER_FROM_ROOM:
-                    UserInfo userInfo = sessionManager.getUserInfo(hgtpHeader.getUserId());
-                    short messageType = HgtpMessageType.OK;
-                    if (userInfo != null){
-                        RoomInfo roomInfo = sessionManager.getRoomInfo(userInfo.getRoomId());
-                        if (roomInfo != null) {
-                            roomInfo.addUserGroupSet(userInfo.getUserId());
-
-                            HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                                    AppInstance.MAGIC_COOKIE, messageType, hgtpHeader.getRequestType(),
-                                    roomInfo.getManagerId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
-
-                            sendCommonResponse(hgtpCommonResponse);
-
-                            HttpRequestMessageHandler httpRequestMessageHandler = new HttpRequestMessageHandler();
-                            roomInfo.getUserGroupSet().forEach(roomUserId -> {
-                                UserInfo roomUserInfo = sessionManager.getUserInfo(roomUserId);
-                                if (roomUserInfo != null) {
-                                    httpRequestMessageHandler.sendRoomUserListRequest(roomUserInfo);
-                                }
-                            });
-                        }
-                    }
+                    roomInfo.addUserGroupSet(userInfo.getUserId());
+                    processResult = "초대 되었";
+                    break;
+                case HgtpMessageType.REMOVE_USER_FROM_ROOM:
+                    roomInfo.removeUserGroupSet(userInfo.getUserId());
+                    processResult = "퇴장 당하였";
                     break;
                 default:
+                    return;
             }
+
+            HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
+                    AppInstance.MAGIC_COOKIE, messageType, hgtpHeader.getRequestType(),
+                    roomInfo.getManagerId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+
+            sendCommonResponse(hgtpCommonResponse);
+
+            HttpRequestMessageHandler httpRequestMessageHandler = new HttpRequestMessageHandler();
+            roomInfo.getUserGroupSet().forEach(roomUserId -> {
+                UserInfo roomUserInfo = sessionManager.getUserInfo(roomUserId);
+                if (roomUserInfo != null) {
+                    httpRequestMessageHandler.sendRoomUserListRequest(roomUserInfo);
+                    httpRequestMessageHandler.sendNoticeRequest(userInfo.getUserId()+ "님이 "+ processResult +"습니다.", roomUserInfo);
+                }
+            });
         } else if (appInstance.getMode() == AppInstance.CLIENT_MODE) {
             GuiManager guiManager = GuiManager.getInstance();
             ControlPanel controlPanel = guiManager.getControlPanel();
@@ -91,9 +101,11 @@ public class HgtpResponseHandler {
                     controlPanel.setInitButtonStatus();
                     break;
                 case HgtpMessageType.CREATE_ROOM:
+                    appInstance.setManager(true);
                     controlPanel.setCreateRoomButtonStatus();
                     break;
                 case HgtpMessageType.DELETE_ROOM:
+                    appInstance.setManager(false);
                     controlPanel.setDeleteRoomButtonStatus();
                     sessionManager.getUserInfo(appInstance.getUserId()).initRoomId();
                     guiManager.roomInit();
@@ -256,23 +268,27 @@ public class HgtpResponseHandler {
         }
 
         if (appInstance.getMode() == AppInstance.SERVER_MODE) {
+            UserInfo userInfo = sessionManager.getUserInfo(hgtpHeader.getUserId());
+            short messageType = HgtpMessageType.DECLINE;
+            if (userInfo == null) {
+                return;
+            }
+            RoomInfo roomInfo = sessionManager.getRoomInfo(userInfo.getRoomId());
+            if (roomInfo != null) {
+                HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
+                        AppInstance.MAGIC_COOKIE, messageType, hgtpHeader.getRequestType(),
+                        roomInfo.getManagerId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+
+                sendCommonResponse(hgtpCommonResponse);
+            }
             switch (hgtpHeader.getRequestType()) {
                 case HgtpMessageType.INVITE_USER_FROM_ROOM:
-                    UserInfo userInfo = sessionManager.getUserInfo(hgtpHeader.getUserId());
-                    short messageType = HgtpMessageType.DECLINE;
-                    if (userInfo != null){
-                        userInfo.initRoomId();
-                        RoomInfo roomInfo = sessionManager.getRoomInfo(userInfo.getRoomId());
-                        if (roomInfo != null) {
-                            HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                                    AppInstance.MAGIC_COOKIE, messageType, hgtpHeader.getRequestType(),
-                                    roomInfo.getManagerId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
-
-                            sendCommonResponse(hgtpCommonResponse);
-                        }
-                    }
+                    userInfo.initRoomId();
+                    break;
+                case HgtpMessageType.REMOVE_USER_FROM_ROOM:
                     break;
                 default:
+                    return;
             }
         }
     }

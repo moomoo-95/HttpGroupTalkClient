@@ -10,10 +10,7 @@ import moomoo.hgtp.grouptalk.gui.component.panel.RoomUserListPanel;
 import moomoo.hgtp.grouptalk.gui.component.panel.UserListPanel;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
 import moomoo.hgtp.grouptalk.protocol.http.base.HttpMessageType;
-import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpMessageContent;
-import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpRoomListContent;
-import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpRoomUserListContent;
-import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpUserListContent;
+import moomoo.hgtp.grouptalk.protocol.http.message.content.*;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
 import moomoo.hgtp.grouptalk.session.base.RoomInfo;
@@ -130,6 +127,26 @@ public class HttpRequestMessageHandler {
     }
 
     /**
+     * @fn sendNoticeRequest
+     * @brief server 가 특정 인원들에게 공지사항 전송하는 메서드
+     * @param userInfo
+     */
+    public void sendNoticeRequest(String notice, UserInfo userInfo) {
+        DefaultFullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, HttpMessageType.NOTICE);
+        HttpNoticeContent noticeContent = new HttpNoticeContent(notice);
+
+        setRequestHeader(request, userInfo, HttpMessageType.NOTICE);
+
+        String content = noticeContent.toString();
+
+        ByteBuf byteBuf = Unpooled.copiedBuffer(content, StandardCharsets.UTF_8);
+        request.headers().set(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes());
+        request.content().writeBytes(byteBuf);
+
+        sendHttpRequest(request, userInfo);
+    }
+
+    /**
      * @fn receiveRoomListRequest
      * @brief server로 부터 받은 room list 정보를 통해 room list를 갱신하는 메서드
      * @param roomListContent
@@ -210,6 +227,26 @@ public class HttpRequestMessageHandler {
                 stringBuilder.append("[" + messageContent.getMessageTimeFormat() + "]\n");
                 stringBuilder.append("| " +messageContent.getUserId() + " | " + messageContent.getMessage() + "\n");
                 roomPanel.addMessage(stringBuilder.toString(), isMyMessage);
+                break;
+            case AppInstance.PROXY_MODE:
+                break;
+            default:
+        }
+    }
+
+    /**
+     * @fn receiveNoticeRequest
+     * @brief server로 부터 받은 메시지 출력
+     * @param messageContent
+     */
+    public void receiveNoticeRequest(HttpNoticeContent messageContent) {
+        switch (AppInstance.getInstance().getMode()) {
+            case AppInstance.CLIENT_MODE:
+                RoomPanel roomPanel = GuiManager.getInstance().getRoomPanel();
+
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.append("*** " + messageContent.getNotice() + " ***\n");
+                roomPanel.addNotice(stringBuilder.toString());
                 break;
             case AppInstance.PROXY_MODE:
                 break;

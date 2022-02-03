@@ -24,6 +24,7 @@ public class GuiManager {
     public void clientFrameInit() {
         getUserListPanel().setUserList(null);
         getRoomListPanel().setRoomList(null);
+        getRoomUserListPanel().setRoomUserList(null);
         getControlPanel().setInitButtonStatus();
     }
 

@@ -4,10 +4,7 @@ import io.netty.handler.codec.http.*;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.handler.HgtpResponseHandler;
 import moomoo.hgtp.grouptalk.protocol.http.handler.HttpRequestMessageHandler;
 import moomoo.hgtp.grouptalk.protocol.http.message.HttpMessageFactory;
-import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpMessageContent;
-import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpRoomListContent;
-import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpRoomUserListContent;
-import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpUserListContent;
+import moomoo.hgtp.grouptalk.protocol.http.message.content.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.module.ConcurrentCyclicFIFO;
@@ -80,6 +77,8 @@ public class HttpConsumer implements Runnable {
                     httpRequestMessageHandler.receiveMessageRequest(messageContent);
                     break;
                 case NOTICE:
+                    HttpNoticeContent noticeContent = HttpMessageFactory.createHttpNoticeContent(httpContent);
+                    httpRequestMessageHandler.receiveNoticeRequest(noticeContent);
                     break;
                 default:
                     log.warn("({}) () () Undefined message cannot be processed. {}", userId, httpRequest);
