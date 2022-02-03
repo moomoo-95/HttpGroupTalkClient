@@ -19,10 +19,10 @@ public class RoomListPanel extends JPanel {
         borderLayout.setHgap(3);
         setLayout(borderLayout);
 
-        JLabel roomlistName = new JLabel("ROOM LIST");
-        roomlistName.setHorizontalAlignment(JLabel.CENTER);
-        roomlistName.setPreferredSize(new Dimension(this.getWidth(), 20));
-        this.add(roomlistName, BorderLayout.NORTH);
+        JLabel roomListName = new JLabel("ROOM LIST");
+        roomListName.setHorizontalAlignment(JLabel.CENTER);
+        roomListName.setPreferredSize(new Dimension(this.getWidth(), 20));
+        this.add(roomListName, BorderLayout.NORTH);
 
         initRoomListView();
 

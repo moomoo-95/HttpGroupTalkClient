@@ -73,18 +73,18 @@ public class AppInstance {
 
     public int getMode() {return mode;}
 
-    public boolean setMode(String mode) {
+    public boolean setMode(int mode) {
         if (this.mode != -1) { return false; }
         switch (mode){
-            case "server":
+            case SERVER_MODE:
                 this.mode = SERVER_MODE;
                 initServerInstance();
                 break;
-            case "client":
+            case CLIENT_MODE:
                 this.mode = CLIENT_MODE;
                 initClientInstance();
                 break;
-            case "proxy":
+            case PROXY_MODE:
                 this.mode = PROXY_MODE;
                 break;
             default:

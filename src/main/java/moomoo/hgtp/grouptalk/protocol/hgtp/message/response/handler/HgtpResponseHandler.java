@@ -11,8 +11,10 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.HgtpRegisterRequest;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHandler;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpCommonResponse;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpUnauthorizedResponse;
+import moomoo.hgtp.grouptalk.protocol.http.handler.HttpRequestMessageHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
+import moomoo.hgtp.grouptalk.session.base.RoomInfo;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
 import network.definition.DestinationRecord;
 import org.apache.commons.net.ntp.TimeStamp;
@@ -49,7 +51,35 @@ public class HgtpResponseHandler {
             return;
         }
 
-        if (appInstance.getMode() == AppInstance.CLIENT_MODE) {
+        if (appInstance.getMode() == AppInstance.SERVER_MODE) {
+            switch (hgtpHeader.getRequestType()) {
+                case HgtpMessageType.INVITE_USER_FROM_ROOM:
+                    UserInfo userInfo = sessionManager.getUserInfo(hgtpHeader.getUserId());
+                    short messageType = HgtpMessageType.OK;
+                    if (userInfo != null){
+                        RoomInfo roomInfo = sessionManager.getRoomInfo(userInfo.getRoomId());
+                        if (roomInfo != null) {
+                            roomInfo.addUserGroupSet(userInfo.getUserId());
+
+                            HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
+                                    AppInstance.MAGIC_COOKIE, messageType, hgtpHeader.getRequestType(),
+                                    roomInfo.getManagerId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+
+                            sendCommonResponse(hgtpCommonResponse);
+
+                            HttpRequestMessageHandler httpRequestMessageHandler = new HttpRequestMessageHandler();
+                            roomInfo.getUserGroupSet().forEach(roomUserId -> {
+                                UserInfo roomUserInfo = sessionManager.getUserInfo(roomUserId);
+                                if (roomUserInfo != null) {
+                                    httpRequestMessageHandler.sendRoomUserListRequest(roomUserInfo);
+                                }
+                            });
+                        }
+                    }
+                    break;
+                default:
+            }
+        } else if (appInstance.getMode() == AppInstance.CLIENT_MODE) {
             GuiManager guiManager = GuiManager.getInstance();
             ControlPanel controlPanel = guiManager.getControlPanel();
 
@@ -211,9 +241,40 @@ public class HgtpResponseHandler {
         }
     }
 
-    public boolean declineResponseProcessing(HgtpCommonResponse hgtpDeclineResponse) {
-        log.debug(RECV_LOG, hgtpDeclineResponse.getHgtpHeader().getUserId(), hgtpDeclineResponse);
-        return true;
+    /**
+     * @fn declineResponseProcessing
+     * @brief decline 수신시 처리하는 메서드 (server, proxy 는 relay, client 는 처리)
+     * @param hgtpDeclineResponse
+     */
+    public void declineResponseProcessing(HgtpCommonResponse hgtpDeclineResponse) {
+        HgtpHeader hgtpHeader = hgtpDeclineResponse.getHgtpHeader();
+        log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpDeclineResponse);
+
+        if (hgtpHeader == null) {
+            log.debug("() () () header is null [{}]", hgtpDeclineResponse);
+            return;
+        }
+
+        if (appInstance.getMode() == AppInstance.SERVER_MODE) {
+            switch (hgtpHeader.getRequestType()) {
+                case HgtpMessageType.INVITE_USER_FROM_ROOM:
+                    UserInfo userInfo = sessionManager.getUserInfo(hgtpHeader.getUserId());
+                    short messageType = HgtpMessageType.DECLINE;
+                    if (userInfo != null){
+                        userInfo.initRoomId();
+                        RoomInfo roomInfo = sessionManager.getRoomInfo(userInfo.getRoomId());
+                        if (roomInfo != null) {
+                            HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
+                                    AppInstance.MAGIC_COOKIE, messageType, hgtpHeader.getRequestType(),
+                                    roomInfo.getManagerId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+
+                            sendCommonResponse(hgtpCommonResponse);
+                        }
+                    }
+                    break;
+                default:
+            }
+        }
     }
 
     /**

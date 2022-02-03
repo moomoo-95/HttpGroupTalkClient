@@ -19,10 +19,10 @@ public class RoomUserListPanel extends JPanel {
         borderLayout.setHgap(3);
         setLayout(borderLayout);
 
-        JLabel roomlistName = new JLabel("ROOM USER LIST");
-        roomlistName.setHorizontalAlignment(JLabel.CENTER);
-        roomlistName.setPreferredSize(new Dimension(this.getWidth(), 20));
-        this.add(roomlistName, BorderLayout.NORTH);
+        JLabel roomUserListName = new JLabel("ROOM USER LIST");
+        roomUserListName.setHorizontalAlignment(JLabel.CENTER);
+        roomUserListName.setPreferredSize(new Dimension(this.getWidth(), 20));
+        this.add(roomUserListName, BorderLayout.NORTH);
 
         initUserListView();
     }

@@ -2,6 +2,7 @@ package moomoo.hgtp.grouptalk;
 
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.service.ServiceManager;
+import moomoo.hgtp.grouptalk.util.ClassUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,11 +18,12 @@ public class HttpGroupTalkMain {
         }
 
         AppInstance appInstance = AppInstance.getInstance();
-        if (!appInstance.setMode(args[1])) {
-            log.error("{} is not defined", args[1]);
-            return;
+        if (ClassUtil.isInteger(args[1])) {
+            if (!appInstance.setMode(Integer.parseInt(args[1]))) {
+                log.error("{} is not defined", args[1]);
+                return;
+            }
         }
-
 
         log.debug("HttpGroupTalk {} Start.", args[1]);
         appInstance.setConfigManager(args[0]);
