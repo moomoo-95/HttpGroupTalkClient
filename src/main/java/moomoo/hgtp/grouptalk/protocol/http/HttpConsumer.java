@@ -80,6 +80,10 @@ public class HttpConsumer implements Runnable {
                     HttpNoticeContent noticeContent = HttpMessageFactory.createHttpNoticeContent(httpContent);
                     httpRequestMessageHandler.receiveNoticeRequest(noticeContent);
                     break;
+                case REFRESH:
+                    HttpRefreshContent refreshContent = HttpMessageFactory.createHttpRefreshContent(httpContent);
+                    httpRequestMessageHandler.receiveRefreshRequest(refreshContent);
+                    break;
                 default:
                     log.warn("({}) () () Undefined message cannot be processed. {}", userId, httpRequest);
                     break;

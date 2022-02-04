@@ -12,6 +12,10 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
 
+/**
+ * @class UserListPanel
+ * @brief client 모드시 실행되는 GUI 내 user list 를 출력하는 Panel
+ */
 public class UserListPanel extends JPanel {
 
     private final JList<String> userListView = new JList<>();

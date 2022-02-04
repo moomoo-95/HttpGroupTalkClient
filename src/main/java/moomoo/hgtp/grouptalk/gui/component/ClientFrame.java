@@ -5,6 +5,10 @@ import moomoo.hgtp.grouptalk.gui.component.panel.*;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * @class ClientFrame
+ * @brief client 모드시 실행되는 GUI 내 frame
+ */
 public class ClientFrame extends JFrame {
 
     private static final int WIDTH = 800;

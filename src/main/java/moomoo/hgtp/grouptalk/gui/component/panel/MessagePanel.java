@@ -5,6 +5,10 @@ import moomoo.hgtp.grouptalk.gui.listener.SendButtonListener;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * @class MessagePanel
+ * @brief client 모드시 실행되는 GUI 내 http message request 의 content 정보를 입력 및 전송하는 panel
+ */
 public class MessagePanel extends JPanel {
 
     private final JTextField sendText = new JTextField();

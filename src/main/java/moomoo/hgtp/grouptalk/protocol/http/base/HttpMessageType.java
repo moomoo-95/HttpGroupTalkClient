@@ -14,6 +14,7 @@ public class HttpMessageType {
     public static final String ROOM_USER_LIST = "room_user_list";
     public static final String MESSAGE = "message";
     public static final String NOTICE = "notice";
+    public static final String REFRESH = "refresh";
 
     private HttpMessageType() {
         // nothing

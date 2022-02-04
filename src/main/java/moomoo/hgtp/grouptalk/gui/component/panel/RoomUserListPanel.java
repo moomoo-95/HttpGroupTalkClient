@@ -12,6 +12,10 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
 
+/**
+ * @class RoomUserListPanel
+ * @brief client 모드시 실행되는 GUI 내 user list in my room 를 출력하는 Panel
+ */
 public class RoomUserListPanel extends JPanel {
 
     private final JList<String> roomUserListView = new JList<>();

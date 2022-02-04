@@ -4,6 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import moomoo.hgtp.grouptalk.protocol.http.message.content.*;
 
+/**
+ * @class HttpMessageFactory
+ * @brief Http message 를 생성하는 factory class
+ */
 public class HttpMessageFactory {
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -64,6 +68,18 @@ public class HttpMessageFactory {
      */
     public static HttpNoticeContent createHttpNoticeContent(String jsonString) {
         HttpNoticeContent messageContent = gson.fromJson(jsonString, HttpNoticeContent.class);
+
+        return messageContent;
+    }
+
+    /**
+     * @fn createHttpRefreshContent
+     * @brief string 형태의 json 데이터를 createHttpRefreshContent 클래스로 변환하는 메서드
+     * @param jsonString
+     * @return
+     */
+    public static HttpRefreshContent createHttpRefreshContent(String jsonString) {
+        HttpRefreshContent messageContent = gson.fromJson(jsonString, HttpRefreshContent.class);
 
         return messageContent;
     }

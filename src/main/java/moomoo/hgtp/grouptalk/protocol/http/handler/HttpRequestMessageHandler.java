@@ -147,6 +147,26 @@ public class HttpRequestMessageHandler {
     }
 
     /**
+     * @fn sendRefreshRequest
+     * @brief client 가 room, room user, user 에 대한 정보를 재 요청할 때 보내는 메서드
+     * @param userInfo
+     */
+    public void sendRefreshRequest(UserInfo userInfo) {
+        DefaultFullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, HttpMessageType.REFRESH);
+        HttpRefreshContent refreshContent = new HttpRefreshContent(userInfo.getUserId());
+
+        setRequestHeader(request, userInfo, HttpMessageType.REFRESH);
+
+        String content = refreshContent.toString();
+
+        ByteBuf byteBuf = Unpooled.copiedBuffer(content, StandardCharsets.UTF_8);
+        request.headers().set(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes());
+        request.content().writeBytes(byteBuf);
+
+        sendHttpRequest(request, userInfo);
+    }
+
+    /**
      * @fn receiveRoomListRequest
      * @brief server로 부터 받은 room list 정보를 통해 room list를 갱신하는 메서드
      * @param roomListContent
@@ -247,6 +267,27 @@ public class HttpRequestMessageHandler {
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append("*** " + messageContent.getNotice() + " ***\n");
                 roomPanel.addNotice(stringBuilder.toString());
+                break;
+            case PROXY:
+                break;
+            default:
+        }
+    }
+
+    /**
+     * @fn receiveRefreshRequest
+     * @brief client로 부터 메시지를 받으면 room, room user, user 목록을 재전송해주는 메서드
+     * @param messageContent
+     */
+    public void receiveRefreshRequest(HttpRefreshContent messageContent) {
+        switch (AppInstance.getInstance().getMode()) {
+            case SERVER:
+                UserInfo userInfo = SessionManager.getInstance().getUserInfo(messageContent.getUserId());
+                if (userInfo != null) {
+                    sendUserListRequest(userInfo);
+                    sendRoomListRequest(userInfo);
+                    sendRoomUserListRequest(userInfo);
+                }
                 break;
             case PROXY:
                 break;

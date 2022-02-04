@@ -7,6 +7,10 @@ import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
 
+/**
+ * @class RoomPanel
+ * @brief room 내 메시지 및 공지를 출력하는 panel
+ */
 public class RoomPanel extends JPanel {
 
     private static final Logger log = LoggerFactory.getLogger(RoomPanel.class);

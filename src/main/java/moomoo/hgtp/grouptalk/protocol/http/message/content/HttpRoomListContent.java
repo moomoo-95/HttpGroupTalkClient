@@ -4,6 +4,10 @@ import moomoo.hgtp.grouptalk.protocol.http.base.HttpMessage;
 
 import java.util.HashSet;
 
+/**
+ * @class HttpRoomListContent
+ * @brief 서버가 클라이언트에게 room 목록 정보를 보내기 위한 http 요청 메시지
+ */
 public class HttpRoomListContent extends HttpMessage {
 
     private HashSet<String> roomListSet = new HashSet<>();

@@ -3,6 +3,10 @@ package moomoo.hgtp.grouptalk.gui.component.panel;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * @class ListPanel
+ * @brief client 모드시 실행되는 GUI 내 user, room, user in my room 의 정보를 출력하는 panel
+ */
 public class ListPanel extends JPanel {
 
     private final UserListPanel userListPanel = new UserListPanel();

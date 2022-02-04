@@ -4,6 +4,10 @@ import moomoo.hgtp.grouptalk.gui.component.ClientFrame;
 import moomoo.hgtp.grouptalk.gui.component.panel.*;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 
+/**
+ * @class GuiManager
+ * @brief client 모드시 실행되는 GUI를 관리하는 class
+ */
 public class GuiManager {
 
     private static GuiManager guiManager = null;

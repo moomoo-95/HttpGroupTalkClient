@@ -3,7 +3,6 @@ package moomoo.hgtp.grouptalk.gui.listener;
 
 import moomoo.hgtp.grouptalk.gui.GuiManager;
 import moomoo.hgtp.grouptalk.gui.component.panel.MessagePanel;
-import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHandler;
 import moomoo.hgtp.grouptalk.protocol.http.handler.HttpRequestMessageHandler;
 import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpMessageContent;
 import moomoo.hgtp.grouptalk.service.AppInstance;
@@ -20,8 +19,6 @@ public class SendButtonListener implements ActionListener {
     private static final Logger log = LoggerFactory.getLogger(CreateRoomButtonListener.class);
 
     private static SessionManager sessionManager = SessionManager.getInstance();
-
-    private final HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -40,7 +37,7 @@ public class SendButtonListener implements ActionListener {
             log.warn("({}) ({}) () message is null", userInfo.getUserId(), userInfo.getRoomId());
         } else {
             // create request message
-            HttpMessageContent httpMessageContent = new HttpMessageContent(userInfo.getUserId(), message, System.currentTimeMillis());
+            HttpMessageContent httpMessageContent = new HttpMessageContent(userInfo.getUserId(), message);
 
             HttpRequestMessageHandler httpRequestMessageHandler = new HttpRequestMessageHandler();
             httpRequestMessageHandler.sendMessageRequest(httpMessageContent, userInfo);
