@@ -6,7 +6,6 @@ import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
 import moomoo.hgtp.grouptalk.util.CnameGenerator;
-import org.apache.commons.net.ntp.TimeStamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,8 +33,7 @@ public class CreateRoomButtonListener implements ActionListener {
 
             // create request create room
             HgtpCreateRoomRequest hgtpCreateRoomRequest = new HgtpCreateRoomRequest(
-                    AppInstance.MAGIC_COOKIE, appInstance.getUserId(),
-                    AppInstance.SEQ_INCREMENT, TimeStamp.getCurrentTime().getSeconds(), roomId
+                    appInstance.getUserId(), AppInstance.SEQ_INCREMENT, roomId
             );
 
             hgtpRequestHandler.sendCreateRoomRequest(hgtpCreateRoomRequest);

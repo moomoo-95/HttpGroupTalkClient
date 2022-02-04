@@ -198,7 +198,7 @@ public class HttpRequestMessageHandler {
      */
     public void receiveMessageRequest(HttpMessageContent messageContent) {
         switch (AppInstance.getInstance().getMode()) {
-            case AppInstance.SERVER_MODE:
+            case SERVER:
                 SessionManager sessionManager = SessionManager.getInstance();
                 UserInfo userInfo = sessionManager.getUserInfo(messageContent.getUserId());
                 if (userInfo == null) {
@@ -219,7 +219,7 @@ public class HttpRequestMessageHandler {
                     }
                 });
                 break;
-            case AppInstance.CLIENT_MODE:
+            case CLIENT:
                 RoomPanel roomPanel = GuiManager.getInstance().getRoomPanel();
                 boolean isMyMessage = messageContent.getUserId().equals(AppInstance.getInstance().getUserId());
 
@@ -228,7 +228,7 @@ public class HttpRequestMessageHandler {
                 stringBuilder.append("| " +messageContent.getUserId() + " | " + messageContent.getMessage() + "\n");
                 roomPanel.addMessage(stringBuilder.toString(), isMyMessage);
                 break;
-            case AppInstance.PROXY_MODE:
+            case PROXY:
                 break;
             default:
         }
@@ -241,14 +241,14 @@ public class HttpRequestMessageHandler {
      */
     public void receiveNoticeRequest(HttpNoticeContent messageContent) {
         switch (AppInstance.getInstance().getMode()) {
-            case AppInstance.CLIENT_MODE:
+            case CLIENT:
                 RoomPanel roomPanel = GuiManager.getInstance().getRoomPanel();
 
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append("*** " + messageContent.getNotice() + " ***\n");
                 roomPanel.addNotice(stringBuilder.toString());
                 break;
-            case AppInstance.PROXY_MODE:
+            case PROXY:
                 break;
             default:
         }
@@ -282,10 +282,14 @@ public class HttpRequestMessageHandler {
         NettyTcpClientChannel clientChannel = (NettyTcpClientChannel) groupSocket.getDestination(userInfo.getSessionId()).getNettyChannel();
 
         clientChannel.sendHttpRequest(request);
-        log.debug("[{}] -> [{}] -> [{}\n\n{}]",
-                groupSocket.getListenSocket().getNetAddress().getPort(),
-                groupSocket.getDestination(userInfo.getSessionId()).getGroupEndpointId().getGroupAddress().getPort(),
-                request.headers().toString(), request.content().toString(StandardCharsets.UTF_8));
+
+        ByteBuf requestContent = request.content();
+        if (requestContent.refCnt() != 0) {
+            log.debug("[{}] -> [{}] -> [{}\n\n{}]",
+                    groupSocket.getListenSocket().getNetAddress().getPort(),
+                    groupSocket.getDestination(userInfo.getSessionId()).getGroupEndpointId().getGroupAddress().getPort(),
+                    request.headers().toString(), requestContent.toString(StandardCharsets.UTF_8));
+        }
         clientChannel.closeConnectChannel();
         clientChannel.openConnectChannel(userInfo.getHttpTargetNetAddress().getInet4Address().getHostAddress(), userInfo.getHttpTargetNetAddress().getPort());
     }

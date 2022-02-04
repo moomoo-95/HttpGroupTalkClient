@@ -1,6 +1,7 @@
 package moomoo.hgtp.grouptalk.service;
 
 import moomoo.hgtp.grouptalk.config.ConfigManager;
+import moomoo.hgtp.grouptalk.service.base.ProcessMode;
 import moomoo.hgtp.grouptalk.util.CnameGenerator;
 import org.apache.commons.net.ntp.TimeStamp;
 import org.slf4j.Logger;
@@ -18,9 +19,7 @@ public class AppInstance {
     public static final String MD5_HASH_KEY = "950817";
 
     public static final short MAGIC_COOKIE = 0x4853; // HS
-    public static final int SERVER_MODE = 0;
-    public static final int CLIENT_MODE = 1;
-    public static final int PROXY_MODE = 2;
+
     public static final int USER_ID_SIZE = 8;
     public static final int ROOM_ID_SIZE = 12;
     public static final int SEQ_INCREMENT = 1;
@@ -28,7 +27,7 @@ public class AppInstance {
     private static AppInstance appInstance = null;
 
     // 프로그램 모드 init (-1) , server (0) , client (1) , proxy (2)
-    private int mode = -1;
+    private ProcessMode mode = ProcessMode.DOWN;
 
     private ConfigManager configManager = null;
 
@@ -40,6 +39,7 @@ public class AppInstance {
     private String serverNonce = "";
 
     public AppInstance() {
+        // nothing
     }
 
     public static AppInstance getInstance() {
@@ -70,21 +70,21 @@ public class AppInstance {
         userId = CnameGenerator.generateCnameUserId();
     }
 
-    public int getMode() {return mode;}
+    public ProcessMode getMode() {return mode;}
 
     public boolean setMode(int mode) {
-        if (this.mode != -1) { return false; }
+        if (this.mode != ProcessMode.DOWN) { return false; }
         switch (mode){
-            case SERVER_MODE:
-                this.mode = SERVER_MODE;
+            case 0:
+                this.mode = ProcessMode.SERVER;
                 initServerInstance();
                 break;
-            case CLIENT_MODE:
-                this.mode = CLIENT_MODE;
+            case 1:
+                this.mode = ProcessMode.CLIENT;
                 initClientInstance();
                 break;
-            case PROXY_MODE:
-                this.mode = PROXY_MODE;
+            case 2:
+                this.mode = ProcessMode.PROXY;
                 break;
             default:
                 return false;

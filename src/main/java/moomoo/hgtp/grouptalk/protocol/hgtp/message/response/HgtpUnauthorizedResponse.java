@@ -3,7 +3,9 @@ package moomoo.hgtp.grouptalk.protocol.hgtp.message.response;
 import moomoo.hgtp.grouptalk.protocol.hgtp.exception.HgtpException;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpHeader;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessage;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.content.HgtpUnauthorizedContent;
+import moomoo.hgtp.grouptalk.service.AppInstance;
 import util.module.ByteUtil;
 
 
@@ -31,9 +33,9 @@ public class HgtpUnauthorizedResponse extends HgtpMessage {
         }
     }
 
-    public HgtpUnauthorizedResponse(short magicCookie, short messageType, Short requestType, String userId, int seqNumber, long timeStamp, short listenPort, String realm) {
+    public HgtpUnauthorizedResponse(Short requestType, String userId, int seqNumber, short listenPort, String realm) {
         this.hgtpContent = new HgtpUnauthorizedContent(listenPort, realm);
-        this.hgtpHeader = new HgtpHeader(magicCookie, messageType, requestType, userId, seqNumber, timeStamp, hgtpContent.getBodyLength());
+        this.hgtpHeader = new HgtpHeader(AppInstance.MAGIC_COOKIE, HgtpMessageType.UNAUTHORIZED, requestType, userId, seqNumber, AppInstance.getInstance().getTimeStamp(), hgtpContent.getBodyLength());
     }
 
     @Override

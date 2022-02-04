@@ -4,7 +4,6 @@ import moomoo.hgtp.grouptalk.config.ConfigManager;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.HgtpRegisterRequest;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
-import org.apache.commons.net.ntp.TimeStamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,8 +23,7 @@ public class RegisterButtonListener implements ActionListener {
 
         // create request Register
         HgtpRegisterRequest hgtpRegisterRequest = new HgtpRegisterRequest(
-                AppInstance.MAGIC_COOKIE, appInstance.getUserId(),
-                AppInstance.SEQ_INCREMENT, TimeStamp.getCurrentTime().getSeconds(),
+                appInstance.getUserId(), AppInstance.SEQ_INCREMENT,
                 configManager.getHgtpExpireTime(), configManager.getLocalListenIp(), configManager.getHgtpListenPort()
         );
 

@@ -43,7 +43,7 @@ public class HttpChannelHandler extends SimpleChannelInboundHandler<HttpObject> 
             if (httpObjectArray[PARSE_CONTENT] != null) {
                 log.error("({}) ({}) ({}) Fail to cnt message oder. {}", isContent, httpObjectArray[PARSE_MESSAGE], httpObjectArray[PARSE_CONTENT], httpObject);
             }
-            httpObjectArray[PARSE_CONTENT] = ((HttpContent) httpObject).content().toString(StandardCharsets.UTF_8);;
+            httpObjectArray[PARSE_CONTENT] = ((HttpContent) httpObject).content().toString(StandardCharsets.UTF_8);
 
             HttpManager.getInstance().putMessage(httpObjectArray);
         }
@@ -54,6 +54,6 @@ public class HttpChannelHandler extends SimpleChannelInboundHandler<HttpObject> 
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        log.warn("HttpChannelHandler.Exception (cause={})", cause.toString());
+        log.warn("HttpChannelHandler.Exception ", cause);
     }
 }

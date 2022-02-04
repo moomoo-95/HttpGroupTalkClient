@@ -13,11 +13,11 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpCommonResponse;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpUnauthorizedResponse;
 import moomoo.hgtp.grouptalk.protocol.http.handler.HttpRequestMessageHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
+import moomoo.hgtp.grouptalk.service.base.ProcessMode;
 import moomoo.hgtp.grouptalk.session.SessionManager;
 import moomoo.hgtp.grouptalk.session.base.RoomInfo;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
 import network.definition.DestinationRecord;
-import org.apache.commons.net.ntp.TimeStamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +51,7 @@ public class HgtpResponseHandler {
             return;
         }
 
-        if (appInstance.getMode() == AppInstance.SERVER_MODE) {
+        if (appInstance.getMode() == ProcessMode.SERVER) {
             UserInfo userInfo = sessionManager.getUserInfo(hgtpHeader.getUserId());
             short messageType = HgtpMessageType.OK;
             if (userInfo == null) {
@@ -76,8 +76,8 @@ public class HgtpResponseHandler {
             }
 
             HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                    AppInstance.MAGIC_COOKIE, messageType, hgtpHeader.getRequestType(),
-                    roomInfo.getManagerId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+                    messageType, hgtpHeader.getRequestType(),
+                    roomInfo.getManagerId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
 
             sendCommonResponse(hgtpCommonResponse);
 
@@ -86,10 +86,10 @@ public class HgtpResponseHandler {
                 UserInfo roomUserInfo = sessionManager.getUserInfo(roomUserId);
                 if (roomUserInfo != null) {
                     httpRequestMessageHandler.sendRoomUserListRequest(roomUserInfo);
-                    httpRequestMessageHandler.sendNoticeRequest(userInfo.getUserId()+ "님이 "+ processResult +"습니다.", roomUserInfo);
+                    httpRequestMessageHandler.sendNoticeRequest("[" + userInfo.getUserId()+ "]님이 "+ processResult +"습니다.", roomUserInfo);
                 }
             });
-        } else if (appInstance.getMode() == AppInstance.CLIENT_MODE) {
+        } else if (appInstance.getMode() == ProcessMode.CLIENT) {
             GuiManager guiManager = GuiManager.getInstance();
             ControlPanel controlPanel = guiManager.getControlPanel();
 
@@ -136,7 +136,7 @@ public class HgtpResponseHandler {
             return;
         }
 
-        if (appInstance.getMode() == AppInstance.CLIENT_MODE) {
+        if (appInstance.getMode() == ProcessMode.CLIENT) {
             ControlPanel controlPanel = GuiManager.getInstance().getControlPanel();
 
             switch (hgtpHeader.getRequestType()) {
@@ -179,10 +179,10 @@ public class HgtpResponseHandler {
         log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpUnauthorizedResponse);
 
         // server 일 경우 bad request 전송
-        if (appInstance.getMode() == AppInstance.SERVER_MODE) {
+        if (appInstance.getMode() == ProcessMode.SERVER) {
             HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                    AppInstance.MAGIC_COOKIE, HgtpMessageType.BAD_REQUEST, hgtpHeader.getRequestType(),
-                    hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+                    HgtpMessageType.BAD_REQUEST, hgtpHeader.getRequestType(),
+                    hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
 
             sendCommonResponse(hgtpCommonResponse);
             return;
@@ -204,8 +204,8 @@ public class HgtpResponseHandler {
 
             // Send Register
             HgtpRegisterRequest hgtpRegisterRequest = new HgtpRegisterRequest(
-                    AppInstance.MAGIC_COOKIE, appInstance.getUserId(),
-                    hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, TimeStamp.getCurrentTime().getSeconds(),
+                    appInstance.getUserId(),
+                    hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT,
                     configManager.getHgtpExpireTime(), configManager.getLocalListenIp(), (short) userInfo.getHttpServerNetAddress().getPort()
             );
             HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();
@@ -229,7 +229,7 @@ public class HgtpResponseHandler {
             return;
         }
 
-        if (appInstance.getMode() == AppInstance.CLIENT_MODE) {
+        if (appInstance.getMode() == ProcessMode.CLIENT) {
             ControlPanel controlPanel = GuiManager.getInstance().getControlPanel();
 
             switch (hgtpHeader.getRequestType()) {
@@ -267,7 +267,7 @@ public class HgtpResponseHandler {
             return;
         }
 
-        if (appInstance.getMode() == AppInstance.SERVER_MODE) {
+        if (appInstance.getMode() == ProcessMode.SERVER) {
             UserInfo userInfo = sessionManager.getUserInfo(hgtpHeader.getUserId());
             short messageType = HgtpMessageType.DECLINE;
             if (userInfo == null) {
@@ -276,8 +276,8 @@ public class HgtpResponseHandler {
             RoomInfo roomInfo = sessionManager.getRoomInfo(userInfo.getRoomId());
             if (roomInfo != null) {
                 HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                        AppInstance.MAGIC_COOKIE, messageType, hgtpHeader.getRequestType(),
-                        roomInfo.getManagerId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+                        messageType, hgtpHeader.getRequestType(),
+                        roomInfo.getManagerId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
 
                 sendCommonResponse(hgtpCommonResponse);
             }

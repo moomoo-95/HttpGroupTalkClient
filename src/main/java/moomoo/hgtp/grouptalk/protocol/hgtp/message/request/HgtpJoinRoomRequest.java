@@ -31,9 +31,9 @@ public class HgtpJoinRoomRequest extends HgtpMessage {
         }
     }
 
-    public HgtpJoinRoomRequest(short magicCookie, String userId, int seqNumber, long timeStamp, String roomId) {
+    public HgtpJoinRoomRequest(String userId, int seqNumber, String roomId) {
         this.hgtpContent = new HgtpRoomContent(roomId);
-        this.hgtpHeader = new HgtpHeader(magicCookie, HgtpMessageType.JOIN_ROOM, HgtpMessageType.JOIN_ROOM, userId, seqNumber, timeStamp, hgtpContent.getBodyLength());
+        this.hgtpHeader = new HgtpHeader(AppInstance.MAGIC_COOKIE, HgtpMessageType.JOIN_ROOM, HgtpMessageType.JOIN_ROOM, userId, seqNumber, AppInstance.getInstance().getTimeStamp(), hgtpContent.getBodyLength());
     }
 
     @Override

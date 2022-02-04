@@ -31,9 +31,9 @@ public class HgtpInviteUserFromRoomRequest extends HgtpMessage {
         }
     }
 
-    public HgtpInviteUserFromRoomRequest(short magicCookie, String userId, int seqNumber, long timeStamp, String roomId, String peerUserId) {
+    public HgtpInviteUserFromRoomRequest(String userId, int seqNumber, String roomId, String peerUserId) {
         this.hgtpContent = new HgtpRoomManagerContent(roomId, peerUserId);
-        this.hgtpHeader = new HgtpHeader(magicCookie, HgtpMessageType.INVITE_USER_FROM_ROOM, HgtpMessageType.INVITE_USER_FROM_ROOM, userId, seqNumber, timeStamp, hgtpContent.getBodyLength());
+        this.hgtpHeader = new HgtpHeader(AppInstance.MAGIC_COOKIE, HgtpMessageType.INVITE_USER_FROM_ROOM, HgtpMessageType.INVITE_USER_FROM_ROOM, userId, seqNumber, AppInstance.getInstance().getTimeStamp(), hgtpContent.getBodyLength());
     }
 
     @Override

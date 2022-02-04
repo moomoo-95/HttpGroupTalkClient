@@ -5,7 +5,6 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHa
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
-import org.apache.commons.net.ntp.TimeStamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,8 +32,7 @@ public class DeleteRoomButtonListener implements ActionListener {
 
             // create request delete room
             HgtpDeleteRoomRequest hgtpDeleteRoomRequest = new HgtpDeleteRoomRequest(
-                    AppInstance.MAGIC_COOKIE, appInstance.getUserId(),
-                    AppInstance.SEQ_INCREMENT, TimeStamp.getCurrentTime().getSeconds(), roomId
+                    appInstance.getUserId(), AppInstance.SEQ_INCREMENT, roomId
             );
 
             hgtpRequestHandler.sendDeleteRoomRequest(hgtpDeleteRoomRequest);

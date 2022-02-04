@@ -4,7 +4,6 @@ import moomoo.hgtp.grouptalk.gui.GuiManager;
 import moomoo.hgtp.grouptalk.gui.component.panel.ControlPanel;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpHeader;
-import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessage;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.content.HgtpRegisterContent;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.content.HgtpRoomContent;
@@ -15,11 +14,11 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpUnauthorizedResp
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.handler.HgtpResponseHandler;
 import moomoo.hgtp.grouptalk.protocol.http.handler.HttpRequestMessageHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
+import moomoo.hgtp.grouptalk.service.base.ProcessMode;
 import moomoo.hgtp.grouptalk.session.SessionManager;
 import moomoo.hgtp.grouptalk.session.base.RoomInfo;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
 import network.definition.DestinationRecord;
-import org.apache.commons.net.ntp.TimeStamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +31,7 @@ public class HgtpRequestHandler {
     private static final String DEST_CH_NULL_LOG = "({}) () () DestinationRecord Channel is null.";
     private static final String USER_UNREG_LOG = "{} UserInfo is unregister";
     private static final String ROOM_DEL_LOG = "{} RoomInfo is deleted";
+    private static final String SERVER_UNAVAIL_LOG = "({}) () () The server cannot request create room.";
 
     private static AppInstance appInstance = AppInstance.getInstance();
     private static SessionManager sessionManager = SessionManager.getInstance();
@@ -59,10 +59,10 @@ public class HgtpRequestHandler {
         log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpRegisterRequest);
 
         // client 일 경우 bad request 전송
-        if (appInstance.getMode() == AppInstance.CLIENT_MODE) {
+        if (appInstance.getMode() == ProcessMode.CLIENT) {
             HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                    AppInstance.MAGIC_COOKIE, HgtpMessageType.BAD_REQUEST, hgtpHeader.getRequestType(),
-                    hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+                    HgtpMessageType.BAD_REQUEST, hgtpHeader.getRequestType(),
+                    hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
 
             hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
             return;
@@ -89,16 +89,16 @@ public class HgtpRequestHandler {
                 short httpPort = (short) userInfo.getHttpServerNetAddress().getPort();
 
                 HgtpUnauthorizedResponse hgtpUnauthorizedResponse = new HgtpUnauthorizedResponse(
-                        AppInstance.MAGIC_COOKIE, HgtpMessageType.UNAUTHORIZED, hgtpHeader.getRequestType(),
-                        userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp(), httpPort, AppInstance.MD5_REALM);
+                        hgtpHeader.getRequestType(), userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT,
+                        httpPort, AppInstance.MD5_REALM);
 
                 hgtpResponseHandler.sendUnauthorizedResponse(hgtpUnauthorizedResponse);
             }
             // userInfo 생성 실패
             else {
                 HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                        AppInstance.MAGIC_COOKIE, messageType, hgtpHeader.getRequestType(),
-                        userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+                        messageType, hgtpHeader.getRequestType(),
+                        userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
 
                 hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
                 sessionManager.deleteUserInfo(userId);
@@ -122,8 +122,8 @@ public class HgtpRequestHandler {
             }
 
             HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                    AppInstance.MAGIC_COOKIE, messageType, hgtpHeader.getRequestType(),
-                    userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+                    messageType, hgtpHeader.getRequestType(),
+                    userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
 
             hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
 
@@ -155,10 +155,10 @@ public class HgtpRequestHandler {
         log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpUnregisterRequest);
 
         // client 일 경우 bad request 전송
-        if (appInstance.getMode() == AppInstance.CLIENT_MODE) {
+        if (appInstance.getMode() == ProcessMode.CLIENT) {
             HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                    AppInstance.MAGIC_COOKIE, HgtpMessageType.BAD_REQUEST, hgtpHeader.getRequestType(),
-                    hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+                    HgtpMessageType.BAD_REQUEST, hgtpHeader.getRequestType(),
+                    hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
 
             hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
             return;
@@ -187,8 +187,8 @@ public class HgtpRequestHandler {
         }
 
         HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                AppInstance.MAGIC_COOKIE, messageType, hgtpHeader.getRequestType(),
-                userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+                messageType, hgtpHeader.getRequestType(),
+                userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
 
         hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
 
@@ -217,10 +217,10 @@ public class HgtpRequestHandler {
         log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpCreateRoomRequest);
 
         // client 일 경우 bad request 전송
-        if (appInstance.getMode() == AppInstance.CLIENT_MODE) {
+        if (appInstance.getMode() == ProcessMode.CLIENT) {
             HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                    AppInstance.MAGIC_COOKIE, HgtpMessageType.BAD_REQUEST, hgtpHeader.getRequestType(),
-                    hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+                    HgtpMessageType.BAD_REQUEST, hgtpHeader.getRequestType(),
+                    hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
 
             hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
             return;
@@ -238,8 +238,8 @@ public class HgtpRequestHandler {
         short messageType = sessionManager.addRoomInfo(roomId, userId);
 
         HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                AppInstance.MAGIC_COOKIE, messageType, hgtpHeader.getRequestType(),
-                userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+                messageType, hgtpHeader.getRequestType(),
+                userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
 
         hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
 
@@ -269,10 +269,10 @@ public class HgtpRequestHandler {
         log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpDeleteRoomRequest);
 
         // client 일 경우 bad request 전송
-        if (appInstance.getMode() == AppInstance.CLIENT_MODE) {
+        if (appInstance.getMode() == ProcessMode.CLIENT) {
             HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                    AppInstance.MAGIC_COOKIE, HgtpMessageType.BAD_REQUEST, hgtpHeader.getRequestType(),
-                    hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+                    HgtpMessageType.BAD_REQUEST, hgtpHeader.getRequestType(),
+                    hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
 
             hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
             return;
@@ -289,8 +289,8 @@ public class HgtpRequestHandler {
         short messageType = sessionManager.deleteRoomInfo(roomId, userId);
 
         HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                AppInstance.MAGIC_COOKIE, messageType, hgtpHeader.getRequestType(),
-                userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+                messageType, hgtpHeader.getRequestType(),
+                userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
 
         hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
 
@@ -317,10 +317,10 @@ public class HgtpRequestHandler {
         log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpJoinRoomRequest);
 
         // client 일 경우 bad request 전송
-        if (appInstance.getMode() == AppInstance.CLIENT_MODE) {
+        if (appInstance.getMode() == ProcessMode.CLIENT) {
             HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                    AppInstance.MAGIC_COOKIE, HgtpMessageType.BAD_REQUEST, hgtpHeader.getRequestType(),
-                    hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+                    HgtpMessageType.BAD_REQUEST, hgtpHeader.getRequestType(),
+                    hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
 
             hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
             return;
@@ -344,8 +344,8 @@ public class HgtpRequestHandler {
         short messageType = userInfo.getRoomId().equals("") ? HgtpMessageType.OK : HgtpMessageType.BAD_REQUEST;
 
         HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                AppInstance.MAGIC_COOKIE, messageType, hgtpHeader.getRequestType(),
-                userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+                messageType, hgtpHeader.getRequestType(),
+                userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
 
         hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
 
@@ -381,10 +381,10 @@ public class HgtpRequestHandler {
         log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpExitRoomRequest);
 
         // client 일 경우 bad request 전송
-        if (appInstance.getMode() == AppInstance.CLIENT_MODE) {
+        if (appInstance.getMode() == ProcessMode.CLIENT) {
             HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                    AppInstance.MAGIC_COOKIE, HgtpMessageType.BAD_REQUEST, hgtpHeader.getRequestType(),
-                    hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+                    HgtpMessageType.BAD_REQUEST, hgtpHeader.getRequestType(),
+                    hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
 
             hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
             return;
@@ -406,11 +406,11 @@ public class HgtpRequestHandler {
         }
 
         // 방에 입장해 있을 때 && manager 가 아닐 때
-        short messageType = ( userInfo.getRoomId().equals("") || roomInfo.getManagerId().equals(userInfo) ) ? HgtpMessageType.BAD_REQUEST : HgtpMessageType.OK;
+        short messageType = ( userInfo.getRoomId().equals("") || roomInfo.getManagerId().equals(userInfo.getUserId()) ) ? HgtpMessageType.BAD_REQUEST : HgtpMessageType.OK;
 
         HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                AppInstance.MAGIC_COOKIE, messageType, hgtpHeader.getRequestType(),
-                userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+                messageType, hgtpHeader.getRequestType(),
+                userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
 
         hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
 
@@ -456,7 +456,7 @@ public class HgtpRequestHandler {
         UserInfo peerUserInfo = sessionManager.getUserInfo(peerUserId);
         short messageType = HgtpMessageType.OK;
         switch (appInstance.getMode()) {
-            case AppInstance.SERVER_MODE:
+            case SERVER:
                 RoomInfo roomInfo = sessionManager.getRoomInfo(roomId);
                 if (roomInfo == null) {
                     log.debug(ROOM_DEL_LOG, roomId);
@@ -471,22 +471,22 @@ public class HgtpRequestHandler {
 
                 if (messageType != HgtpMessageType.OK) {
                     HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                            AppInstance.MAGIC_COOKIE, messageType, hgtpHeader.getRequestType(),
-                            userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+                            messageType, hgtpHeader.getRequestType(),
+                            userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
 
                     hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
                 } else {
                     peerUserInfo.setRoomId(roomId);
 
                     HgtpInviteUserFromRoomRequest hgtpInviteRequest = new HgtpInviteUserFromRoomRequest(
-                            AppInstance.MAGIC_COOKIE, peerUserId,
-                            hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, TimeStamp.getCurrentTime().getSeconds(),
+                            peerUserId,
+                            hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT,
                             peerUserInfo.getRoomId(), peerUserId
                     );
                     sendInviteUserFromRoomRequest(hgtpInviteRequest);
                 }
                 break;
-            case AppInstance.CLIENT_MODE:
+            case CLIENT:
                 if (!userInfo.getRoomId().equals("")) {
                     messageType = HgtpMessageType.DECLINE;
                 } else {
@@ -499,11 +499,12 @@ public class HgtpRequestHandler {
                 }
 
                 HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                        AppInstance.MAGIC_COOKIE, messageType, hgtpHeader.getRequestType(),
-                        userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+                        messageType, hgtpHeader.getRequestType(),
+                        userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
 
                 hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
-            case AppInstance.PROXY_MODE:
+                break;
+            case PROXY:
                 break;
             default:
         }
@@ -537,7 +538,7 @@ public class HgtpRequestHandler {
         UserInfo peerUserInfo = sessionManager.getUserInfo(peerUserId);
         short messageType = HgtpMessageType.OK;
         switch (appInstance.getMode()) {
-            case AppInstance.SERVER_MODE:
+            case SERVER:
                 RoomInfo roomInfo = sessionManager.getRoomInfo(roomId);
                 if (roomInfo == null) {
                     log.debug(ROOM_DEL_LOG, roomId);
@@ -552,21 +553,19 @@ public class HgtpRequestHandler {
 
                 if (messageType != HgtpMessageType.OK) {
                     HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                            AppInstance.MAGIC_COOKIE, messageType, hgtpHeader.getRequestType(),
-                            userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+                            messageType, hgtpHeader.getRequestType(),
+                            userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
 
                     hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
                 } else {
                     HgtpRemoveUserFromRoomRequest hgtpRemoveRequest = new HgtpRemoveUserFromRoomRequest(
-                            AppInstance.MAGIC_COOKIE, peerUserId,
-                            hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, TimeStamp.getCurrentTime().getSeconds(),
-                            peerUserInfo.getRoomId(), peerUserId
+                            peerUserId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, peerUserInfo.getRoomId(), peerUserId
                     );
 
                     sendRemoveUserFromRoomRequest(hgtpRemoveRequest);
                 }
                 break;
-            case AppInstance.CLIENT_MODE:
+            case CLIENT:
                 if (userInfo.getRoomId().equals("")) {
                     messageType = HgtpMessageType.DECLINE;
                 } else {
@@ -580,11 +579,12 @@ public class HgtpRequestHandler {
                 }
 
                 HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                        AppInstance.MAGIC_COOKIE, messageType, hgtpHeader.getRequestType(),
-                        userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, appInstance.getTimeStamp());
+                        messageType, hgtpHeader.getRequestType(),
+                        userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
 
                 hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
-            case AppInstance.PROXY_MODE:
+                break;
+            case PROXY:
                 break;
             default:
         }
@@ -602,7 +602,7 @@ public class HgtpRequestHandler {
             log.warn(DATA_NULL_LOG, hgtpRegisterRequest);
             return;
         }
-        if (appInstance.getMode() == AppInstance.SERVER_MODE) {
+        if (appInstance.getMode() == ProcessMode.SERVER) {
             log.warn("({}) () () The server cannot request register.", hgtpHeader.getUserId());
             return;
         }
@@ -627,7 +627,7 @@ public class HgtpRequestHandler {
             log.warn(DATA_NULL_LOG, hgtpUnregisterRequest);
             return;
         }
-        if (appInstance.getMode() == AppInstance.SERVER_MODE) {
+        if (appInstance.getMode() == ProcessMode.SERVER) {
             log.warn("({}) () () The server cannot request unregister.", hgtpHeader.getUserId());
             return;
         }
@@ -651,8 +651,8 @@ public class HgtpRequestHandler {
             log.warn(DATA_NULL_LOG, hgtpCreateRoomRequest);
             return;
         }
-        if (appInstance.getMode() == AppInstance.SERVER_MODE) {
-            log.warn("({}) () () The server cannot request create room.", hgtpHeader.getUserId());
+        if (appInstance.getMode() == ProcessMode.SERVER) {
+            log.warn(SERVER_UNAVAIL_LOG, hgtpHeader.getUserId());
             return;
         }
 
@@ -675,8 +675,8 @@ public class HgtpRequestHandler {
             log.warn(DATA_NULL_LOG, hgtpDeleteRoomRequest);
             return;
         }
-        if (appInstance.getMode() == AppInstance.SERVER_MODE) {
-            log.warn("({}) () () The server cannot request create room.", hgtpHeader.getUserId());
+        if (appInstance.getMode() == ProcessMode.SERVER) {
+            log.warn(SERVER_UNAVAIL_LOG, hgtpHeader.getUserId());
             return;
         }
 
@@ -698,8 +698,8 @@ public class HgtpRequestHandler {
             log.warn(DATA_NULL_LOG, hgtpJoinRoomRequest);
             return;
         }
-        if (appInstance.getMode() == AppInstance.SERVER_MODE) {
-            log.warn("({}) () () The server cannot request create room.", hgtpHeader.getUserId());
+        if (appInstance.getMode() == ProcessMode.SERVER) {
+            log.warn(SERVER_UNAVAIL_LOG, hgtpHeader.getUserId());
             return;
         }
 
@@ -722,8 +722,8 @@ public class HgtpRequestHandler {
             log.warn(DATA_NULL_LOG, hgtpExitRoomRequest);
             return;
         }
-        if (appInstance.getMode() == AppInstance.SERVER_MODE) {
-            log.warn("({}) () () The server cannot request create room.", hgtpHeader.getUserId());
+        if (appInstance.getMode() == ProcessMode.SERVER) {
+            log.warn(SERVER_UNAVAIL_LOG, hgtpHeader.getUserId());
             return;
         }
 

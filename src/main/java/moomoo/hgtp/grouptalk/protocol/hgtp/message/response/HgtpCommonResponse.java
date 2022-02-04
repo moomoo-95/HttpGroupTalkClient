@@ -3,6 +3,7 @@ package moomoo.hgtp.grouptalk.protocol.hgtp.message.response;
 import moomoo.hgtp.grouptalk.protocol.hgtp.exception.HgtpException;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpHeader;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessage;
+import moomoo.hgtp.grouptalk.service.AppInstance;
 
 public class HgtpCommonResponse extends HgtpMessage {
 
@@ -20,8 +21,8 @@ public class HgtpCommonResponse extends HgtpMessage {
         }
     }
 
-    public HgtpCommonResponse(short magicCookie, short messageType, Short requestType, String userId, int seqNumber, long timeStamp) {
-        this.hgtpHeader = new HgtpHeader(magicCookie, messageType, requestType, userId, seqNumber, timeStamp, 0);
+    public HgtpCommonResponse(short messageType, Short requestType, String userId, int seqNumber) {
+        this.hgtpHeader = new HgtpHeader(AppInstance.MAGIC_COOKIE, messageType, requestType, userId, seqNumber, AppInstance.getInstance().getTimeStamp(), 0);
     }
 
     @Override

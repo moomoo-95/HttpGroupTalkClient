@@ -31,9 +31,9 @@ public class HgtpRemoveUserFromRoomRequest extends HgtpMessage {
         }
     }
 
-    public HgtpRemoveUserFromRoomRequest(short magicCookie, String userId, int seqNumber, long timeStamp, String roomId, String peerUserId) {
+    public HgtpRemoveUserFromRoomRequest(String userId, int seqNumber, String roomId, String peerUserId) {
         this.hgtpContent = new HgtpRoomManagerContent(roomId, peerUserId);
-        this.hgtpHeader = new HgtpHeader(magicCookie, HgtpMessageType.REMOVE_USER_FROM_ROOM, HgtpMessageType.REMOVE_USER_FROM_ROOM, userId, seqNumber, timeStamp, hgtpContent.getBodyLength());
+        this.hgtpHeader = new HgtpHeader(AppInstance.MAGIC_COOKIE, HgtpMessageType.REMOVE_USER_FROM_ROOM, HgtpMessageType.REMOVE_USER_FROM_ROOM, userId, seqNumber, AppInstance.getInstance().getTimeStamp(), hgtpContent.getBodyLength());
     }
 
     @Override

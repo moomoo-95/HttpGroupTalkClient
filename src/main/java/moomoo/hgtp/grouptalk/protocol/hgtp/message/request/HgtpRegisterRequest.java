@@ -5,6 +5,7 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpHeader;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessage;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.content.HgtpRegisterContent;
+import moomoo.hgtp.grouptalk.service.AppInstance;
 import util.module.ByteUtil;
 
 
@@ -31,9 +32,9 @@ public class HgtpRegisterRequest extends HgtpMessage {
         }
     }
 
-    public HgtpRegisterRequest(short magicCookie, String userId, int seqNumber, long timeStamp, long expires, String listenIp, short listenPort) {
+    public HgtpRegisterRequest(String userId, int seqNumber, long expires, String listenIp, short listenPort) {
         this.hgtpContent = new HgtpRegisterContent(expires, listenIp, listenPort);
-        this.hgtpHeader = new HgtpHeader(magicCookie, HgtpMessageType.REGISTER, HgtpMessageType.REGISTER, userId, seqNumber, timeStamp, hgtpContent.getBodyLength());
+        this.hgtpHeader = new HgtpHeader(AppInstance.MAGIC_COOKIE, HgtpMessageType.REGISTER, HgtpMessageType.REGISTER, userId, seqNumber, AppInstance.getInstance().getTimeStamp(), hgtpContent.getBodyLength());
     }
 
     @Override

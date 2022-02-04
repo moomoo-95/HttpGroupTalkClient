@@ -31,9 +31,9 @@ public class HgtpDeleteRoomRequest extends HgtpMessage {
         }
     }
 
-    public HgtpDeleteRoomRequest(short magicCookie, String userId, int seqNumber, long timeStamp, String roomId) {
+    public HgtpDeleteRoomRequest(String userId, int seqNumber, String roomId) {
         this.hgtpContent = new HgtpRoomContent(roomId);
-        this.hgtpHeader = new HgtpHeader(magicCookie, HgtpMessageType.DELETE_ROOM, HgtpMessageType.DELETE_ROOM, userId, seqNumber, timeStamp, hgtpContent.getBodyLength());
+        this.hgtpHeader = new HgtpHeader(AppInstance.MAGIC_COOKIE, HgtpMessageType.DELETE_ROOM, HgtpMessageType.DELETE_ROOM, userId, seqNumber, AppInstance.getInstance().getTimeStamp(), hgtpContent.getBodyLength());
 
     }
 

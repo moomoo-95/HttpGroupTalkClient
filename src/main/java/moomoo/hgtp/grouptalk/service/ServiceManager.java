@@ -76,11 +76,11 @@ public class ServiceManager {
 
         AppInstance appInstance = AppInstance.getInstance();
         switch (appInstance.getMode()){
-            case AppInstance.SERVER_MODE:
+            case SERVER:
                 scheduleManager = ScheduleManager.getInstance();
                 scheduleManager.start();
                 break;
-            case AppInstance.CLIENT_MODE:
+            case CLIENT:
                 ConfigManager configManager = appInstance.getConfigManager();
                 sessionManager.addUserInfo(appInstance.getUserId(), 0);
                 UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
@@ -88,7 +88,7 @@ public class ServiceManager {
 
                 GuiManager.getInstance();
                 break;
-            case AppInstance.PROXY_MODE:
+            case PROXY:
                 break;
             default:
                 return false;
@@ -103,12 +103,12 @@ public class ServiceManager {
         networkManager.stopSocket();
 
         switch (AppInstance.getInstance().getMode()){
-            case AppInstance.SERVER_MODE:
+            case SERVER:
                 scheduleManager.stop();
                 break;
-            case AppInstance.CLIENT_MODE:
+            case CLIENT:
                 break;
-            case AppInstance.PROXY_MODE:
+            case PROXY:
                 break;
             default:
         }

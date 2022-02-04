@@ -3,6 +3,7 @@ package moomoo.hgtp.grouptalk.session.base;
 import moomoo.hgtp.grouptalk.gui.GuiManager;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
 import moomoo.hgtp.grouptalk.service.AppInstance;
+import moomoo.hgtp.grouptalk.service.base.ProcessMode;
 import network.definition.NetAddress;
 import network.socket.SocketProtocol;
 import util.module.ByteUtil;
@@ -76,7 +77,7 @@ public class UserInfo {
     public void setRoomId(String roomId) {
         this.roomId = roomId;
 
-        if(AppInstance.getInstance().getMode() == AppInstance.CLIENT_MODE) {
+        if(AppInstance.getInstance().getMode() == ProcessMode.CLIENT) {
             GuiManager.getInstance().getRoomPanel().setRoomName(this.roomId);
         }
     }
@@ -84,7 +85,7 @@ public class UserInfo {
     public void initRoomId() {
         this.roomId = "";
 
-        if(AppInstance.getInstance().getMode() == AppInstance.CLIENT_MODE) {
+        if(AppInstance.getInstance().getMode() == ProcessMode.CLIENT) {
             GuiManager.getInstance().getRoomPanel().setRoomName(this.roomId);
         }
     }

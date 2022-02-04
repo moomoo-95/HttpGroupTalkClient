@@ -5,9 +5,6 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHa
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
-import org.apache.commons.net.ntp.TimeStamp;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
@@ -83,9 +80,7 @@ public class RoomUserListPanel extends JPanel {
 
         // create request remove user from room
         HgtpRemoveUserFromRoomRequest hgtpRemoveUserFromRoomRequest = new HgtpRemoveUserFromRoomRequest(
-                AppInstance.MAGIC_COOKIE, appInstance.getUserId(),
-                AppInstance.SEQ_INCREMENT, TimeStamp.getCurrentTime().getSeconds(),
-                userInfo.getRoomId(), removeUserId
+                appInstance.getUserId(), AppInstance.SEQ_INCREMENT, userInfo.getRoomId(), removeUserId
         );
 
         HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();

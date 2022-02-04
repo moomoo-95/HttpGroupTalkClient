@@ -76,7 +76,7 @@ public class HgtpTest {
 
             // send first Register
             HgtpRegisterRequest sendFirstHgtpRegisterRequest = new HgtpRegisterRequest(
-                    AppInstance.MAGIC_COOKIE, userId, 4, TimeStamp.getCurrentTime().getSeconds(),
+                    userId, 4,
                     3600L, AppInstance.getInstance ().getConfigManager().getLocalListenIp(), (short) 5060);
             log.debug("RG1 SEND DATA : {}", sendFirstHgtpRegisterRequest);
 
@@ -90,10 +90,10 @@ public class HgtpTest {
             // send unauthorized
             HgtpHeader recvReg1Header = recvFirstHgtpRegisterRequest.getHgtpHeader();
             HgtpUnauthorizedResponse sendHgtpUnauthorizedResponse = new HgtpUnauthorizedResponse(
-                    recvReg1Header.getMagicCookie(), HgtpMessageType.UNAUTHORIZED,
                     recvReg1Header.getRequestType(), recvReg1Header.getUserId(),
-                    recvFirstHgtpRegisterRequest.getHgtpHeader().getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds(), (short) 4000,
-                    CLIENT_TEST_REALM);
+                    recvFirstHgtpRegisterRequest.getHgtpHeader().getSeqNumber() + 1,
+                    (short) 4000, CLIENT_TEST_REALM
+            );
             log.debug("URE SEND DATA : {}", sendHgtpUnauthorizedResponse);
 
             // recv unauthorized
@@ -113,8 +113,8 @@ public class HgtpTest {
             // send second Register
             HgtpHeader recvUnauthHeader = recvHgtpUnauthorizedResponse.getHgtpHeader();
             HgtpRegisterRequest sendSecondHgtpRegisterRequest = new HgtpRegisterRequest(
-                    AppInstance.MAGIC_COOKIE, recvUnauthHeader.getUserId(),
-                    recvUnauthHeader.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds(),
+                    recvUnauthHeader.getUserId(),
+                    recvUnauthHeader.getSeqNumber() + 1,
                     3600L, AppInstance.getInstance ().getConfigManager().getLocalListenIp(), (short) 5060);
             sendSecondHgtpRegisterRequest.getHgtpContent().setNonce(sendSecondHgtpRegisterRequest.getHgtpHeader(), nonce);
             log.debug("RG2 SEND DATA : {}", sendSecondHgtpRegisterRequest);
@@ -156,9 +156,9 @@ public class HgtpTest {
             // send response
             HgtpHeader recvReg2Header = recvSecondHgtpRegisterRequest.getHgtpHeader();
             HgtpCommonResponse sendHgtpResponse = new HgtpCommonResponse(
-                    recvSecondHgtpRegisterRequest.getHgtpHeader().getMagicCookie(), messageType,
+                    messageType,
                     recvReg2Header.getMessageType(), recvReg2Header.getUserId(),
-                    recvReg2Header.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds()
+                    recvReg2Header.getSeqNumber() + 1
                     );
             log.debug("{} SEND DATA : {}", msgType, sendHgtpResponse);
             // recv response
@@ -176,7 +176,7 @@ public class HgtpTest {
         try {
             // send Unregister
             HgtpUnregisterRequest sendHgtpUnregisterRequest = new HgtpUnregisterRequest(
-                    AppInstance.MAGIC_COOKIE, userId, 7, TimeStamp.getCurrentTime().getSeconds());
+                    userId, 7);
             log.debug("SEND DATA : {}", sendHgtpUnregisterRequest);
             // recv Unregister
             byte[] recvRequestUnregister = sendHgtpUnregisterRequest.getByteData();
@@ -201,8 +201,8 @@ public class HgtpTest {
             // send response
             HgtpHeader recvUnregHeader = recvHgtpUnregisterRequest.getHgtpHeader();
             HgtpCommonResponse sendHgtpResponse = new HgtpCommonResponse(
-                    recvUnregHeader.getMagicCookie(), messageType, recvUnregHeader.getMessageType(), recvUnregHeader.getUserId(),
-                    recvUnregHeader.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds());
+                    messageType, recvUnregHeader.getMessageType(), recvUnregHeader.getUserId(),
+                    recvUnregHeader.getSeqNumber() + 1);
             log.debug("{} SEND DATA : {}", msgType, sendHgtpResponse);
             // recv response
             byte[] recvResponse = sendHgtpResponse.getByteData();
@@ -218,13 +218,13 @@ public class HgtpTest {
     public void hgtpCreateRoomTest(String userId, String roomId){
         try {
             // send Create room
-            HgtpCreateRoomRequest sendHgtpCreateRoomReqeust = new HgtpCreateRoomRequest(
-                    AppInstance.MAGIC_COOKIE, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId
+            HgtpCreateRoomRequest sendHgtpCreateRoomRequest = new HgtpCreateRoomRequest(
+                    userId, 9, roomId
             );
-            log.debug("SEND DATA : {}", sendHgtpCreateRoomReqeust);
+            log.debug("SEND DATA : {}", sendHgtpCreateRoomRequest);
 
             // recv Create room
-            byte[] recvRequestCreateRoom = sendHgtpCreateRoomReqeust.getByteData();
+            byte[] recvRequestCreateRoom = sendHgtpCreateRoomRequest.getByteData();
             HgtpCreateRoomRequest recvHgtpCreateRoomReqeust = new HgtpCreateRoomRequest(recvRequestCreateRoom);
             log.debug("RECV DATA  : {}", recvHgtpCreateRoomReqeust);
 
@@ -247,8 +247,8 @@ public class HgtpTest {
             // send response
             HgtpHeader recvCreateHeader = recvHgtpCreateRoomReqeust.getHgtpHeader();
             HgtpCommonResponse sendHgtpResponse = new HgtpCommonResponse(
-                    recvCreateHeader.getMagicCookie(), messageType, recvCreateHeader.getMessageType(), recvCreateHeader.getUserId(),
-                    recvCreateHeader.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds());
+                    recvCreateHeader.getMessageType(), recvCreateHeader.getRequestType(), recvCreateHeader.getUserId(),
+                    recvCreateHeader.getSeqNumber() + 1);
             log.debug("{} SEND DATA : {}", msgType, sendHgtpResponse);
             // recv response
             byte[] recvResponse = sendHgtpResponse.getByteData();
@@ -263,13 +263,13 @@ public class HgtpTest {
     public void hgtpDeleteRoomTest(String userId, String roomId){
         try {
             // send Delete room
-            HgtpDeleteRoomRequest sendHgtpDeleteRoomReqeust = new HgtpDeleteRoomRequest(
-                    AppInstance.MAGIC_COOKIE, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId
+            HgtpDeleteRoomRequest sendHgtpDeleteRoomRequest = new HgtpDeleteRoomRequest(
+                    userId, 9, roomId
             );
-            log.debug("SEND DATA : {}", sendHgtpDeleteRoomReqeust);
+            log.debug("SEND DATA : {}", sendHgtpDeleteRoomRequest);
 
             // recv Delete room
-            byte[] recvRequestDeleteRoom = sendHgtpDeleteRoomReqeust.getByteData();
+            byte[] recvRequestDeleteRoom = sendHgtpDeleteRoomRequest.getByteData();
             HgtpDeleteRoomRequest recvHgtpDeleteRoomReqeust = new HgtpDeleteRoomRequest(recvRequestDeleteRoom);
             log.debug("RECV DATA  : {}", recvHgtpDeleteRoomReqeust);
 
@@ -290,8 +290,8 @@ public class HgtpTest {
             // send response
             HgtpHeader recvUnregHeader = recvHgtpDeleteRoomReqeust.getHgtpHeader();
             HgtpCommonResponse sendHgtpResponse = new HgtpCommonResponse(
-                    recvUnregHeader.getMagicCookie(), messageType, recvUnregHeader.getMessageType(), recvUnregHeader.getUserId(),
-                    recvUnregHeader.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds());
+                    messageType, recvUnregHeader.getMessageType(), recvUnregHeader.getUserId(),
+                    recvUnregHeader.getSeqNumber() + 1);
             log.debug("{} SEND DATA : {}", msgType, sendHgtpResponse);
             // recv response
             byte[] recvResponse = sendHgtpResponse.getByteData();
@@ -309,7 +309,7 @@ public class HgtpTest {
         try {
             // send Join room
             HgtpJoinRoomRequest sendHgtpJoinRoomReqeust = new HgtpJoinRoomRequest(
-                    AppInstance.MAGIC_COOKIE, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId
+                    userId, 9, roomId
             );
             log.debug("SEND DATA : {}", sendHgtpJoinRoomReqeust);
 
@@ -336,8 +336,8 @@ public class HgtpTest {
             // send response
             HgtpHeader recvJoinHeader = recvHgtpJoinRoomReqeust.getHgtpHeader();
             HgtpCommonResponse sendHgtpResponse = new HgtpCommonResponse(
-                    recvJoinHeader.getMagicCookie(), messageType, recvJoinHeader.getMessageType(), recvJoinHeader.getUserId(),
-                    recvJoinHeader.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds());
+                    messageType, recvJoinHeader.getMessageType(), recvJoinHeader.getUserId(),
+                    recvJoinHeader.getSeqNumber() + 1);
             log.debug("{} SEND DATA : {}", msgType, sendHgtpResponse);
             // recv response
             byte[] recvResponse = sendHgtpResponse.getByteData();
@@ -352,13 +352,13 @@ public class HgtpTest {
     public void hgtpExitRoomTest(String userId, String roomId){
         try {
             // send Exit room
-            HgtpExitRoomRequest sendHgtpExitRoomReqeust = new HgtpExitRoomRequest(
-                    AppInstance.MAGIC_COOKIE, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId
+            HgtpExitRoomRequest sendHgtpExitRoomRequest = new HgtpExitRoomRequest(
+                    userId, 9, roomId
             );
-            log.debug("SEND DATA : {}", sendHgtpExitRoomReqeust);
+            log.debug("SEND DATA : {}", sendHgtpExitRoomRequest);
 
             // recv Exit room
-            byte[] recvRequestExitRoom = sendHgtpExitRoomReqeust.getByteData();
+            byte[] recvRequestExitRoom = sendHgtpExitRoomRequest.getByteData();
             HgtpExitRoomRequest recvHgtpExitRoomReqeust = new HgtpExitRoomRequest(recvRequestExitRoom);
             log.debug("RECV DATA  : {}", recvHgtpExitRoomReqeust);
 
@@ -380,8 +380,8 @@ public class HgtpTest {
             // send response
             HgtpHeader recvExitHeader = recvHgtpExitRoomReqeust.getHgtpHeader();
             HgtpCommonResponse sendHgtpResponse = new HgtpCommonResponse(
-                    recvExitHeader.getMagicCookie(), messageType, recvExitHeader.getMessageType(), recvExitHeader.getUserId(),
-                    recvExitHeader.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds());
+                    messageType, recvExitHeader.getMessageType(), recvExitHeader.getUserId(),
+                    recvExitHeader.getSeqNumber() + 1);
             log.debug("{} SEND DATA : {}", msgType, sendHgtpResponse);
             // recv response
             byte[] recvResponse = sendHgtpResponse.getByteData();
@@ -397,7 +397,7 @@ public class HgtpTest {
         try {
             // send Exit room
             HgtpInviteUserFromRoomRequest sendHgtpInviteUserFromRoomRequest = new HgtpInviteUserFromRoomRequest(
-                    AppInstance.MAGIC_COOKIE, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId, peerUserId
+                    userId, 9, roomId, peerUserId
             );
             log.debug("SEND DATA : {}", sendHgtpInviteUserFromRoomRequest);
 
@@ -426,8 +426,8 @@ public class HgtpTest {
             // send response
             HgtpHeader recvInviteUserFromRoomHeader = recvHgtpInviteUserFromRoomRequest.getHgtpHeader();
             HgtpCommonResponse sendHgtpResponse = new HgtpCommonResponse(
-                    recvInviteUserFromRoomHeader.getMagicCookie(), messageType, recvInviteUserFromRoomHeader.getMessageType(), recvInviteUserFromRoomHeader.getUserId(),
-                    recvInviteUserFromRoomHeader.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds());
+                    messageType, recvInviteUserFromRoomHeader.getMessageType(), recvInviteUserFromRoomHeader.getUserId(),
+                    recvInviteUserFromRoomHeader.getSeqNumber() + 1);
             log.debug("{} SEND DATA : {}", msgType, sendHgtpResponse);
             // recv response
             byte[] recvResponse = sendHgtpResponse.getByteData();
@@ -443,7 +443,7 @@ public class HgtpTest {
         try {
             // send Exit room
             HgtpRemoveUserFromRoomRequest sendHgtpRemoveUserFromRoomRequest = new HgtpRemoveUserFromRoomRequest(
-                    AppInstance.MAGIC_COOKIE, userId, 9, TimeStamp.getCurrentTime().getSeconds(), roomId, peerUserId
+                    userId, 9, roomId, peerUserId
             );
             log.debug("SEND DATA : {}", sendHgtpRemoveUserFromRoomRequest);
 
@@ -472,8 +472,8 @@ public class HgtpTest {
             // send response
             HgtpHeader recvRemoveUserFromRoomHeader = recvHgtpRemoveUserFromRoomRequest.getHgtpHeader();
             HgtpCommonResponse sendHgtpResponse = new HgtpCommonResponse(
-                    recvRemoveUserFromRoomHeader.getMagicCookie(), messageType, recvRemoveUserFromRoomHeader.getMessageType(), recvRemoveUserFromRoomHeader.getUserId(),
-                    recvRemoveUserFromRoomHeader.getSeqNumber() + 1, TimeStamp.getCurrentTime().getSeconds());
+                    messageType, recvRemoveUserFromRoomHeader.getMessageType(), recvRemoveUserFromRoomHeader.getUserId(),
+                    recvRemoveUserFromRoomHeader.getSeqNumber() + 1);
             log.debug("{} SEND DATA : {}", msgType, sendHgtpResponse);
             // recv response
             byte[] recvResponse = sendHgtpResponse.getByteData();

@@ -114,32 +114,26 @@ public class NetworkManager {
 
     public void stopSocket() {
         // 소켓 삭제
-        if (udpSocketManager != null) {
-            if (udpSocketManager.getSocket(hgtpLocalAddress) != null) {
-                udpSocketManager.removeSocket(hgtpLocalAddress);
-            }
+        if (udpSocketManager != null && udpSocketManager.getSocket(hgtpLocalAddress) != null) {
+            udpSocketManager.removeSocket(hgtpLocalAddress);
         }
-        if (tcpServerSocketManager != null) {
-            if (httpServerAddressMap.size() > 0) {
-                httpServerAddressMap.forEach( (key, address) -> {
-                    if (tcpServerSocketManager.getSocket(address) != null) {
-                        tcpServerSocketManager.removeSocket(address);
-                    }
-                });
+        if (tcpServerSocketManager != null && httpServerAddressMap.size() > 0) {
+            httpServerAddressMap.forEach( (key, address) -> {
+                if (tcpServerSocketManager.getSocket(address) != null) {
+                    tcpServerSocketManager.removeSocket(address);
+                }
+            });
 
-                httpServerAddressMap.clear();
-            }
+            httpServerAddressMap.clear();
         }
-        if (tcpClientSocketManager != null) {
-            if (httpClientAddressMap.size() > 0) {
-                httpClientAddressMap.forEach( (key, address) -> {
-                    if (tcpClientSocketManager.getSocket(address) != null) {
-                        tcpClientSocketManager.removeSocket(address);
-                    }
-                });
+        if (tcpClientSocketManager != null && httpClientAddressMap.size() > 0) {
+            httpClientAddressMap.forEach( (key, address) -> {
+                if (tcpClientSocketManager.getSocket(address) != null) {
+                    tcpClientSocketManager.removeSocket(address);
+                }
+            });
 
-                httpClientAddressMap.clear();
-            }
+            httpClientAddressMap.clear();
         }
 
         // 인스턴스 삭제

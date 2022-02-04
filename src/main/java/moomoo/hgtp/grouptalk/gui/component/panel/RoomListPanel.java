@@ -1,14 +1,9 @@
 package moomoo.hgtp.grouptalk.gui.component.panel;
 
-import moomoo.hgtp.grouptalk.gui.GuiManager;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.HgtpJoinRoomRequest;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
-import moomoo.hgtp.grouptalk.session.base.UserInfo;
-import org.apache.commons.net.ntp.TimeStamp;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
@@ -83,8 +78,7 @@ public class RoomListPanel extends JPanel {
 
         // create request join room
         HgtpJoinRoomRequest hgtpJoinRoomRequest = new HgtpJoinRoomRequest(
-                AppInstance.MAGIC_COOKIE, appInstance.getUserId(),
-                AppInstance.SEQ_INCREMENT, TimeStamp.getCurrentTime().getSeconds(), joinRoomId
+                appInstance.getUserId(), AppInstance.SEQ_INCREMENT, joinRoomId
         );
 
         HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();

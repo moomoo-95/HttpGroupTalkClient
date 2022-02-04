@@ -22,32 +22,31 @@ public class HgtpMessageType {
     public static final short SERVER_UNAVAILABLE = 0x53;
     public static final short DECLINE = 0x63;
 
+    public static final Map<Short, String> REQUEST_HASHMAP = new HashMap<>();
+    public static final Map<Short, String> RESPONSE_HASHMAP = new HashMap<>();
+    public static final Map<Short, String> HGTP_HASHMAP = new HashMap<>();
+
+    static {
+        REQUEST_HASHMAP.put(REGISTER, "REGISTER");
+        REQUEST_HASHMAP.put(UNREGISTER, "UNREGISTER");
+        REQUEST_HASHMAP.put(CREATE_ROOM, "CREATE_ROOM");
+        REQUEST_HASHMAP.put(DELETE_ROOM, "DELETE_ROOM");
+        REQUEST_HASHMAP.put(JOIN_ROOM, "JOIN_ROOM");
+        REQUEST_HASHMAP.put(EXIT_ROOM, "EXIT_ROOM");
+        REQUEST_HASHMAP.put(INVITE_USER_FROM_ROOM, "INVITE_USER_FROM_ROOM");
+        REQUEST_HASHMAP.put(REMOVE_USER_FROM_ROOM, "REMOVE_USER_FROM_ROOM");
+
+        RESPONSE_HASHMAP.put(OK, "OK");
+        RESPONSE_HASHMAP.put(BAD_REQUEST, "BAD_REQUEST");
+        RESPONSE_HASHMAP.put(UNAUTHORIZED, "UNAUTHORIZED");
+        RESPONSE_HASHMAP.put(FORBIDDEN, "FORBIDDEN");
+        RESPONSE_HASHMAP.put(SERVER_UNAVAILABLE, "SERVER_UNAVAILABLE");
+        RESPONSE_HASHMAP.put(DECLINE, "DECLINE");
+
+        HGTP_HASHMAP.putAll(REQUEST_HASHMAP);
+        HGTP_HASHMAP.putAll(RESPONSE_HASHMAP);
+    }
     private HgtpMessageType() {
         // nothing
     }
-
-    public static final Map<Short, String> REQUEST_HASHMAP = new HashMap<Short, String>() { {
-            put(REGISTER, "REGISTER");
-            put(UNREGISTER, "UNREGISTER");
-            put(CREATE_ROOM, "CREATE_ROOM");
-            put(DELETE_ROOM, "DELETE_ROOM");
-            put(JOIN_ROOM, "JOIN_ROOM");
-            put(EXIT_ROOM, "EXIT_ROOM");
-            put(INVITE_USER_FROM_ROOM, "INVITE_USER_FROM_ROOM");
-            put(REMOVE_USER_FROM_ROOM, "REMOVE_USER_FROM_ROOM");
-    } };
-
-    public static final Map<Short, String> RESPONSE_HASHMAP = new HashMap<Short, String>() { {
-        put(OK, "OK");
-        put(BAD_REQUEST, "BAD_REQUEST");
-        put(UNAUTHORIZED, "UNAUTHORIZED");
-        put(FORBIDDEN, "FORBIDDEN");
-        put(SERVER_UNAVAILABLE, "SERVER_UNAVAILABLE");
-        put(DECLINE, "DECLINE");
-    } };
-
-    public static final Map<Short, String> HGTP_HASHMAP = new HashMap<Short, String>() { {
-        putAll(REQUEST_HASHMAP);
-        putAll(RESPONSE_HASHMAP);
-    } };
 }
