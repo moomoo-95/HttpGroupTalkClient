@@ -1,5 +1,7 @@
 package moomoo.hgtp.grouptalk.fsm;
 
+import java.util.HashSet;
+
 public class HgtpState {
     public static final String NAME = "HgtpState";
 
@@ -15,4 +17,15 @@ public class HgtpState {
     public static final String EXIT = "EXIT";
     public static final String EXIT_OK = "EXIT_OK";
     public static final String DELETE = "DELETE";
+
+    protected static final HashSet<String> TO_JOIN = new HashSet<>();
+
+    static {
+        TO_JOIN.add(REGISTER);
+        TO_JOIN.add(CREATE_OK);
+    }
+
+    private HgtpState() {
+        // nothing
+    }
 }

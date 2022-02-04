@@ -1,24 +1,25 @@
-package moomoo.hgtp.grouptalk.service.scheduler.handler;
+package moomoo.hgtp.grouptalk.service.scheduler;
 
-import moomoo.hgtp.grouptalk.service.scheduler.base.ScheduleUnit;
+import moomoo.hgtp.grouptalk.session.SessionManager;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import service.scheduler.job.Job;
+import service.scheduler.schedule.ScheduleManager;
 
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
-/**
- * @class SessionChecker
- * @brief register 를 진행 중인 userInfo 중 비정상적인 상태의 userInfo 를 정리하는 클래스
- */
-public class SessionChecker extends ScheduleUnit {
+public class SessionCheckJob extends Job {
 
-    private static final Logger log = LoggerFactory.getLogger(SessionChecker.class);
+    private static final Logger log = LoggerFactory.getLogger(SessionCheckJob.class);
     private static final int REMOVE_TIME = 1000;
 
-    public SessionChecker(int interval) {
-        super(interval);
+    private final SessionManager sessionManager = SessionManager.getInstance();
+
+    public SessionCheckJob(ScheduleManager scheduleManager, String name, int initialDelay, int interval, TimeUnit timeUnit, int priority, int totalRunCount, boolean isLasted) {
+        super(scheduleManager, name, initialDelay, interval, timeUnit, priority, totalRunCount, isLasted);
     }
 
     @Override

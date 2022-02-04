@@ -1,9 +1,7 @@
 package protocol.hgtp;
 
-import moomoo.hgtp.grouptalk.protocol.hgtp.HgtpManager;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.*;
 import moomoo.hgtp.grouptalk.service.AppInstance;
-import org.apache.commons.net.ntp.TimeStamp;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,7 +80,7 @@ public class HgtpTest {
 
             // recv first Register
 
-            HgtpManager.getInstance().putMessage(sendFirstHgtpRegisterRequest.getByteData());
+            AppInstance.getInstance().putHgtpMessage(sendFirstHgtpRegisterRequest.getByteData());
             byte[] recvFirstRegister = sendFirstHgtpRegisterRequest.getByteData();
             HgtpRegisterRequest recvFirstHgtpRegisterRequest = new HgtpRegisterRequest(recvFirstRegister);
             log.debug("RG1 RECV DATA  : {}", recvFirstHgtpRegisterRequest);

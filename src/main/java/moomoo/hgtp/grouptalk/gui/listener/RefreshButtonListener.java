@@ -1,6 +1,6 @@
 package moomoo.hgtp.grouptalk.gui.listener;
 
-import moomoo.hgtp.grouptalk.protocol.http.handler.HttpRequestMessageHandler;
+import moomoo.hgtp.grouptalk.protocol.http.handler.HttpMessageHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
@@ -21,7 +21,7 @@ public class RefreshButtonListener implements ActionListener {
         UserInfo userInfo = sessionManager.getUserInfo(AppInstance.getInstance().getUserId());
 
         if (userInfo != null) {
-            HttpRequestMessageHandler httpRequestMessageHandler = new HttpRequestMessageHandler();
+            HttpMessageHandler httpRequestMessageHandler = new HttpMessageHandler();
             httpRequestMessageHandler.sendRefreshRequest(userInfo);
         }
     }

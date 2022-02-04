@@ -15,7 +15,7 @@
         <rpm.binary.name>${project.artifactId}-${project.version}-${rpm.release.version}.noarch.rpm</rpm.binary.name>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <netty.version>4.0.33.Final</netty.version>
+        <netty.version>5.0.0.Alpha2</netty.version>
         <logback.version>1.2.3</logback.version>
     </properties>
 
@@ -79,12 +79,6 @@
             <groupId>umediafsm</groupId>
             <artifactId>umediafsm</artifactId>
             <version>1.0.3</version>
-        </dependency>
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-            <version>4.1.52.Final</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

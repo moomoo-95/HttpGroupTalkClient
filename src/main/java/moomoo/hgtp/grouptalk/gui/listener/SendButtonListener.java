@@ -3,7 +3,7 @@ package moomoo.hgtp.grouptalk.gui.listener;
 
 import moomoo.hgtp.grouptalk.gui.GuiManager;
 import moomoo.hgtp.grouptalk.gui.component.panel.MessagePanel;
-import moomoo.hgtp.grouptalk.protocol.http.handler.HttpRequestMessageHandler;
+import moomoo.hgtp.grouptalk.protocol.http.handler.HttpMessageHandler;
 import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpMessageContent;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
@@ -39,7 +39,7 @@ public class SendButtonListener implements ActionListener {
             // create request message
             HttpMessageContent httpMessageContent = new HttpMessageContent(userInfo.getUserId(), message);
 
-            HttpRequestMessageHandler httpRequestMessageHandler = new HttpRequestMessageHandler();
+            HttpMessageHandler httpRequestMessageHandler = new HttpMessageHandler();
             httpRequestMessageHandler.sendMessageRequest(httpMessageContent, userInfo);
         }
     }

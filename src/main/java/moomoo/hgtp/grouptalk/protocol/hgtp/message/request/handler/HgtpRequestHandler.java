@@ -12,7 +12,7 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.*;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpCommonResponse;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpUnauthorizedResponse;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.handler.HgtpResponseHandler;
-import moomoo.hgtp.grouptalk.protocol.http.handler.HttpRequestMessageHandler;
+import moomoo.hgtp.grouptalk.protocol.http.handler.HttpMessageHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.service.base.ProcessMode;
 import moomoo.hgtp.grouptalk.session.SessionManager;
@@ -133,7 +133,7 @@ public class HgtpRequestHandler {
                 userInfo.setRegister();
 
                 //현재 user, room list 전송
-                HttpRequestMessageHandler httpRequestMessageHandler = new HttpRequestMessageHandler();
+                HttpMessageHandler httpRequestMessageHandler = new HttpMessageHandler();
                 httpRequestMessageHandler.sendRoomListRequest(userInfo);
                 sessionManager.getUserInfoHashMap().forEach( (key, value) -> httpRequestMessageHandler.sendUserListRequest(value));
             }
@@ -196,7 +196,7 @@ public class HgtpRequestHandler {
         if (messageType == HgtpMessageType.OK) {
             sessionManager.deleteUserInfo(userId);
 
-            HttpRequestMessageHandler httpRequestMessageHandler = new HttpRequestMessageHandler();
+            HttpMessageHandler httpRequestMessageHandler = new HttpMessageHandler();
             sessionManager.getUserInfoHashMap().forEach( (key, value) -> httpRequestMessageHandler.sendUserListRequest(value));
         }
     }
@@ -245,7 +245,7 @@ public class HgtpRequestHandler {
 
         if (messageType == HgtpMessageType.OK) {
             //현재 room list 전송
-            HttpRequestMessageHandler httpRequestMessageHandler = new HttpRequestMessageHandler();
+            HttpMessageHandler httpRequestMessageHandler = new HttpMessageHandler();
             sessionManager.getUserInfoHashMap().forEach( (key, value) -> httpRequestMessageHandler.sendRoomListRequest(value));
             httpRequestMessageHandler.sendRoomUserListRequest(userInfo);
 
@@ -296,7 +296,7 @@ public class HgtpRequestHandler {
 
         if (messageType == HgtpMessageType.OK) {
             //현재 room list 전송
-            HttpRequestMessageHandler httpRequestMessageHandler = new HttpRequestMessageHandler();
+            HttpMessageHandler httpRequestMessageHandler = new HttpMessageHandler();
             sessionManager.getUserInfoHashMap().forEach( (key, userInfo) -> httpRequestMessageHandler.sendRoomListRequest(userInfo));
         }
     }
@@ -352,7 +352,7 @@ public class HgtpRequestHandler {
         if (messageType == HgtpMessageType.OK) {
             roomInfo.addUserGroupSet(userId);
 
-            HttpRequestMessageHandler httpRequestMessageHandler = new HttpRequestMessageHandler();
+            HttpMessageHandler httpRequestMessageHandler = new HttpMessageHandler();
             roomInfo.getUserGroupSet().forEach(roomUserId -> {
                 UserInfo roomUserInfo = sessionManager.getUserInfo(roomUserId);
                 if (roomUserInfo != null) {
@@ -417,7 +417,7 @@ public class HgtpRequestHandler {
         if (messageType == HgtpMessageType.OK) {
             roomInfo.removeUserGroupSet(userId);
 
-            HttpRequestMessageHandler httpRequestMessageHandler = new HttpRequestMessageHandler();
+            HttpMessageHandler httpRequestMessageHandler = new HttpMessageHandler();
             roomInfo.getUserGroupSet().forEach(roomUserId -> {
                 UserInfo roomUserInfo = sessionManager.getUserInfo(roomUserId);
                 if (roomUserInfo != null) {

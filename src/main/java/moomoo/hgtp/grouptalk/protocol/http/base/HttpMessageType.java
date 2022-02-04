@@ -16,6 +16,8 @@ public class HttpMessageType {
     public static final String NOTICE = "notice";
     public static final String REFRESH = "refresh";
 
+    public static final String APPLICATION_JSON = "application/json";
+
     private HttpMessageType() {
         // nothing
     }

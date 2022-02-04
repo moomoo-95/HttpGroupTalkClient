@@ -1,17 +1,15 @@
 package moomoo.hgtp.grouptalk.network;
 
 import instance.BaseEnvironment;
-import instance.DebugLevel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioDatagramChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.http.HttpClientCodec;
-import io.netty.handler.codec.http.HttpContentDecompressor;
-import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.*;
 import moomoo.hgtp.grouptalk.config.ConfigManager;
+import moomoo.hgtp.grouptalk.network.handler.DashHttpHandler;
 import moomoo.hgtp.grouptalk.network.handler.HgtpChannelHandler;
-import moomoo.hgtp.grouptalk.network.handler.HttpChannelHandler;
+import moomoo.hgtp.grouptalk.protocol.http.base.HttpMessageRouteTable;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
 import network.definition.NetAddress;
@@ -20,8 +18,6 @@ import network.socket.SocketManager;
 import network.socket.SocketProtocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import service.ResourceManager;
-import service.scheduler.schedule.ScheduleManager;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -33,10 +29,6 @@ public class NetworkManager {
     private static NetworkManager networkManager = null;
 
     private AppInstance appInstance = AppInstance.getInstance();
-    private ConfigManager configManager = appInstance.getConfigManager();
-
-    // NetAddress 생성
-    private final BaseEnvironment baseEnvironment;
 
     // Hgtp / udp
     private final SocketManager udpSocketManager;
@@ -50,12 +42,18 @@ public class NetworkManager {
     private final ConcurrentHashMap<String, NetAddress> httpClientAddressMap = new ConcurrentHashMap<>();
 
     private final ChannelInitializer<NioDatagramChannel> hgtpChannelInitializer;
-    private final ChannelInitializer<NioSocketChannel> httpServerChannelInitializer;
-    private final ChannelInitializer<NioSocketChannel> httpClientChannelInitializer;
+//    private final ChannelInitializer<NioSocketChannel> httpServerChannelInitializer;
+//    private final ChannelInitializer<NioSocketChannel> httpClientChannelInitializer;
+
+    private final HttpMessageRouteTable routeTable;
+    private final ChannelInitializer<SocketChannel> httpMessageServerInitializer;
+    private final ChannelInitializer<SocketChannel> httpMessageClientInitializer;
 
     public NetworkManager() {
+        ConfigManager configManager = appInstance.getConfigManager();
+
         // 인스턴스 생성
-        baseEnvironment = new BaseEnvironment( new ScheduleManager(), new ResourceManager(configManager.getHttpMinPort(), configManager.getHttpMaxPort()), DebugLevel.DEBUG );
+        BaseEnvironment baseEnvironment = appInstance.getBaseEnvironment();
 
         // SocketManager 생성
         udpSocketManager = new SocketManager(baseEnvironment, false, false, SOCKET_THREAD_SIZE, configManager.getSendBufSize(), configManager.getRecvBufSize());
@@ -73,23 +71,26 @@ public class NetworkManager {
             }
         };
 
-        httpServerChannelInitializer = new ChannelInitializer<NioSocketChannel>() {
+        routeTable = new HttpMessageRouteTable();
+        httpMessageServerInitializer = new ChannelInitializer<SocketChannel>() {
             @Override
-            protected void initChannel(NioSocketChannel socketChannel) {
-                final ChannelPipeline channelPipeline = socketChannel.pipeline();
-                channelPipeline.addLast("codec", new HttpServerCodec());
-                channelPipeline.addLast("deflater", new HttpContentDecompressor());
-                channelPipeline.addLast(new HttpChannelHandler());
+            protected void initChannel(SocketChannel socketChannel) throws Exception {
+                final ChannelPipeline p = socketChannel.pipeline();
+                p.addLast("decoder", new HttpRequestDecoder(4096, 8192, 8192, false));
+                p.addLast("aggregator", new HttpObjectAggregator(100 * 1024 * 1024));
+                p.addLast("encoder", new HttpResponseEncoder());
+                p.addLast("handler", new DashHttpHandler(routeTable));
             }
         };
 
-        httpClientChannelInitializer = new ChannelInitializer<NioSocketChannel>() {
+        httpMessageClientInitializer = new ChannelInitializer<SocketChannel>() {
             @Override
-            protected void initChannel(NioSocketChannel socketChannel) {
-                final ChannelPipeline channelPipeline = socketChannel.pipeline();
-                channelPipeline.addLast("codec", new HttpClientCodec());
-                channelPipeline.addLast("deflater", new HttpContentDecompressor());
-                channelPipeline.addLast(new HttpChannelHandler());
+            protected void initChannel(SocketChannel socketChannel) throws Exception {
+                final ChannelPipeline p = socketChannel.pipeline();
+                p.addLast("decoder", new HttpResponseDecoder(4096, 8192, 8192, false));
+                p.addLast("aggregator", new HttpObjectAggregator(100 * 1024 * 1024));
+                p.addLast("encoder", new HttpRequestEncoder());
+                p.addLast("handler", new DashHttpHandler(routeTable));
             }
         };
     }
@@ -135,11 +136,6 @@ public class NetworkManager {
 
             httpClientAddressMap.clear();
         }
-
-        // 인스턴스 삭제
-        if (baseEnvironment != null) {
-            baseEnvironment.stop();
-        }
     }
 
     public NetAddress getHttpSocket(String userId, boolean isServerSocket) {
@@ -149,7 +145,7 @@ public class NetworkManager {
     public boolean addHttpSocket(String userId, NetAddress httpAddress, boolean isServerSocket) {
         GroupSocket httpGroupSocket;
         if (isServerSocket) {
-            if (tcpServerSocketManager.addSocket(httpAddress, httpServerChannelInitializer)) {
+            if (tcpServerSocketManager.addSocket(httpAddress, httpMessageServerInitializer)) {
                 httpGroupSocket = tcpServerSocketManager.getSocket(httpAddress);
                 if (httpGroupSocket.getListenSocket().openListenChannel()) {
                     synchronized (httpServerAddressMap) {
@@ -159,7 +155,7 @@ public class NetworkManager {
                 }
             }
         } else {
-            if (tcpClientSocketManager.addSocket(httpAddress, httpClientChannelInitializer)){
+            if (tcpClientSocketManager.addSocket(httpAddress, httpMessageClientInitializer)){
                 httpGroupSocket = tcpClientSocketManager.getSocket(httpAddress);
                 if (httpGroupSocket.getListenSocket().openListenChannel()) {
                     synchronized (httpClientAddressMap) {
@@ -180,7 +176,7 @@ public class NetworkManager {
             log.debug("({}) () () httpAddress already removed.", userId);
             return;
         }
-        getBaseEnvironment().getPortResourceManager().restorePort(httpAddress.getPort());
+        appInstance.getResourceManager().restorePort(httpAddress.getPort());
 
         if (isServerSocket && tcpServerSocketManager.getSocket(httpAddress) != null) {
             tcpServerSocketManager.removeSocket(httpAddress);
@@ -205,12 +201,9 @@ public class NetworkManager {
     public void addDestinationHttpSocket(UserInfo userInfo) {
         GroupSocket httpGroupSocket = getHttpGroupSocket(userInfo.getUserId(), false);
 
-        httpGroupSocket.addDestination(userInfo.getHttpTargetNetAddress(), null, userInfo.getSessionId(), httpClientChannelInitializer);
+        httpGroupSocket.addDestination(userInfo.getHttpTargetNetAddress(), null, userInfo.getSessionId(), httpMessageClientInitializer);
         log.debug("({}) () () add Destination ok. [{}] -> [{}]", userInfo.getUserId(), httpGroupSocket.getListenSocket().getNetAddress().getPort(), httpGroupSocket.getDestination(userInfo.getSessionId()).getGroupEndpointId().getGroupAddress().getPort());
     }
-
-
-    public BaseEnvironment getBaseEnvironment() {return baseEnvironment;}
 
     public GroupSocket getHgtpGroupSocket() {return udpSocketManager.getSocket(hgtpLocalAddress);}
 

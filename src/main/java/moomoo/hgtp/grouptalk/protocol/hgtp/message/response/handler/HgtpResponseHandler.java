@@ -11,7 +11,7 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.HgtpRegisterRequest;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHandler;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpCommonResponse;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpUnauthorizedResponse;
-import moomoo.hgtp.grouptalk.protocol.http.handler.HttpRequestMessageHandler;
+import moomoo.hgtp.grouptalk.protocol.http.handler.HttpMessageHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.service.base.ProcessMode;
 import moomoo.hgtp.grouptalk.session.SessionManager;
@@ -81,7 +81,7 @@ public class HgtpResponseHandler {
 
             sendCommonResponse(hgtpCommonResponse);
 
-            HttpRequestMessageHandler httpRequestMessageHandler = new HttpRequestMessageHandler();
+            HttpMessageHandler httpRequestMessageHandler = new HttpMessageHandler();
             roomInfo.getUserGroupSet().forEach(roomUserId -> {
                 UserInfo roomUserInfo = sessionManager.getUserInfo(roomUserId);
                 if (roomUserInfo != null) {

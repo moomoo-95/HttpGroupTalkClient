@@ -10,6 +10,8 @@ import moomoo.hgtp.grouptalk.gui.component.panel.RoomUserListPanel;
 import moomoo.hgtp.grouptalk.gui.component.panel.UserListPanel;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
 import moomoo.hgtp.grouptalk.protocol.http.base.HttpMessageType;
+import moomoo.hgtp.grouptalk.protocol.http.base.HttpRequest;
+import moomoo.hgtp.grouptalk.protocol.http.message.HttpMessageFactory;
 import moomoo.hgtp.grouptalk.protocol.http.message.content.*;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
@@ -23,9 +25,53 @@ import org.slf4j.LoggerFactory;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 
-public class HttpRequestMessageHandler {
+import static moomoo.hgtp.grouptalk.protocol.http.base.HttpMessageType.*;
 
-    private static final Logger log = LoggerFactory.getLogger(HttpRequestMessageHandler.class);
+public class HttpMessageHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(HttpMessageHandler.class);
+
+
+    public Object handle(HttpRequest httpRequest) {
+        HttpHeaders httpHeaders = httpRequest.headers();
+        String httpContent = httpRequest.body();
+
+        String userId = httpHeaders.get(HttpHeaderNames.HOST).toString();
+        String messageType = httpHeaders.get(MESSAGE_TYPE).toString();
+        log.debug("({}) () () RECV {} MSG : {}\n\n{}", userId, messageType, httpHeaders, httpContent);
+
+        switch (messageType){
+            case ROOM_LIST:
+                HttpRoomListContent roomListContent = HttpMessageFactory.createHttpRoomListContent(httpContent);
+                receiveRoomListRequest(roomListContent);
+                break;
+            case USER_LIST:
+                HttpUserListContent userListContent = HttpMessageFactory.createHttpUserListContent(httpContent);
+                receiveUserListRequest(userListContent);
+                break;
+            case ROOM_USER_LIST:
+                HttpRoomUserListContent roomUserListContent = HttpMessageFactory.createHttpRoomUserListContent(httpContent);
+                receiveRoomUserListRequest(roomUserListContent);
+                break;
+            case MESSAGE:
+                HttpMessageContent messageContent = HttpMessageFactory.createHttpMessageContent(httpContent);
+                receiveMessageRequest(messageContent);
+                break;
+            case NOTICE:
+                HttpNoticeContent noticeContent = HttpMessageFactory.createHttpNoticeContent(httpContent);
+                receiveNoticeRequest(noticeContent);
+                break;
+            case REFRESH:
+                HttpRefreshContent refreshContent = HttpMessageFactory.createHttpRefreshContent(httpContent);
+                receiveRefreshRequest(refreshContent);
+                break;
+            default:
+                log.warn("({}) () () Undefined message cannot be processed. {}", userId, httpRequest);
+                break;
+        }
+
+        return null;
+    }
 
     /**
      * @fn sendRoomListRequest
@@ -47,7 +93,7 @@ public class HttpRequestMessageHandler {
         String content = httpRoomListContent.toString();
 
         ByteBuf byteBuf = Unpooled.copiedBuffer(content, StandardCharsets.UTF_8);
-        request.headers().set(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes());
+        request.headers().set(HttpHeaderNames.CONTENT_LENGTH, String.valueOf(byteBuf.readableBytes()));
         request.content().writeBytes(byteBuf);
 
         sendHttpRequest(request, userInfo);
@@ -73,7 +119,7 @@ public class HttpRequestMessageHandler {
         String content = httpUserListContent.toString();
 
         ByteBuf byteBuf = Unpooled.copiedBuffer(content, StandardCharsets.UTF_8);
-        request.headers().set(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes());
+        request.headers().set(HttpHeaderNames.CONTENT_LENGTH, String.valueOf(byteBuf.readableBytes()));
         request.content().writeBytes(byteBuf);
 
         sendHttpRequest(request, userInfo);
@@ -101,7 +147,7 @@ public class HttpRequestMessageHandler {
         String content = roomUserListContent.toString();
 
         ByteBuf byteBuf = Unpooled.copiedBuffer(content, StandardCharsets.UTF_8);
-        request.headers().set(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes());
+        request.headers().set(HttpHeaderNames.CONTENT_LENGTH, String.valueOf(byteBuf.readableBytes()));
         request.content().writeBytes(byteBuf);
 
         sendHttpRequest(request, userInfo);
@@ -120,7 +166,7 @@ public class HttpRequestMessageHandler {
         String content = messageContent.toString();
 
         ByteBuf byteBuf = Unpooled.copiedBuffer(content, StandardCharsets.UTF_8);
-        request.headers().set(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes());
+        request.headers().set(HttpHeaderNames.CONTENT_LENGTH, String.valueOf(byteBuf.readableBytes()));
         request.content().writeBytes(byteBuf);
 
         sendHttpRequest(request, userInfo);
@@ -140,7 +186,7 @@ public class HttpRequestMessageHandler {
         String content = noticeContent.toString();
 
         ByteBuf byteBuf = Unpooled.copiedBuffer(content, StandardCharsets.UTF_8);
-        request.headers().set(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes());
+        request.headers().set(HttpHeaderNames.CONTENT_LENGTH, String.valueOf(byteBuf.readableBytes()));
         request.content().writeBytes(byteBuf);
 
         sendHttpRequest(request, userInfo);
@@ -160,7 +206,7 @@ public class HttpRequestMessageHandler {
         String content = refreshContent.toString();
 
         ByteBuf byteBuf = Unpooled.copiedBuffer(content, StandardCharsets.UTF_8);
-        request.headers().set(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes());
+        request.headers().set(HttpHeaderNames.CONTENT_LENGTH, String.valueOf(byteBuf.readableBytes()));
         request.content().writeBytes(byteBuf);
 
         sendHttpRequest(request, userInfo);
@@ -306,7 +352,7 @@ public class HttpRequestMessageHandler {
     private void setRequestHeader(DefaultFullHttpRequest request, UserInfo userInfo, String messageType) {
         request.headers().set(HttpHeaderNames.HOST, userInfo.getHttpClientNetAddress().getInet4Address().getHostAddress());
         request.headers().set(HttpHeaderNames.USER_AGENT, userInfo.getUserId());
-        request.headers().set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
+        request.headers().set(HttpHeaderNames.CONTENT_TYPE, HttpMessageType.APPLICATION_JSON);
         request.headers().set(HttpMessageType.MESSAGE_TYPE, messageType);
     }
 

@@ -10,20 +10,25 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpUnauthorizedResp
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.handler.HgtpResponseHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import service.scheduler.job.Job;
+import service.scheduler.schedule.ScheduleManager;
 import util.module.ConcurrentCyclicFIFO;
 
-public class HgtpConsumer implements Runnable {
+import java.util.concurrent.TimeUnit;
+
+public class HgtpMessageHandler extends Job {
 
     private static final Logger log = LoggerFactory.getLogger(HgtpResponseHandler.class);
 
-    private final ConcurrentCyclicFIFO<byte[]> hgtpQueue;
+    private final ConcurrentCyclicFIFO<byte[]> hgtpMessageQueue;
     private final HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();
     private final HgtpResponseHandler hgtpResponseHandler = new HgtpResponseHandler();
 
     private boolean isQuit = false;
 
-    public HgtpConsumer(ConcurrentCyclicFIFO<byte[]> hgtpQueue) {
-        this.hgtpQueue = hgtpQueue;
+    public HgtpMessageHandler(ScheduleManager scheduleManager, String name, int initialDelay, int interval, TimeUnit timeUnit, int priority, int totalRunCount, boolean isLasted, ConcurrentCyclicFIFO<byte[]> hgtpMessageQueue) {
+        super(scheduleManager, name, initialDelay, interval, timeUnit, priority, totalRunCount, isLasted);
+        this.hgtpMessageQueue = hgtpMessageQueue;
     }
 
     @Override
@@ -34,7 +39,7 @@ public class HgtpConsumer implements Runnable {
     private void queueProcessing() {
         while (!isQuit) {
             try {
-                byte[] data = hgtpQueue.take();
+                byte[] data = hgtpMessageQueue.take();
                 parseHgtpMessage(data);
             } catch (InterruptedException e) {
                 log.error("() () () HgtpConsumer.queueProcessing ", e);

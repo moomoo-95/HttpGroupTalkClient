@@ -47,7 +47,7 @@ public class SessionManager {
 
         // PortResourceManager에서 채널 할당
         ConfigManager configManager = appInstance.getConfigManager();
-        ResourceManager resourceManager = networkManager.getBaseEnvironment().getPortResourceManager();
+        ResourceManager resourceManager = appInstance.getResourceManager();
 
         // 포트가 정상적으로 할당될 수 있는 경우 할당받을 때 까지 반복
         short httpServerPort = 0;

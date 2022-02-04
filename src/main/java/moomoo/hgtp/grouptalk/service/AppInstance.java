@@ -1,18 +1,29 @@
 package moomoo.hgtp.grouptalk.service;
 
+import instance.BaseEnvironment;
+import instance.DebugLevel;
 import moomoo.hgtp.grouptalk.config.ConfigManager;
+import moomoo.hgtp.grouptalk.protocol.hgtp.HgtpMessageHandler;
 import moomoo.hgtp.grouptalk.service.base.ProcessMode;
 import moomoo.hgtp.grouptalk.util.CnameGenerator;
 import org.apache.commons.net.ntp.TimeStamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import service.ResourceManager;
+import service.scheduler.schedule.ScheduleManager;
+import util.module.ConcurrentCyclicFIFO;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.concurrent.TimeUnit;
 
 public class AppInstance {
 
     private static final Logger log = LoggerFactory.getLogger(AppInstance.class);
+
+    public static final String SERVER_SCHEDULE_KEY = "server-schedule-key";
+    public static final String HGTP_SCHEDULE_KEY = "hgtp-schedule-key";
+    public static final String HTTP_SCHEDULE_KEY = "http-schedule-key";
 
     public static final String ALGORITHM = "MD5";
     public static final String MD5_REALM = "HGTP_SERVICE";
@@ -30,6 +41,11 @@ public class AppInstance {
     private ProcessMode mode = ProcessMode.DOWN;
 
     private ConfigManager configManager = null;
+
+    private BaseEnvironment baseEnvironment;
+
+    private final ConcurrentCyclicFIFO<byte[]> hgtpMessageQueue = new ConcurrentCyclicFIFO<>();
+    private final ConcurrentCyclicFIFO<Object[]> httpMessageQueue = new ConcurrentCyclicFIFO<>();
 
     // only client
     private String userId = "";
@@ -70,6 +86,21 @@ public class AppInstance {
         userId = CnameGenerator.generateCnameUserId();
     }
 
+    private void initScheduleManager() {
+        ScheduleManager scheduleManager = appInstance.getScheduleManager();
+
+        scheduleManager.initJob(AppInstance.HGTP_SCHEDULE_KEY, configManager.getHgtpThreadSize(), configManager.getRecvBufSize());
+
+        scheduleManager.startJob(
+                AppInstance.HGTP_SCHEDULE_KEY,
+                new HgtpMessageHandler(
+                        scheduleManager, HgtpMessageHandler.class.getSimpleName(),
+                        0, 1, TimeUnit.MILLISECONDS, 1, 0, true,
+                        appInstance.getHgtpMessageQueue()
+                )
+        );
+    }
+
     public ProcessMode getMode() {return mode;}
 
     public boolean setMode(int mode) {
@@ -96,9 +127,28 @@ public class AppInstance {
 
     public void setConfigManager(String configPath) {
         this.configManager = new ConfigManager(configPath);
+        this.baseEnvironment = new BaseEnvironment(
+                new ScheduleManager(),
+                new ResourceManager(configManager.getHttpMinPort(), configManager.getHttpMaxPort()), DebugLevel.DEBUG
+        );
+        initScheduleManager();
     }
 
     public long getTimeStamp() { return TimeStamp.getCurrentTime().getSeconds();}
+
+    public BaseEnvironment getBaseEnvironment() {return baseEnvironment;}
+
+    public ScheduleManager getScheduleManager() { return this.baseEnvironment.getScheduleManager() ; }
+    public ResourceManager getResourceManager() { return this.baseEnvironment.getPortResourceManager(); }
+
+
+    public ConcurrentCyclicFIFO<byte[]> getHgtpMessageQueue() {return hgtpMessageQueue;}
+
+    public ConcurrentCyclicFIFO<Object[]> getHttpMessageQueue() {return httpMessageQueue;}
+
+    public void putHgtpMessage(byte[] data) {
+        this.hgtpMessageQueue.offer(data);
+    }
 
     // only server
     public String getServerNonce() {return serverNonce;}
@@ -107,6 +157,5 @@ public class AppInstance {
     public String getUserId() {return userId;}
 
     public boolean isManager() {return isManager;}
-
     public void setManager(boolean manager) {isManager = manager;}
 }

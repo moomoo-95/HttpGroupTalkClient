@@ -3,13 +3,15 @@ package moomoo.hgtp.grouptalk.service;
 import moomoo.hgtp.grouptalk.config.ConfigManager;
 import moomoo.hgtp.grouptalk.gui.GuiManager;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
-import moomoo.hgtp.grouptalk.protocol.hgtp.HgtpManager;
-import moomoo.hgtp.grouptalk.protocol.http.HttpManager;
-import moomoo.hgtp.grouptalk.service.scheduler.ScheduleManager;
+import moomoo.hgtp.grouptalk.service.scheduler.SessionCheckJob;
+import moomoo.hgtp.grouptalk.service.scheduler.SessionMonitorJob;
 import moomoo.hgtp.grouptalk.session.SessionManager;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import service.scheduler.schedule.ScheduleManager;
+
+import java.util.concurrent.TimeUnit;
 
 public class ServiceManager {
 
@@ -19,12 +21,10 @@ public class ServiceManager {
 
     private static ServiceManager serviceManager = null;
 
-    private HgtpManager hgtpManager;
-    private HttpManager httpManager;
-    private NetworkManager networkManager;
+    private final AppInstance appInstance = AppInstance.getInstance();
 
-    // server, proxy
-    private ScheduleManager scheduleManager;
+//    private HttpManager httpManager;
+    private NetworkManager networkManager;
 
     private boolean isQuit = false;
 
@@ -60,28 +60,42 @@ public class ServiceManager {
             this.stop();
         }));
 
-        // HgtpManager
-        hgtpManager = HgtpManager.getInstance();
-        hgtpManager.startHgtp();
-        // HttpManager
-        httpManager = HttpManager.getInstance();
-        httpManager.startHttp();
-
         // SessionManager
         SessionManager sessionManager = SessionManager.getInstance();
+
+        ConfigManager configManager = AppInstance.getInstance().getConfigManager();
+        ScheduleManager scheduleManager = appInstance.getScheduleManager();
+
+        // HttpManager
+//        httpManager = HttpManager.getInstance();
+//        httpManager.startHttp();
+
 
         // NetworkManager
         networkManager = NetworkManager.getInstance();
         networkManager.startSocket();
 
-        AppInstance appInstance = AppInstance.getInstance();
         switch (appInstance.getMode()){
             case SERVER:
-                scheduleManager = ScheduleManager.getInstance();
-                scheduleManager.start();
+                scheduleManager.initJob(AppInstance.SERVER_SCHEDULE_KEY, 10, 10);
+
+                scheduleManager.startJob(
+                        AppInstance.SERVER_SCHEDULE_KEY,
+                        new SessionCheckJob(
+                                scheduleManager, SessionCheckJob.class.getSimpleName(),
+                                0, 1000, TimeUnit.MILLISECONDS, 1, 0, true
+                        )
+                );
+                scheduleManager.startJob(
+                        AppInstance.SERVER_SCHEDULE_KEY,
+                        new SessionMonitorJob(
+                                scheduleManager, SessionMonitorJob.class.getSimpleName(),
+                                0, 1000, TimeUnit.MILLISECONDS, 1, 0, true
+                        )
+                );
+
                 break;
             case CLIENT:
-                ConfigManager configManager = appInstance.getConfigManager();
                 sessionManager.addUserInfo(appInstance.getUserId(), 0);
                 UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
                 userInfo.setHgtpTargetNetAddress(configManager.getTargetListenIp(), configManager.getHgtpTargetPort());
@@ -98,19 +112,9 @@ public class ServiceManager {
     }
 
     public void stop() {
-        hgtpManager.stopHgtp();
-        httpManager.stopHttp();
+//        httpManager.stopHttp();
         networkManager.stopSocket();
 
-        switch (AppInstance.getInstance().getMode()){
-            case SERVER:
-                scheduleManager.stop();
-                break;
-            case CLIENT:
-                break;
-            case PROXY:
-                break;
-            default:
-        }
+        appInstance.getBaseEnvironment().stop();
     }
 }
