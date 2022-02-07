@@ -41,5 +41,8 @@ Include the data needed for each request and response.
 ### HTTP Flow
 ![image](https://user-images.githubusercontent.com/58906637/148345776-9dfa9e0b-b581-4e55-ab47-8a8b20da1ea6.png)
 
+### HGTP FSM
+![image](https://user-images.githubusercontent.com/58906637/152746797-28b13dba-66aa-4c00-b825-90f8964464f7.png)
+
 ### Transport Structure
 ![image](https://user-images.githubusercontent.com/58906637/152719176-5331cc49-51c1-4176-a47e-b70c7c964e4e.png)
