@@ -1,5 +1,6 @@
 package moomoo.hgtp.grouptalk.gui.listener;
 
+import moomoo.hgtp.grouptalk.fsm.HgtpEvent;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.HgtpExitRoomRequest;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
@@ -30,6 +31,7 @@ public class ExitRoomButtonListener implements ActionListener {
             log.warn("({}) ({}) () UserInfo has already exit the room.", userInfo.getUserId(), userInfo.getRoomId());
         } else {
 
+            appInstance.getStateHandler().fire(HgtpEvent.EXIT_ROOM, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
             // create request exit room
             HgtpExitRoomRequest hgtpExitRoomRequest = new HgtpExitRoomRequest(
                     appInstance.getUserId(), AppInstance.SEQ_INCREMENT, roomId

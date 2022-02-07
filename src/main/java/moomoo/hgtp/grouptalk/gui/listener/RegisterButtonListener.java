@@ -7,15 +7,13 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHa
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class RegisterButtonListener implements ActionListener {
 
-    private static final Logger log = LoggerFactory.getLogger(RegisterButtonListener.class);
+    private static SessionManager sessionManager = SessionManager.getInstance();
 
     private final HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();
 
@@ -24,7 +22,7 @@ public class RegisterButtonListener implements ActionListener {
         AppInstance appInstance = AppInstance.getInstance();
         ConfigManager configManager = appInstance.getConfigManager();
 
-        UserInfo userInfo = SessionManager.getInstance().getUserInfo(appInstance.getUserId());
+        UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
         appInstance.getStateHandler().fire(HgtpEvent.REGISTER, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
         // create request Register
         HgtpRegisterRequest hgtpRegisterRequest = new HgtpRegisterRequest(

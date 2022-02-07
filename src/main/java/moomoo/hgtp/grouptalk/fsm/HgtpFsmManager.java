@@ -70,6 +70,8 @@ public class HgtpFsmManager {
 
         // TO_TALK
         stateHandler.addState(HgtpEvent.TO_TALK, HgtpState.TO_TALK, HgtpState.TALK, null, null, null, 0, 0 );
+
+        stateHandler.addEventCondition(new ToTalkEventCondition(stateManager, stateHandler.getEvent(HgtpEvent.TO_TALK)), 1000);
     }
 
     public StateManager getStateManager() {

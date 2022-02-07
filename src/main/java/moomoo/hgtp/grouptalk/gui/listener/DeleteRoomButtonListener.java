@@ -1,5 +1,6 @@
 package moomoo.hgtp.grouptalk.gui.listener;
 
+import moomoo.hgtp.grouptalk.fsm.HgtpEvent;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.HgtpDeleteRoomRequest;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
@@ -30,6 +31,7 @@ public class DeleteRoomButtonListener implements ActionListener {
         } else {
             String roomId = userInfo.getRoomId();
 
+            appInstance.getStateHandler().fire(HgtpEvent.DELETE_ROOM, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
             // create request delete room
             HgtpDeleteRoomRequest hgtpDeleteRoomRequest = new HgtpDeleteRoomRequest(
                     appInstance.getUserId(), AppInstance.SEQ_INCREMENT, roomId

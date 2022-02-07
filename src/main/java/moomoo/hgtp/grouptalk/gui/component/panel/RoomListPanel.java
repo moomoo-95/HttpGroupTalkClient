@@ -1,9 +1,11 @@
 package moomoo.hgtp.grouptalk.gui.component.panel;
 
+import moomoo.hgtp.grouptalk.fsm.HgtpEvent;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.HgtpJoinRoomRequest;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
+import moomoo.hgtp.grouptalk.session.base.UserInfo;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
@@ -80,6 +82,9 @@ public class RoomListPanel extends JPanel {
     private void joinRoom(String joinRoomId) {
         AppInstance appInstance = AppInstance.getInstance();
 
+
+        UserInfo userInfo = SessionManager.getInstance().getUserInfo(appInstance.getUserId());
+        appInstance.getStateHandler().fire(HgtpEvent.JOIN_ROOM, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
         // create request join room
         HgtpJoinRoomRequest hgtpJoinRoomRequest = new HgtpJoinRoomRequest(
                 appInstance.getUserId(), AppInstance.SEQ_INCREMENT, joinRoomId
@@ -97,6 +102,4 @@ public class RoomListPanel extends JPanel {
         }
 
     }
-
-//    public String getFocusRoomId() { return focusRoomId; }
 }

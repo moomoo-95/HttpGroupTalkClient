@@ -6,7 +6,6 @@ import instance.BaseEnvironment;
 import instance.DebugLevel;
 import moomoo.hgtp.grouptalk.config.ConfigManager;
 import moomoo.hgtp.grouptalk.fsm.HgtpFsmManager;
-import moomoo.hgtp.grouptalk.fsm.HgtpState;
 import moomoo.hgtp.grouptalk.protocol.hgtp.HgtpMessageHandler;
 import moomoo.hgtp.grouptalk.service.base.ProcessMode;
 import moomoo.hgtp.grouptalk.util.CnameGenerator;

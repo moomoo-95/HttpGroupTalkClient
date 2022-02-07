@@ -1,5 +1,6 @@
 package moomoo.hgtp.grouptalk.gui.listener;
 
+import moomoo.hgtp.grouptalk.fsm.HgtpEvent;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.HgtpCreateRoomRequest;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
@@ -31,6 +32,7 @@ public class CreateRoomButtonListener implements ActionListener {
         } else {
             String roomId = CnameGenerator.generateCnameRoomId();
 
+            appInstance.getStateHandler().fire(HgtpEvent.CREATE_ROOM, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
             // create request create room
             HgtpCreateRoomRequest hgtpCreateRoomRequest = new HgtpCreateRoomRequest(
                     appInstance.getUserId(), AppInstance.SEQ_INCREMENT, roomId
