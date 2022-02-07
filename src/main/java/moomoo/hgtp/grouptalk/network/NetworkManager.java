@@ -7,9 +7,11 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.handler.codec.http.*;
 import moomoo.hgtp.grouptalk.config.ConfigManager;
-import moomoo.hgtp.grouptalk.network.handler.DashHttpHandler;
+import moomoo.hgtp.grouptalk.network.handler.DashHttpChannelHandler;
 import moomoo.hgtp.grouptalk.network.handler.HgtpChannelHandler;
+import moomoo.hgtp.grouptalk.protocol.http.base.HttpMessageRoute;
 import moomoo.hgtp.grouptalk.protocol.http.base.HttpMessageRouteTable;
+import moomoo.hgtp.grouptalk.protocol.http.handler.HttpMessageHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
 import network.definition.NetAddress;
@@ -20,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ConcurrentHashMap;
+
+import static moomoo.hgtp.grouptalk.protocol.http.base.HttpMessageType.*;
 
 public class NetworkManager {
 
@@ -42,8 +46,6 @@ public class NetworkManager {
     private final ConcurrentHashMap<String, NetAddress> httpClientAddressMap = new ConcurrentHashMap<>();
 
     private final ChannelInitializer<NioDatagramChannel> hgtpChannelInitializer;
-//    private final ChannelInitializer<NioSocketChannel> httpServerChannelInitializer;
-//    private final ChannelInitializer<NioSocketChannel> httpClientChannelInitializer;
 
     private final HttpMessageRouteTable routeTable;
     private final ChannelInitializer<SocketChannel> httpMessageServerInitializer;
@@ -52,13 +54,22 @@ public class NetworkManager {
     public NetworkManager() {
         ConfigManager configManager = appInstance.getConfigManager();
 
-        // 인스턴스 생성
         BaseEnvironment baseEnvironment = appInstance.getBaseEnvironment();
 
         // SocketManager 생성
         udpSocketManager = new SocketManager(baseEnvironment, false, false, SOCKET_THREAD_SIZE, configManager.getSendBufSize(), configManager.getRecvBufSize());
         tcpServerSocketManager = new SocketManager(baseEnvironment, true, true, SOCKET_THREAD_SIZE, configManager.getSendBufSize(), configManager.getRecvBufSize());
         tcpClientSocketManager = new SocketManager(baseEnvironment, true, false, SOCKET_THREAD_SIZE, configManager.getSendBufSize(), configManager.getRecvBufSize());
+
+        // http message route table 설정
+        routeTable = new HttpMessageRouteTable();
+
+        routeTable.addRoute(new HttpMessageRoute(HttpMethod.POST, ROOM_LIST, new HttpMessageHandler()));
+        routeTable.addRoute(new HttpMessageRoute(HttpMethod.POST, USER_LIST, new HttpMessageHandler()));
+        routeTable.addRoute(new HttpMessageRoute(HttpMethod.POST, ROOM_USER_LIST, new HttpMessageHandler()));
+        routeTable.addRoute(new HttpMessageRoute(HttpMethod.POST, MESSAGE, new HttpMessageHandler()));
+        routeTable.addRoute(new HttpMessageRoute(HttpMethod.POST, NOTICE, new HttpMessageHandler()));
+        routeTable.addRoute(new HttpMessageRoute(HttpMethod.POST, REFRESH, new HttpMessageHandler()));
 
         // HGTP , HTTP local 주소 설정
         hgtpLocalAddress = new NetAddress(configManager.getLocalListenIp(), configManager.getHgtpListenPort(),true, SocketProtocol.UDP);
@@ -71,7 +82,6 @@ public class NetworkManager {
             }
         };
 
-        routeTable = new HttpMessageRouteTable();
         httpMessageServerInitializer = new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel socketChannel) throws Exception {
@@ -79,7 +89,7 @@ public class NetworkManager {
                 p.addLast("decoder", new HttpRequestDecoder(4096, 8192, 8192, false));
                 p.addLast("aggregator", new HttpObjectAggregator(100 * 1024 * 1024));
                 p.addLast("encoder", new HttpResponseEncoder());
-                p.addLast("handler", new DashHttpHandler(routeTable));
+                p.addLast("handler", new DashHttpChannelHandler(routeTable));
             }
         };
 
@@ -90,7 +100,7 @@ public class NetworkManager {
                 p.addLast("decoder", new HttpResponseDecoder(4096, 8192, 8192, false));
                 p.addLast("aggregator", new HttpObjectAggregator(100 * 1024 * 1024));
                 p.addLast("encoder", new HttpRequestEncoder());
-                p.addLast("handler", new DashHttpHandler(routeTable));
+                p.addLast("handler", new DashHttpChannelHandler(routeTable));
             }
         };
     }

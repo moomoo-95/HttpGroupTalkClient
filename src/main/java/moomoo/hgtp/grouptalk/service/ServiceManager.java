@@ -23,7 +23,6 @@ public class ServiceManager {
 
     private final AppInstance appInstance = AppInstance.getInstance();
 
-//    private HttpManager httpManager;
     private NetworkManager networkManager;
 
     private boolean isQuit = false;
@@ -63,13 +62,6 @@ public class ServiceManager {
         // SessionManager
         SessionManager sessionManager = SessionManager.getInstance();
 
-        ConfigManager configManager = AppInstance.getInstance().getConfigManager();
-        ScheduleManager scheduleManager = appInstance.getScheduleManager();
-
-        // HttpManager
-//        httpManager = HttpManager.getInstance();
-//        httpManager.startHttp();
-
 
         // NetworkManager
         networkManager = NetworkManager.getInstance();
@@ -77,6 +69,7 @@ public class ServiceManager {
 
         switch (appInstance.getMode()){
             case SERVER:
+                ScheduleManager scheduleManager = appInstance.getScheduleManager();
                 scheduleManager.initJob(AppInstance.SERVER_SCHEDULE_KEY, 10, 10);
 
                 scheduleManager.startJob(
@@ -96,6 +89,7 @@ public class ServiceManager {
 
                 break;
             case CLIENT:
+                ConfigManager configManager = appInstance.getConfigManager();
                 sessionManager.addUserInfo(appInstance.getUserId(), 0);
                 UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
                 userInfo.setHgtpTargetNetAddress(configManager.getTargetListenIp(), configManager.getHgtpTargetPort());
@@ -112,7 +106,6 @@ public class ServiceManager {
     }
 
     public void stop() {
-//        httpManager.stopHttp();
         networkManager.stopSocket();
 
         appInstance.getBaseEnvironment().stop();

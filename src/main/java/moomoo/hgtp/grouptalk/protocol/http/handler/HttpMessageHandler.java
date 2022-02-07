@@ -17,6 +17,7 @@ import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
 import moomoo.hgtp.grouptalk.session.base.RoomInfo;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
+import network.definition.DestinationRecord;
 import network.socket.GroupSocket;
 import network.socket.netty.tcp.NettyTcpClientChannel;
 import org.slf4j.Logger;
@@ -38,7 +39,6 @@ public class HttpMessageHandler {
 
         String userId = httpHeaders.get(HttpHeaderNames.HOST).toString();
         String messageType = httpHeaders.get(MESSAGE_TYPE).toString();
-        log.debug("({}) () () RECV {} MSG : {}\n\n{}", userId, messageType, httpHeaders, httpContent);
 
         switch (messageType){
             case ROOM_LIST:
@@ -138,6 +138,10 @@ public class HttpMessageHandler {
         SessionManager sessionManager = SessionManager.getInstance();
 
         RoomInfo roomInfo = sessionManager.getRoomInfo(userInfo.getRoomId());
+
+        if (roomInfo == null) {
+            return;
+        }
 
         if (roomInfo.getUserGroupSetSize() > 0) {
             HashSet<String> userGroupSet = new HashSet<>(roomInfo.getUserGroupSet());
@@ -268,13 +272,11 @@ public class HttpMessageHandler {
                 SessionManager sessionManager = SessionManager.getInstance();
                 UserInfo userInfo = sessionManager.getUserInfo(messageContent.getUserId());
                 if (userInfo == null) {
-                    // todo badrequest
                     return;
                 }
 
                 RoomInfo roomInfo = sessionManager.getRoomInfo(userInfo.getRoomId());
                 if (roomInfo == null) {
-                    // todo badrequest
                     return;
                 }
 
@@ -366,18 +368,19 @@ public class HttpMessageHandler {
         if (groupSocket == null) {
             return;
         }
-        NettyTcpClientChannel clientChannel = (NettyTcpClientChannel) groupSocket.getDestination(userInfo.getSessionId()).getNettyChannel();
+        DestinationRecord destinationRecord = groupSocket.getDestination(userInfo.getSessionId());
+        if (destinationRecord == null) {
+            return;
+        }
 
-        clientChannel.sendHttpRequest(request);
+        NettyTcpClientChannel clientChannel = (NettyTcpClientChannel) destinationRecord.getNettyChannel();
 
         ByteBuf requestContent = request.content();
-        if (requestContent.refCnt() != 0) {
-            log.debug("[{}] -> [{}] -> [{}\n\n{}]",
-                    groupSocket.getListenSocket().getNetAddress().getPort(),
-                    groupSocket.getDestination(userInfo.getSessionId()).getGroupEndpointId().getGroupAddress().getPort(),
-                    request.headers().toString(), requestContent.toString(StandardCharsets.UTF_8));
-        }
-        clientChannel.closeConnectChannel();
-        clientChannel.openConnectChannel(userInfo.getHttpTargetNetAddress().getInet4Address().getHostAddress(), userInfo.getHttpTargetNetAddress().getPort());
+        log.debug("[{}] -> [{}] -> [{}\n\n{}]",
+                groupSocket.getListenSocket().getNetAddress().getPort(),
+                destinationRecord.getGroupEndpointId().getGroupAddress().getPort(),
+                request.headers(), requestContent.toString(StandardCharsets.UTF_8));
+
+        clientChannel.sendHttpRequest(request);
     }
 }

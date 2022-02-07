@@ -17,13 +17,14 @@ import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static moomoo.hgtp.grouptalk.protocol.http.base.HttpMessageType.APPLICATION_JSON;
 
-public class DashHttpHandler extends SimpleChannelInboundHandler<Object> {
+
+public class DashHttpChannelHandler extends SimpleChannelInboundHandler<Object> {
 
     ////////////////////////////////////////////////////////////
-    private static final Logger logger = LoggerFactory.getLogger(DashHttpHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(DashHttpChannelHandler.class);
 
-    private static final String CONTENT_TYPE = "application/json";
     private static final String SERVER_NAME = "http-grouptalk-server";
 
     private final HttpMessageRouteTable routeTable;
@@ -31,7 +32,7 @@ public class DashHttpHandler extends SimpleChannelInboundHandler<Object> {
     ////////////////////////////////////////////////////////////
 
     ////////////////////////////////////////////////////////////
-    public DashHttpHandler(HttpMessageRouteTable routeTable) {
+    public DashHttpChannelHandler(HttpMessageRouteTable routeTable) {
         this.routeTable = routeTable;
     }
     ////////////////////////////////////////////////////////////
@@ -40,6 +41,10 @@ public class DashHttpHandler extends SimpleChannelInboundHandler<Object> {
     @Override
     public void messageReceived(final ChannelHandlerContext ctx, final Object msg) {
         if (!(msg instanceof FullHttpRequest)) {
+            if (msg instanceof FullHttpResponse) {
+                FullHttpResponse response = (FullHttpResponse) msg;
+                log.debug("() () () RECV {} MSG : {}", response.status(), response);
+            }
             return;
         }
 
@@ -57,13 +62,14 @@ public class DashHttpHandler extends SimpleChannelInboundHandler<Object> {
         }
 
         try {
+            log.debug("() () () RECV {} MSG : {}", uri, request);
             final HttpRequest requestWrapper = new HttpRequest(request);
             final Object obj = route.getHandler().handle(requestWrapper);
             final String content = (obj == null) ? "" : obj.toString();
 
-            writeResponse(ctx, request, HttpResponseStatus.OK, CONTENT_TYPE, content);
+            writeResponse(ctx, request, HttpResponseStatus.OK, APPLICATION_JSON, content);
         } catch (final Exception e) {
-            logger.warn("DashHttpHandler.messageReceived.Exception", e);
+            log.warn("DashHttpHandler.messageReceived.Exception", e);
             writeInternalServerError(ctx, request);
         }
     }
@@ -123,7 +129,7 @@ public class DashHttpHandler extends SimpleChannelInboundHandler<Object> {
             final FullHttpRequest request,
             final HttpResponseStatus status) {
 
-        writeResponse(ctx, request, status, CONTENT_TYPE, status.reasonPhrase().toString());
+        writeResponse(ctx, request, status, APPLICATION_JSON, status.reasonPhrase().toString());
     }
 
 
@@ -186,6 +192,7 @@ public class DashHttpHandler extends SimpleChannelInboundHandler<Object> {
         headers.set(HttpHeaderNames.CONTENT_TYPE, contentType);
         headers.set(HttpHeaderNames.CONTENT_LENGTH, Integer.toString(contentLength));
 
+        log.debug("SEND {} MSG : {}", response.status().codeAsText(), response);
         // Close the non-keep-alive connection after the write operation is done.
         if (!keepAlive) {
             ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
