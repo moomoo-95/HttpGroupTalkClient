@@ -26,12 +26,9 @@ public class HgtpEvent {
     public static final String REMOVE_USER_ROOM_SUC = "REMOVE_USER_ROOM_SUC";
     public static final String REMOVE_USER_ROOM_FAIL = "REMOVE_USER_ROOM_FAIL";
 
-    public static final String START_TALK = "START_TALK";
-    public static final String STOP_TALK = "STOP_TALK";
-
     public static final String EXIT_ROOM = "EXIT_ROOM";
     public static final String EXIT_ROOM_SUC = "EXIT_ROOM_SUC";
     public static final String EXIT_ROOM_FAIL = "EXIT_ROOM_FAIL";
 
-    public static final String TO_REGISTER = "TO_REGISTER";
+    public static final String TO_TALK = "TO_TALK";
 }

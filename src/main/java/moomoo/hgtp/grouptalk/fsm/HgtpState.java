@@ -15,14 +15,13 @@ public class HgtpState {
     public static final String TALK = "TALK";
     public static final String REMOVE = "REMOVE";
     public static final String EXIT = "EXIT";
-    public static final String EXIT_OK = "EXIT_OK";
     public static final String DELETE = "DELETE";
 
-    protected static final HashSet<String> TO_JOIN = new HashSet<>();
+    protected static final HashSet<String> TO_TALK = new HashSet<>();
 
     static {
-        TO_JOIN.add(REGISTER);
-        TO_JOIN.add(CREATE_OK);
+        TO_TALK.add(CREATE_OK);
+        TO_TALK.add(JOIN_OK);
     }
 
     private HgtpState() {

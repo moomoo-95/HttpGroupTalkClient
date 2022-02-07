@@ -42,7 +42,7 @@ Include the data needed for each request and response.
 ![image](https://user-images.githubusercontent.com/58906637/148345776-9dfa9e0b-b581-4e55-ab47-8a8b20da1ea6.png)
 
 ### FSM
-![image (10)](https://user-images.githubusercontent.com/58906637/148345400-60f57df3-ee3c-477d-a240-f1f7c1319f06.png)
+![image](https://user-images.githubusercontent.com/58906637/152719009-7f31d0f9-612b-4fc4-895f-a9d05781fe58.png)
 
 ### Transport Structure
-![image](https://user-images.githubusercontent.com/58906637/148347521-3cec8725-988f-4480-904c-552bd440379f.png)
+![image](https://user-images.githubusercontent.com/58906637/152719176-5331cc49-51c1-4176-a47e-b70c7c964e4e.png)

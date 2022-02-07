@@ -1,6 +1,7 @@
 package moomoo.hgtp.grouptalk.service;
 
 import moomoo.hgtp.grouptalk.config.ConfigManager;
+import moomoo.hgtp.grouptalk.fsm.HgtpFsmManager;
 import moomoo.hgtp.grouptalk.gui.GuiManager;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
 import moomoo.hgtp.grouptalk.service.scheduler.SessionCheckJob;
@@ -58,6 +59,10 @@ public class ServiceManager {
             this.isQuit = true;
             this.stop();
         }));
+
+        // HgtpFsmStateManager
+        HgtpFsmManager fsmManager = new HgtpFsmManager();
+        fsmManager.initState();
 
         // SessionManager
         SessionManager sessionManager = SessionManager.getInstance();
