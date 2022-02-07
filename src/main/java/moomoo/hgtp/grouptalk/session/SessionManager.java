@@ -1,6 +1,7 @@
 package moomoo.hgtp.grouptalk.session;
 
 import moomoo.hgtp.grouptalk.config.ConfigManager;
+import moomoo.hgtp.grouptalk.fsm.HgtpEvent;
 import moomoo.hgtp.grouptalk.fsm.HgtpState;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
@@ -177,11 +178,16 @@ public class SessionManager {
             removeSet.remove(managerId);
 
             removeSet.forEach(userId -> {
-                // create request remove user from room
-                HgtpRemoveUserFromRoomRequest hgtpRemoveUserFromRoomRequest = new HgtpRemoveUserFromRoomRequest(
-                        userId, AppInstance.SEQ_INCREMENT, roomInfo.getRoomId(), userId
-                );
-                hgtpRequestHandler.sendRemoveUserFromRoomRequest(hgtpRemoveUserFromRoomRequest);
+                UserInfo userInfo = sessionManager.getUserInfo(userId);
+                if (userInfo != null) {
+                    appInstance.getStateHandler().fire(HgtpEvent.REMOVE_USER_ROOM, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
+                    // create request remove user from room
+                    HgtpRemoveUserFromRoomRequest hgtpRemoveUserFromRoomRequest = new HgtpRemoveUserFromRoomRequest(
+                            userId, AppInstance.SEQ_INCREMENT, roomInfo.getRoomId(), userId
+                    );
+                    hgtpRequestHandler.sendRemoveUserFromRoomRequest(hgtpRemoveUserFromRoomRequest);
+                    appInstance.getStateHandler().fire(HgtpEvent.REMOVE_USER_ROOM_SUC, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
+                }
             });
         }
 

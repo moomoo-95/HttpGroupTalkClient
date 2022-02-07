@@ -198,6 +198,7 @@ public class HgtpRequestHandler {
 
         // ok 응답시에만 userInfo 제거
         if (messageType == HgtpMessageType.OK) {
+            appInstance.getStateHandler().fire(HgtpEvent.UNREGISTER, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
             sessionManager.deleteUserInfo(userId);
 
             HttpMessageHandler httpRequestMessageHandler = new HttpMessageHandler();
@@ -238,6 +239,7 @@ public class HgtpRequestHandler {
             log.debug(USER_UNREG_LOG, userId);
             return;
         }
+        appInstance.getStateHandler().fire(HgtpEvent.CREATE_ROOM, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
 
         short messageType = sessionManager.addRoomInfo(roomId, userId);
 
@@ -248,12 +250,15 @@ public class HgtpRequestHandler {
         hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
 
         if (messageType == HgtpMessageType.OK) {
+            appInstance.getStateHandler().fire(HgtpEvent.CREATE_ROOM_SUC, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
             //현재 room list 전송
             HttpMessageHandler httpRequestMessageHandler = new HttpMessageHandler();
             sessionManager.getUserInfoHashMap().forEach( (key, value) -> httpRequestMessageHandler.sendRoomListRequest(value));
             httpRequestMessageHandler.sendRoomUserListRequest(userInfo);
 
             httpRequestMessageHandler.sendNoticeRequest("[" + userId + "] 님이 [" + roomId + "]방을 생성했습니다.", userInfo);
+        } else{
+            appInstance.getStateHandler().fire(HgtpEvent.CREATE_ROOM_FAIL, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
         }
     }
 
@@ -285,10 +290,12 @@ public class HgtpRequestHandler {
         String roomId = hgtpRoomContent.getRoomId();
         String userId = hgtpHeader.getUserId();
 
-        if (sessionManager.getUserInfo(userId) == null) {
+        UserInfo userInfo = sessionManager.getUserInfo(userId);
+        if (userInfo == null) {
             log.debug(USER_UNREG_LOG, userId);
             return;
         }
+        appInstance.getStateHandler().fire(HgtpEvent.DELETE_ROOM, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
 
         short messageType = sessionManager.deleteRoomInfo(roomId, userId);
 
@@ -299,9 +306,12 @@ public class HgtpRequestHandler {
         hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
 
         if (messageType == HgtpMessageType.OK) {
+            appInstance.getStateHandler().fire(HgtpEvent.DELETE_ROOM_SUC, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
             //현재 room list 전송
             HttpMessageHandler httpRequestMessageHandler = new HttpMessageHandler();
-            sessionManager.getUserInfoHashMap().forEach( (key, userInfo) -> httpRequestMessageHandler.sendRoomListRequest(userInfo));
+            sessionManager.getUserInfoHashMap().forEach( (key, roomUserInfo) -> httpRequestMessageHandler.sendRoomListRequest(roomUserInfo));
+        } else {
+            appInstance.getStateHandler().fire(HgtpEvent.DELETE_ROOM_FAIL, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
         }
     }
 
@@ -338,6 +348,7 @@ public class HgtpRequestHandler {
             log.debug(USER_UNREG_LOG, userId);
             return;
         }
+        appInstance.getStateHandler().fire(HgtpEvent.JOIN_ROOM, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
 
         RoomInfo roomInfo = sessionManager.getRoomInfo(roomId);
         if (roomInfo == null) {
@@ -354,6 +365,7 @@ public class HgtpRequestHandler {
         hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
 
         if (messageType == HgtpMessageType.OK) {
+            appInstance.getStateHandler().fire(HgtpEvent.JOIN_ROOM_SUC, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
             roomInfo.addUserGroupSet(userId);
 
             HttpMessageHandler httpRequestMessageHandler = new HttpMessageHandler();
@@ -364,8 +376,8 @@ public class HgtpRequestHandler {
                     httpRequestMessageHandler.sendNoticeRequest("[" + userId+ "]님이 입장 했습니다.", roomUserInfo);
                 }
             });
-
-
+        } else {
+            appInstance.getStateHandler().fire(HgtpEvent.JOIN_ROOM_FAIL, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
         }
     }
 
@@ -408,6 +420,7 @@ public class HgtpRequestHandler {
             log.debug(ROOM_DEL_LOG, roomId);
             return;
         }
+        appInstance.getStateHandler().fire(HgtpEvent.EXIT_ROOM, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
 
         // 방에 입장해 있을 때 && manager 가 아닐 때
         short messageType = ( userInfo.getRoomId().equals("") || roomInfo.getManagerId().equals(userInfo.getUserId()) ) ? HgtpMessageType.BAD_REQUEST : HgtpMessageType.OK;
@@ -419,6 +432,7 @@ public class HgtpRequestHandler {
         hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
 
         if (messageType == HgtpMessageType.OK) {
+            appInstance.getStateHandler().fire(HgtpEvent.EXIT_ROOM_SUC, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
             roomInfo.removeUserGroupSet(userId);
 
             HttpMessageHandler httpRequestMessageHandler = new HttpMessageHandler();
@@ -429,6 +443,8 @@ public class HgtpRequestHandler {
                     httpRequestMessageHandler.sendNoticeRequest("[" + userId+ "]님이 퇴장 했습니다.", roomUserInfo);
                 }
             });
+        } else {
+            appInstance.getStateHandler().fire(HgtpEvent.EXIT_ROOM_FAIL, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
         }
     }
 
@@ -458,6 +474,7 @@ public class HgtpRequestHandler {
         }
 
         UserInfo peerUserInfo = sessionManager.getUserInfo(peerUserId);
+        appInstance.getStateHandler().fire(HgtpEvent.INVITE_USER_ROOM, appInstance.getStateManager().getStateUnit(peerUserInfo.getHgtpStateUnitId()));
         short messageType = HgtpMessageType.OK;
         switch (appInstance.getMode()) {
             case SERVER:
@@ -474,6 +491,7 @@ public class HgtpRequestHandler {
                 }
 
                 if (messageType != HgtpMessageType.OK) {
+                    appInstance.getStateHandler().fire(HgtpEvent.INVITE_USER_ROOM_FAIL, appInstance.getStateManager().getStateUnit(peerUserInfo.getHgtpStateUnitId()));
                     HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
                             messageType, hgtpHeader.getRequestType(),
                             userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
@@ -492,8 +510,10 @@ public class HgtpRequestHandler {
                 break;
             case CLIENT:
                 if (!userInfo.getRoomId().equals("")) {
+                    appInstance.getStateHandler().fire(HgtpEvent.INVITE_USER_ROOM_FAIL, appInstance.getStateManager().getStateUnit(peerUserInfo.getHgtpStateUnitId()));
                     messageType = HgtpMessageType.DECLINE;
                 } else {
+                    appInstance.getStateHandler().fire(HgtpEvent.INVITE_USER_ROOM_SUC, appInstance.getStateManager().getStateUnit(peerUserInfo.getHgtpStateUnitId()));
                     GuiManager guiManager = GuiManager.getInstance();
                     ControlPanel controlPanel = guiManager.getControlPanel();
 
@@ -540,6 +560,7 @@ public class HgtpRequestHandler {
         }
 
         UserInfo peerUserInfo = sessionManager.getUserInfo(peerUserId);
+        appInstance.getStateHandler().fire(HgtpEvent.REMOVE_USER_ROOM, appInstance.getStateManager().getStateUnit(peerUserInfo.getHgtpStateUnitId()));
         short messageType = HgtpMessageType.OK;
         switch (appInstance.getMode()) {
             case SERVER:
@@ -556,6 +577,7 @@ public class HgtpRequestHandler {
                 }
 
                 if (messageType != HgtpMessageType.OK) {
+                    appInstance.getStateHandler().fire(HgtpEvent.REMOVE_USER_ROOM_FAIL, appInstance.getStateManager().getStateUnit(peerUserInfo.getHgtpStateUnitId()));
                     HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
                             messageType, hgtpHeader.getRequestType(),
                             userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
@@ -571,8 +593,10 @@ public class HgtpRequestHandler {
                 break;
             case CLIENT:
                 if (userInfo.getRoomId().equals("")) {
+                    appInstance.getStateHandler().fire(HgtpEvent.REMOVE_USER_ROOM_FAIL, appInstance.getStateManager().getStateUnit(peerUserInfo.getHgtpStateUnitId()));
                     messageType = HgtpMessageType.DECLINE;
                 } else {
+                    appInstance.getStateHandler().fire(HgtpEvent.REMOVE_USER_ROOM_SUC, appInstance.getStateManager().getStateUnit(peerUserInfo.getHgtpStateUnitId()));
                     GuiManager guiManager = GuiManager.getInstance();
                     ControlPanel controlPanel = guiManager.getControlPanel();
 

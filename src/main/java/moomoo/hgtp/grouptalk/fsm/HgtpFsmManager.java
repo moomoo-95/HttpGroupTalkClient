@@ -55,11 +55,11 @@ public class HgtpFsmManager {
         stateHandler.addState(HgtpEvent.INVITE_USER_ROOM_FAIL, HgtpState.INVITE, HgtpState.REGISTER_OK, null, null, null, 0, 0 );
 
         // REMOVE_USER_ROOM
-        stateHandler.addState(HgtpEvent.REMOVE_USER_ROOM, HgtpState.REGISTER_OK, HgtpState.REMOVE, null, null, null, 0, 0 );
+        stateHandler.addState(HgtpEvent.REMOVE_USER_ROOM, HgtpState.TALK, HgtpState.REMOVE, null, null, null, 0, 0 );
         // REMOVE_USER_ROOM_SUC
-        stateHandler.addState(HgtpEvent.REMOVE_USER_ROOM_SUC, HgtpState.REMOVE, HgtpState.TALK, null, null, null, 0, 0 );
+        stateHandler.addState(HgtpEvent.REMOVE_USER_ROOM_SUC, HgtpState.REMOVE, HgtpState.REGISTER_OK, null, null, null, 0, 0 );
         // REMOVE_USER_ROOM_FAIL
-        stateHandler.addState(HgtpEvent.REMOVE_USER_ROOM_FAIL, HgtpState.REMOVE, HgtpState.REGISTER_OK, null, null, null, 0, 0 );
+        stateHandler.addState(HgtpEvent.REMOVE_USER_ROOM_FAIL, HgtpState.REMOVE, HgtpState.TALK, null, null, null, 0, 0 );
 
         // EXIT_ROOM
         stateHandler.addState(HgtpEvent.EXIT_ROOM, HgtpState.TALK, HgtpState.EXIT, null, null, null, 0, 0 );

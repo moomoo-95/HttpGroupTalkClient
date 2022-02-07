@@ -2,6 +2,7 @@ package moomoo.hgtp.grouptalk.protocol.hgtp.message.response.handler;
 
 import moomoo.hgtp.grouptalk.config.ConfigManager;
 import moomoo.hgtp.grouptalk.fsm.HgtpEvent;
+import moomoo.hgtp.grouptalk.fsm.HgtpState;
 import moomoo.hgtp.grouptalk.gui.GuiManager;
 import moomoo.hgtp.grouptalk.gui.component.panel.ControlPanel;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
@@ -65,10 +66,12 @@ public class HgtpResponseHandler {
             final String processResult;
             switch (hgtpHeader.getRequestType()) {
                 case HgtpMessageType.INVITE_USER_FROM_ROOM:
+                    appInstance.getStateHandler().fire(HgtpEvent.INVITE_USER_ROOM_SUC, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
                     roomInfo.addUserGroupSet(userInfo.getUserId());
                     processResult = "초대 되었";
                     break;
                 case HgtpMessageType.REMOVE_USER_FROM_ROOM:
+                    appInstance.getStateHandler().fire(HgtpEvent.REMOVE_USER_ROOM_SUC, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
                     roomInfo.removeUserGroupSet(userInfo.getUserId());
                     processResult = "퇴장 당하였";
                     break;
@@ -303,9 +306,11 @@ public class HgtpResponseHandler {
             }
             switch (hgtpHeader.getRequestType()) {
                 case HgtpMessageType.INVITE_USER_FROM_ROOM:
+                    appInstance.getStateHandler().fire(HgtpEvent.INVITE_USER_ROOM_FAIL, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
                     userInfo.initRoomId();
                     break;
                 case HgtpMessageType.REMOVE_USER_FROM_ROOM:
+                    appInstance.getStateHandler().fire(HgtpEvent.REMOVE_USER_ROOM_FAIL, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
                     break;
                 default:
                     return;
