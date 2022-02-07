@@ -3,6 +3,8 @@ package moomoo.hgtp.grouptalk.session;
 import moomoo.hgtp.grouptalk.config.ConfigManager;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.HgtpRemoveUserFromRoomRequest;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.base.RoomInfo;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
@@ -13,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import service.ResourceManager;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SessionManager {
@@ -163,7 +166,18 @@ public class SessionManager {
         }
         if (!roomInfo.isUserGroupSetEmpty()) {
             log.warn("({}) ({}) () UserInfo is not empty", managerId, roomId);
-            return HgtpMessageType.BAD_REQUEST;
+            HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();
+
+            Set<String> removeSet = roomInfo.getUserGroupSet();
+            removeSet.remove(managerId);
+
+            removeSet.forEach(userId -> {
+                // create request remove user from room
+                HgtpRemoveUserFromRoomRequest hgtpRemoveUserFromRoomRequest = new HgtpRemoveUserFromRoomRequest(
+                        userId, AppInstance.SEQ_INCREMENT, roomInfo.getRoomId(), userId
+                );
+                hgtpRequestHandler.sendRemoveUserFromRoomRequest(hgtpRemoveUserFromRoomRequest);
+            });
         }
 
         if (roomInfoHashMap.containsKey(roomId)) {

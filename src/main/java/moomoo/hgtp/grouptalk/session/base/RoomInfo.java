@@ -7,19 +7,19 @@ import java.util.Set;
 
 public class RoomInfo {
 
-    private final String rooId;
+    private final String roomId;
     private final String managerId;
     private final long createTime;
     private final HashSet<String> userGroupSet;
 
-    public RoomInfo(String rooId, String managerId) {
-        this.rooId = rooId;
+    public RoomInfo(String roomId, String managerId) {
+        this.roomId = roomId;
         this.managerId = managerId;
         this.createTime = System.currentTimeMillis();
         this.userGroupSet = new HashSet<>();
     }
 
-    public String getRooId() {return rooId;}
+    public String getRoomId() {return roomId;}
 
     public String getManagerId() {return managerId;}
 
@@ -41,7 +41,7 @@ public class RoomInfo {
             return;
         }
 
-        userInfo.setRoomId(rooId);
+        userInfo.setRoomId(roomId);
         userGroupSet.add(userId);
     }
 
