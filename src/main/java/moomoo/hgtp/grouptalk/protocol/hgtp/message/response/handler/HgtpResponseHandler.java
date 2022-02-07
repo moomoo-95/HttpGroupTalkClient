@@ -1,6 +1,8 @@
 package moomoo.hgtp.grouptalk.protocol.hgtp.message.response.handler;
 
 import moomoo.hgtp.grouptalk.config.ConfigManager;
+import moomoo.hgtp.grouptalk.fsm.HgtpEvent;
+import moomoo.hgtp.grouptalk.fsm.HgtpState;
 import moomoo.hgtp.grouptalk.gui.GuiManager;
 import moomoo.hgtp.grouptalk.gui.component.panel.ControlPanel;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
@@ -86,15 +88,17 @@ public class HgtpResponseHandler {
                 UserInfo roomUserInfo = sessionManager.getUserInfo(roomUserId);
                 if (roomUserInfo != null) {
                     httpRequestMessageHandler.sendRoomUserListRequest(roomUserInfo);
-                    httpRequestMessageHandler.sendNoticeRequest("[" + userInfo.getUserId()+ "]님이 "+ processResult +"습니다.", roomUserInfo);
+                    httpRequestMessageHandler.sendNoticeRequest("[" + userInfo.getUserId() + "]님이 " + processResult + "습니다.", roomUserInfo);
                 }
             });
         } else if (appInstance.getMode() == ProcessMode.CLIENT) {
             GuiManager guiManager = GuiManager.getInstance();
             ControlPanel controlPanel = guiManager.getControlPanel();
 
+            UserInfo userInfo = sessionManager.getUserInfo(hgtpHeader.getUserId());
             switch (hgtpHeader.getRequestType()) {
                 case HgtpMessageType.REGISTER:
+                    appInstance.getStateHandler().fire(HgtpEvent.REGISTER_SUC, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
                     controlPanel.setRegisterButtonStatus();
                     break;
                 case HgtpMessageType.UNREGISTER:
@@ -139,8 +143,10 @@ public class HgtpResponseHandler {
         if (appInstance.getMode() == ProcessMode.CLIENT) {
             ControlPanel controlPanel = GuiManager.getInstance().getControlPanel();
 
+            UserInfo userInfo = sessionManager.getUserInfo(hgtpHeader.getUserId());
             switch (hgtpHeader.getRequestType()) {
                 case HgtpMessageType.REGISTER:
+                    appInstance.getStateHandler().fire(HgtpEvent.REGISTER_FAIL, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
                     break;
                 case HgtpMessageType.UNREGISTER:
                     controlPanel.setInitButtonStatus();
@@ -232,8 +238,10 @@ public class HgtpResponseHandler {
         if (appInstance.getMode() == ProcessMode.CLIENT) {
             ControlPanel controlPanel = GuiManager.getInstance().getControlPanel();
 
+            UserInfo userInfo = sessionManager.getUserInfo(hgtpHeader.getUserId());
             switch (hgtpHeader.getRequestType()) {
                 case HgtpMessageType.REGISTER:
+                    appInstance.getStateHandler().fire(HgtpEvent.REGISTER_FAIL, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
                     break;
                 case HgtpMessageType.UNREGISTER:
                     controlPanel.setInitButtonStatus();

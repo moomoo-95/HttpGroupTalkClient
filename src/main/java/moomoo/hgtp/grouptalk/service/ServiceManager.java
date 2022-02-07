@@ -61,8 +61,7 @@ public class ServiceManager {
         }));
 
         // HgtpFsmStateManager
-        HgtpFsmManager fsmManager = new HgtpFsmManager();
-        fsmManager.initState();
+        appInstance.setFsmManager(new HgtpFsmManager());
 
         // SessionManager
         SessionManager sessionManager = SessionManager.getInstance();

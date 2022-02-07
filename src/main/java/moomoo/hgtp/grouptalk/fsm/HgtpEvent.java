@@ -2,6 +2,7 @@ package moomoo.hgtp.grouptalk.fsm;
 
 public class HgtpEvent {
     public static final String REGISTER = "REGISTER";
+    public static final String REGISTER_SUC = "REGISTER_SUC";
     public static final String REGISTER_FAIL = "REGISTER_FAIL";
 
     public static final String UNREGISTER = "UNREGISTER";

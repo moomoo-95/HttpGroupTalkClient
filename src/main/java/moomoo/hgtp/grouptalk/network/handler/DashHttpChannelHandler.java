@@ -41,10 +41,10 @@ public class DashHttpChannelHandler extends SimpleChannelInboundHandler<Object> 
     @Override
     public void messageReceived(final ChannelHandlerContext ctx, final Object msg) {
         if (!(msg instanceof FullHttpRequest)) {
-            if (msg instanceof FullHttpResponse) {
-                FullHttpResponse response = (FullHttpResponse) msg;
-                log.debug("() () () RECV {} MSG : {}", response.status(), response);
-            }
+//            if (msg instanceof FullHttpResponse) {
+//                FullHttpResponse response = (FullHttpResponse) msg;
+//                log.debug("() () () RECV {} MSG : {}", response.status(), response);
+//            }
             return;
         }
 

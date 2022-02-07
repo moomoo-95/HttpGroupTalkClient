@@ -1,5 +1,6 @@
 package moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler;
 
+import moomoo.hgtp.grouptalk.fsm.HgtpEvent;
 import moomoo.hgtp.grouptalk.gui.GuiManager;
 import moomoo.hgtp.grouptalk.gui.component.panel.ControlPanel;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
@@ -84,6 +85,7 @@ public class HgtpRequestHandler {
             // userInfo 생성 성공 시 UNAUTHORIZED 응답 (server의 http socket port 전송)
             if (messageType == HgtpMessageType.OK) {
                 UserInfo userInfo = sessionManager.getUserInfo(userId);
+                appInstance.getStateHandler().fire(HgtpEvent.REGISTER, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
 
                 userInfo.setHgtpTargetNetAddress(hgtpRegisterContent.getListenIp(), hgtpRegisterContent.getListenPort());
                 short httpPort = (short) userInfo.getHttpServerNetAddress().getPort();
@@ -128,9 +130,11 @@ public class HgtpRequestHandler {
             hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
 
             if (messageType == HgtpMessageType.FORBIDDEN) {
+                appInstance.getStateHandler().fire(HgtpEvent.REGISTER_FAIL, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
                 sessionManager.deleteUserInfo(userInfo.getUserId());
             } else {
                 userInfo.setRegister();
+                appInstance.getStateHandler().fire(HgtpEvent.REGISTER_SUC, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
 
                 //현재 user, room list 전송
                 HttpMessageHandler httpRequestMessageHandler = new HttpMessageHandler();

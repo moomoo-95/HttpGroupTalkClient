@@ -15,6 +15,8 @@ public class UserInfo {
     private final String userId;
     // groupsocket 의 Destination 추가에 필요한 sessionId
     private final long sessionId;
+    // fsm 식별자
+    private final String hgtpStateUnitId;
     private final NetAddress hgtpLocalNetAddress;
     private final NetAddress httpServerNetAddress;
     private final NetAddress httpClientNetAddress;
@@ -31,6 +33,7 @@ public class UserInfo {
         this.userId = userId;
         byte[] userIdByteData = userId.getBytes(StandardCharsets.UTF_8);
         this.sessionId = ByteUtil.bytesToLong(userIdByteData, true);
+        this.hgtpStateUnitId = userId + "_HGTP";
         this.hgtpLocalNetAddress = new NetAddress(listenIp, hgtpListenPort, true, SocketProtocol.UDP);
         this.httpServerNetAddress = new NetAddress(listenIp, httpServerPort, true, SocketProtocol.TCP);
         this.httpClientNetAddress = new NetAddress(listenIp, httpClientPort, true, SocketProtocol.TCP);
@@ -43,6 +46,8 @@ public class UserInfo {
     }
 
     public long getSessionId() {return sessionId;}
+
+    public String getHgtpStateUnitId() {return hgtpStateUnitId;}
 
     public NetAddress getHgtpLocalNetAddress() {return hgtpLocalNetAddress;}
 

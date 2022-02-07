@@ -7,6 +7,7 @@ public class HgtpState {
 
     public static final String IDLE = "IDLE";
     public static final String REGISTER = "REGISTER";
+    public static final String REGISTER_OK = "REGISTER_OK";
     public static final String CREATE = "CREATE";
     public static final String CREATE_OK = "CREATE_OK";
     public static final String JOIN = "JOIN";

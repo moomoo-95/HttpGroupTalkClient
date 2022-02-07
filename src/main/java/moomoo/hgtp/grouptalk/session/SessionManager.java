@@ -1,6 +1,8 @@
 package moomoo.hgtp.grouptalk.session;
 
 import moomoo.hgtp.grouptalk.config.ConfigManager;
+import moomoo.hgtp.grouptalk.fsm.HgtpFsmManager;
+import moomoo.hgtp.grouptalk.fsm.HgtpState;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.HgtpRemoveUserFromRoomRequest;
@@ -48,6 +50,11 @@ public class SessionManager {
             return HgtpMessageType.BAD_REQUEST;
         }
 
+        if (appInstance.getConfigManager().getUserMaxSize() < userInfoHashMap.size()) {
+            log.warn("({}) () () Unavailable add UserInfo", userId);
+            return HgtpMessageType.SERVER_UNAVAILABLE;
+        }
+
         // PortResourceManager에서 채널 할당
         ConfigManager configManager = appInstance.getConfigManager();
         ResourceManager resourceManager = appInstance.getResourceManager();
@@ -89,14 +96,11 @@ public class SessionManager {
         synchronized (userInfoHashMap) {
             userInfoHashMap.put(userId, userInfo);
         }
+        appInstance.getStateManager().addStateUnit(
+                userInfo.getHgtpStateUnitId(),appInstance.getStateHandler().getName(),
+                HgtpState.IDLE, null
+        );
         log.debug("({}) () () UserInfo is created.", userId);
-
-
-
-        if (appInstance.getConfigManager().getUserMaxSize() < userInfoHashMap.size()) {
-            log.warn("({}) () () Unavailable add UserInfo", userId);
-            return HgtpMessageType.SERVER_UNAVAILABLE;
-        }
 
         return HgtpMessageType.OK;
     }
@@ -119,6 +123,8 @@ public class SessionManager {
                     networkManager.removeHttpSocket(userId, false);
                 }
             }
+
+            appInstance.getStateManager().removeStateUnit( userInfo.getHgtpStateUnitId() );
             log.debug("({}) () () UserInfo is deleted.", userId);
         }
     }

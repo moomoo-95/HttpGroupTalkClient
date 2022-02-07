@@ -1,8 +1,12 @@
 package moomoo.hgtp.grouptalk.service;
 
+import com.fsm.StateManager;
+import com.fsm.module.StateHandler;
 import instance.BaseEnvironment;
 import instance.DebugLevel;
 import moomoo.hgtp.grouptalk.config.ConfigManager;
+import moomoo.hgtp.grouptalk.fsm.HgtpFsmManager;
+import moomoo.hgtp.grouptalk.fsm.HgtpState;
 import moomoo.hgtp.grouptalk.protocol.hgtp.HgtpMessageHandler;
 import moomoo.hgtp.grouptalk.service.base.ProcessMode;
 import moomoo.hgtp.grouptalk.util.CnameGenerator;
@@ -23,7 +27,6 @@ public class AppInstance {
 
     public static final String SERVER_SCHEDULE_KEY = "server-schedule-key";
     public static final String HGTP_SCHEDULE_KEY = "hgtp-schedule-key";
-    public static final String HTTP_SCHEDULE_KEY = "http-schedule-key";
 
     public static final String ALGORITHM = "MD5";
     public static final String MD5_REALM = "HGTP_SERVICE";
@@ -46,6 +49,10 @@ public class AppInstance {
 
     private final ConcurrentCyclicFIFO<byte[]> hgtpMessageQueue = new ConcurrentCyclicFIFO<>();
     private final ConcurrentCyclicFIFO<Object[]> httpMessageQueue = new ConcurrentCyclicFIFO<>();
+
+    private HgtpFsmManager fsmManager;
+    private StateManager stateManager;
+    private StateHandler stateHandler;
 
     // only client
     private String userId = "";
@@ -146,9 +153,18 @@ public class AppInstance {
 
     public ConcurrentCyclicFIFO<Object[]> getHttpMessageQueue() {return httpMessageQueue;}
 
-    public void putHgtpMessage(byte[] data) {
-        this.hgtpMessageQueue.offer(data);
+    public void putHgtpMessage(byte[] data) {this.hgtpMessageQueue.offer(data);}
+
+    public HgtpFsmManager getFsmManager() {return fsmManager;}
+    public void setFsmManager(HgtpFsmManager fsmManager) {
+        this.fsmManager = fsmManager;
+        this.fsmManager.initState();
+        this.stateManager = this.fsmManager.getStateManager();
+        this.stateHandler = this.fsmManager.getStateHandler();
     }
+
+    public StateManager getStateManager() {return stateManager;}
+    public StateHandler getStateHandler() {return stateHandler;}
 
     // only server
     public String getServerNonce() {return serverNonce;}
