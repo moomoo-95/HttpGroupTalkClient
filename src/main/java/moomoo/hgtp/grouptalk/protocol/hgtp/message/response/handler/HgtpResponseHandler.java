@@ -208,13 +208,13 @@ public class HgtpResponseHandler {
 
         try {
             // Encoding realm -> nonce
-            MessageDigest messageDigestRealm = MessageDigest.getInstance(AppInstance.ALGORITHM);
-            messageDigestRealm.update(hgtpRegisterContent.getRealm().getBytes(StandardCharsets.UTF_8));
-            messageDigestRealm.update(AppInstance.MD5_HASH_KEY.getBytes(StandardCharsets.UTF_8));
-            byte[] digestRealm = messageDigestRealm.digest();
-            messageDigestRealm.reset();
-            messageDigestRealm.update(digestRealm);
-            String nonce = new String(messageDigestRealm.digest());
+            MessageDigest messageDigest = MessageDigest.getInstance(AppInstance.ALGORITHM);
+            messageDigest.update(hgtpRegisterContent.getRealm().getBytes(StandardCharsets.UTF_8));
+            messageDigest.update(AppInstance.MD5_HASH_KEY.getBytes(StandardCharsets.UTF_8));
+            byte[] digestRealm = messageDigest.digest();
+            messageDigest.reset();
+            messageDigest.update(digestRealm);
+            String nonce = new String(messageDigest.digest());
 
             // Send Register
             HgtpRegisterRequest hgtpRegisterRequest = new HgtpRegisterRequest(

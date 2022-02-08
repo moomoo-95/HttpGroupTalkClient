@@ -65,14 +65,4 @@ public class HttpMessageFactory {
     public static HttpNoticeContent createHttpNoticeContent(String jsonString) {
         return gson.fromJson(jsonString, HttpNoticeContent.class);
     }
-
-    /**
-     * @fn createHttpRefreshContent
-     * @brief string 형태의 json 데이터를 createHttpRefreshContent 클래스로 변환하는 메서드
-     * @param jsonString
-     * @return
-     */
-    public static HttpRefreshContent createHttpRefreshContent(String jsonString) {
-        return gson.fromJson(jsonString, HttpRefreshContent.class);
-    }
 }

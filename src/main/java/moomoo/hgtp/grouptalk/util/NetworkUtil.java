@@ -5,8 +5,8 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.Base64.Encoder;
 import java.util.Base64.Decoder;
+import java.util.Base64.Encoder;
 
 public class NetworkUtil {
 

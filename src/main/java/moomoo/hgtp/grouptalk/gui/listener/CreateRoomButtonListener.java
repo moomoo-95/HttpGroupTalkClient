@@ -35,7 +35,7 @@ public class CreateRoomButtonListener implements ActionListener {
             appInstance.getStateHandler().fire(HgtpEvent.CREATE_ROOM, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
             // create request create room
             HgtpCreateRoomRequest hgtpCreateRoomRequest = new HgtpCreateRoomRequest(
-                    appInstance.getUserId(), AppInstance.SEQ_INCREMENT, roomId
+                    userInfo.getUserId(), AppInstance.SEQ_INCREMENT, roomId
             );
 
             hgtpRequestHandler.sendCreateRoomRequest(hgtpCreateRoomRequest);

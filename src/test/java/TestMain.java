@@ -8,6 +8,7 @@ import protocol.hgtp.HgtpTest;
 import sun.nio.ch.Net;
 
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Base64;
 import java.util.Base64.Encoder;
 import java.util.Base64.Decoder;
@@ -49,13 +50,43 @@ public class TestMain {
 //
 //        hgtpManager.stopHgtp();
 
-        String msg = "안녕하세요. 저는 임현성입니다. kldjaslkfhjklwdshflk";
+        try {
+            String ALGORITHM = "MD5";
+            String MD5_REALM = "HGTP_SERVICE";
+            String MD5_HASH_KEY = "950817";
+            String hostName = "asdasdd";
+            MessageDigest messageDigest = MessageDigest.getInstance(ALGORITHM);
+            messageDigest.update(MD5_REALM.getBytes(StandardCharsets.UTF_8));
+            messageDigest.update(MD5_HASH_KEY.getBytes(StandardCharsets.UTF_8));
+            byte[] digestRealm = messageDigest.digest();
+            messageDigest.reset();
+            messageDigest.update(digestRealm);
+            String nonce = new String(messageDigest.digest());
 
-        log.debug("msg : {}", msg);
-        String emg = NetworkUtil.messageEncoding(msg);
-        log.debug("emg : {}", emg);
-        String dmg = NetworkUtil.messageDecoding(emg);
-        log.debug("dmg : {}", dmg);
+            MessageDigest messageDigest2 = MessageDigest.getInstance(ALGORITHM);
+            messageDigest2.update(MD5_REALM.getBytes(StandardCharsets.UTF_8));
+            messageDigest2.update(hostName.getBytes(StandardCharsets.UTF_8));
+            messageDigest2.update(MD5_HASH_KEY.getBytes(StandardCharsets.UTF_8));
+            byte[] digestRealm2 = messageDigest2.digest();
+            messageDigest2.reset();
+            messageDigest2.update(digestRealm2);
+            String nonce2 = new String(messageDigest2.digest());
+
+            MessageDigest messageDigest3 = MessageDigest.getInstance(ALGORITHM);
+            messageDigest3.update(hostName.getBytes(StandardCharsets.UTF_8));
+            messageDigest3.update(MD5_HASH_KEY.getBytes(StandardCharsets.UTF_8));
+            byte[] digestRealm3 = messageDigest3.digest();
+            messageDigest3.reset();
+            messageDigest3.update(digestRealm3);
+            String nonce3 = new String(messageDigest3.digest());
+
+            log.debug("{} ", nonce);
+            log.debug("{} ", nonce2);
+            log.debug("{} ", nonce3);
+        } catch (Exception e) {
+            // ignore
+        }
+
     }
 
 }

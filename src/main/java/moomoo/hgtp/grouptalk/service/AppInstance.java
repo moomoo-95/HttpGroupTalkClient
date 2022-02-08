@@ -9,7 +9,6 @@ import moomoo.hgtp.grouptalk.fsm.HgtpFsmManager;
 import moomoo.hgtp.grouptalk.protocol.hgtp.HgtpMessageHandler;
 import moomoo.hgtp.grouptalk.service.base.ProcessMode;
 import moomoo.hgtp.grouptalk.util.CnameGenerator;
-import org.apache.commons.net.ntp.TimeStamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import service.ResourceManager;

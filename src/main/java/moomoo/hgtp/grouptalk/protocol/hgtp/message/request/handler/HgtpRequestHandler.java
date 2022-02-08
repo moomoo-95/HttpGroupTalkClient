@@ -631,6 +631,59 @@ public class HgtpRequestHandler {
         }
     }
 
+
+    /**
+     * @fn hgtpRefreshRequestProcessing
+     * @brief refresh 메시지를 받았을 때 처리하는 메서드 (server 는 처리, proxy 는 relay, client 는 error)
+     * @param hgtpRefreshRequest
+     */
+    public void hgtpRefreshRequestProcessing(HgtpRefreshRequest hgtpRefreshRequest) {
+        HgtpHeader hgtpHeader = hgtpRefreshRequest.getHgtpHeader();
+
+        if (hgtpHeader == null) {
+            log.debug(DATA_NULL_LOG, hgtpRefreshRequest);
+            return;
+        }
+        log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpRefreshRequest);
+
+        String userId = hgtpHeader.getUserId();
+
+        UserInfo userInfo = sessionManager.getUserInfo(userId);
+        if (userInfo == null) {
+            log.debug(USER_UNREG_LOG, userId);
+            return;
+        }
+
+        // client 일 경우 bad request 전송
+        if (appInstance.getMode() == ProcessMode.CLIENT) {
+            HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
+                    HgtpMessageType.BAD_REQUEST, hgtpHeader.getRequestType(),
+                    hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
+
+            hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
+            return;
+        }
+
+        switch (appInstance.getMode()) {
+            case SERVER:
+                HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
+                        HgtpMessageType.OK, hgtpHeader.getRequestType(),
+                        hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
+
+                hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
+
+                HttpMessageHandler httpMessageHandler = new HttpMessageHandler();
+
+                httpMessageHandler.sendUserListRequest(userInfo);
+                httpMessageHandler.sendRoomListRequest(userInfo);
+                httpMessageHandler.sendRoomUserListRequest(userInfo);
+                break;
+            case PROXY:
+                break;
+            default:
+        }
+    }
+
     /**
      * @fn sendRegisterRequest
      * @brief register 요청을 전송하는 메서드 (client, proxy 만 처리)
@@ -792,11 +845,11 @@ public class HgtpRequestHandler {
         String userId = hgtpHeader.getUserId();
 
         sendHgtpRequest(userId, data);
-        log.debug(SEND_LOG, userId, HgtpMessageType.REQUEST_HASHMAP.get(hgtpInviteUserFromRoomRequest.getHgtpHeader().getMessageType()), hgtpInviteUserFromRoomRequest);
+        log.debug(SEND_LOG, userId, HgtpMessageType.REQUEST_HASHMAP.get(hgtpHeader.getMessageType()), hgtpInviteUserFromRoomRequest);
     }
 
     /**
-     * @fn sendInviteUserFromRoomRequest
+     * @fn sendRemoveUserFromRoomRequest
      * @brief manager 가 다른 user 에게 remove 요청을 전송하는 메서드
      * @param hgtpRemoveUserFromRoomRequest
      */
@@ -812,7 +865,26 @@ public class HgtpRequestHandler {
         String userId = hgtpHeader.getUserId();
 
         sendHgtpRequest(userId, data);
-        log.debug(SEND_LOG, userId, HgtpMessageType.REQUEST_HASHMAP.get(hgtpRemoveUserFromRoomRequest.getHgtpHeader().getMessageType()), hgtpRemoveUserFromRoomRequest);
+        log.debug(SEND_LOG, userId, HgtpMessageType.REQUEST_HASHMAP.get(hgtpHeader.getMessageType()), hgtpRemoveUserFromRoomRequest);
+    }
+
+    /**
+     * @fn sendRefreshRequest
+     * @brief client 가  server에게 데이터 재 요청을 보내는 메서드
+     * @param hgtpRefreshRequest
+     */
+    public void sendRefreshRequest(HgtpRefreshRequest hgtpRefreshRequest) {
+        HgtpHeader hgtpHeader = hgtpRefreshRequest.getHgtpHeader();
+        if (hgtpHeader == null) {
+            log.warn(DATA_NULL_LOG, hgtpRefreshRequest);
+            return;
+        }
+
+        byte[] data = hgtpRefreshRequest.getByteData();
+        String userId = hgtpHeader.getUserId();
+
+        sendHgtpRequest(userId, data);
+        log.debug(SEND_LOG, userId, HgtpMessageType.REQUEST_HASHMAP.get(hgtpHeader.getMessageType()), hgtpRefreshRequest);
     }
 
     /**

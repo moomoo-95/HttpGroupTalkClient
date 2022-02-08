@@ -14,6 +14,7 @@ public class HgtpMessageType {
     public static final short EXIT_ROOM = 0x93;
     public static final short INVITE_USER_FROM_ROOM = 0xA0;
     public static final short REMOVE_USER_FROM_ROOM = 0xA1;
+    public static final short REFRESH = 0xB0;
 
     public static final short OK = 0x20;
     public static final short BAD_REQUEST = 0x40;
@@ -35,6 +36,7 @@ public class HgtpMessageType {
         REQUEST_HASHMAP.put(EXIT_ROOM, "EXIT_ROOM");
         REQUEST_HASHMAP.put(INVITE_USER_FROM_ROOM, "INVITE_USER_FROM_ROOM");
         REQUEST_HASHMAP.put(REMOVE_USER_FROM_ROOM, "REMOVE_USER_FROM_ROOM");
+        REQUEST_HASHMAP.put(REFRESH, "REFRESH");
 
         RESPONSE_HASHMAP.put(OK, "OK");
         RESPONSE_HASHMAP.put(BAD_REQUEST, "BAD_REQUEST");
@@ -46,6 +48,7 @@ public class HgtpMessageType {
         HGTP_HASHMAP.putAll(REQUEST_HASHMAP);
         HGTP_HASHMAP.putAll(RESPONSE_HASHMAP);
     }
+
     private HgtpMessageType() {
         // nothing
     }

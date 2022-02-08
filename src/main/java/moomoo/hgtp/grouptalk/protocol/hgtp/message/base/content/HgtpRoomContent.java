@@ -14,7 +14,6 @@ public class HgtpRoomContent implements HgtpContent {
             byte[] roomIdByteData = new byte[getBodyLength()];
             System.arraycopy(data, index, roomIdByteData, 0, roomIdByteData.length);
             this.roomId = new String(roomIdByteData, StandardCharsets.UTF_8);
-
         } else {
             this.roomId = "";
         }

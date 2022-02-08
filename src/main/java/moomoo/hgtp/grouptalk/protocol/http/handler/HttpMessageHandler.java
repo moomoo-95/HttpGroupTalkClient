@@ -62,10 +62,6 @@ public class HttpMessageHandler {
                 HttpNoticeContent noticeContent = HttpMessageFactory.createHttpNoticeContent(httpContent);
                 receiveNoticeRequest(noticeContent);
                 break;
-            case REFRESH:
-                HttpRefreshContent refreshContent = HttpMessageFactory.createHttpRefreshContent(httpContent);
-                receiveRefreshRequest(refreshContent);
-                break;
             default:
                 log.warn("({}) () () Undefined message cannot be processed. {}", userId, httpRequest);
                 break;
@@ -199,26 +195,6 @@ public class HttpMessageHandler {
     }
 
     /**
-     * @fn sendRefreshRequest
-     * @brief client 가 room, room user, user 에 대한 정보를 재 요청할 때 보내는 메서드
-     * @param userInfo
-     */
-    public void sendRefreshRequest(UserInfo userInfo) {
-        DefaultFullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, HttpMessageType.REFRESH);
-        HttpRefreshContent refreshContent = new HttpRefreshContent(userInfo.getUserId());
-
-        setRequestHeader(request, userInfo, HttpMessageType.REFRESH);
-
-        String content = refreshContent.toString();
-
-        ByteBuf byteBuf = Unpooled.copiedBuffer(content, StandardCharsets.UTF_8);
-        request.headers().set(HttpHeaderNames.CONTENT_LENGTH, String.valueOf(byteBuf.readableBytes()));
-        request.content().writeBytes(byteBuf);
-
-        sendHttpRequest(request, userInfo);
-    }
-
-    /**
      * @fn receiveRoomListRequest
      * @brief server로 부터 받은 room list 정보를 통해 room list를 갱신하는 메서드
      * @param roomListContent
@@ -329,28 +305,6 @@ public class HttpMessageHandler {
     }
 
     /**
-     * @fn receiveRefreshRequest
-     * @brief client로 부터 메시지를 받으면 room, room user, user 목록을 재전송해주는 메서드
-     * @param messageContent
-     */
-    public void receiveRefreshRequest(HttpRefreshContent messageContent) {
-        switch (AppInstance.getInstance().getMode()) {
-            case SERVER:
-                UserInfo userInfo = SessionManager.getInstance().getUserInfo(messageContent.getUserId());
-                if (userInfo != null) {
-                    sendUserListRequest(userInfo);
-                    sendRoomListRequest(userInfo);
-                    sendRoomUserListRequest(userInfo);
-                }
-                break;
-            case PROXY:
-                break;
-            default:
-        }
-    }
-
-
-    /**
      * @fn setRequestHeader
      * @brief Http request message header를 설정하는 메서드
      * @param request
@@ -371,16 +325,11 @@ public class HttpMessageHandler {
      */
     private void sendHttpRequest(DefaultFullHttpRequest request, UserInfo userInfo) {
         GroupSocket groupSocket = NetworkManager.getInstance().getHttpGroupSocket(userInfo.getUserId(), false);
-        if (groupSocket == null) {
-            return;
-        }
+        if (groupSocket == null) { return; }
         DestinationRecord destinationRecord = groupSocket.getDestination(userInfo.getSessionId());
-        if (destinationRecord == null) {
-            return;
-        }
+        if (destinationRecord == null) { return; }
 
         NettyTcpClientChannel clientChannel = (NettyTcpClientChannel) destinationRecord.getNettyChannel();
-
         ByteBuf requestContent = request.content();
         log.debug("[{}] -> [{}] -> [{}\n\n{}]",
                 groupSocket.getListenSocket().getNetAddress().getPort(),

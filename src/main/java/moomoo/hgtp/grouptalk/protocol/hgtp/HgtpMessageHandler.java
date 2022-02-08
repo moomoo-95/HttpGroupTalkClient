@@ -91,6 +91,10 @@ public class HgtpMessageHandler extends Job {
                     HgtpRemoveUserFromRoomRequest hgtpRemoveUserFromRoomRequest = new HgtpRemoveUserFromRoomRequest(data);
                     hgtpRequestHandler.removeUserFromRoomRequestProcessing(hgtpRemoveUserFromRoomRequest);
                     break;
+                case HgtpMessageType.REFRESH:
+                    HgtpRefreshRequest hgtpRefreshRequest = new HgtpRefreshRequest(data);
+                    hgtpRequestHandler.hgtpRefreshRequestProcessing(hgtpRefreshRequest);
+                    break;
                 case HgtpMessageType.OK:
                     HgtpCommonResponse hgtpOkResponse = new HgtpCommonResponse(data);
                     hgtpResponseHandler.okResponseProcessing(hgtpOkResponse);
