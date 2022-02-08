@@ -28,7 +28,7 @@ public class RoomUserListPanel extends JPanel {
         setLayout(borderLayout);
 
         JLabel roomUserListName = new JLabel("ROOM USER LIST");
-        roomUserListName.setHorizontalAlignment(JLabel.CENTER);
+        roomUserListName.setHorizontalAlignment(SwingConstants.CENTER);
         roomUserListName.setPreferredSize(new Dimension(this.getWidth(), 20));
         this.add(roomUserListName, BorderLayout.NORTH);
 
@@ -95,7 +95,7 @@ public class RoomUserListPanel extends JPanel {
         model.clear();
 
         if (groupUserList != null) {
-            groupUserList.forEach( value -> model.addElement(value));
+            groupUserList.forEach(model::addElement);
         }
     }
 }

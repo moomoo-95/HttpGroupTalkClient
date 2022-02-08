@@ -38,7 +38,6 @@ public class ConfigManager {
     // HTTP
     private static final String FIELD_HTTP_MIN_PORT = "HTTP_MIN_PORT";
     private static final String FIELD_HTTP_MAX_PORT = "HTTP_MAX_PORT";
-    private static final String FIELD_HTTP_THREAD_SIZE = "HTTP_THREAD_SIZE";
 
     // COMMON
     private int userMaxSize = 0;
@@ -56,7 +55,6 @@ public class ConfigManager {
     // HTTP
     private int  httpMinPort = 0;
     private int  httpMaxPort = 0;
-    private int  httpThreadSize = 0;
 
     public ConfigManager(String configPath) {
         File iniFile = new File(configPath);
@@ -79,15 +77,17 @@ public class ConfigManager {
 
     private void loadCommonConfig() {
         this.userMaxSize = Integer.parseInt(getIniValue(SECTION_COMMON, FIELD_USER_MAX_SIZE));
-        if (userMaxSize < 0 || userMaxSize > 1000000) {
+        if (userMaxSize <= 0 || userMaxSize > 1000000) {
             log.warn("[{}] config [{}] : [{} -> 100] Warn", SECTION_COMMON, FIELD_USER_MAX_SIZE, userMaxSize);
             userMaxSize = 100;
+            setIniValue(SECTION_COMMON, FIELD_USER_MAX_SIZE, "100");
         }
 
         this.roomMaxSize = Integer.parseInt(getIniValue(SECTION_COMMON, FIELD_ROOM_MAX_SIZE));
         if (roomMaxSize < 0 || roomMaxSize > 1000000) {
             log.warn("[{}] config [{}] : [{} -> 100] Warn", SECTION_COMMON, FIELD_ROOM_MAX_SIZE, roomMaxSize);
             roomMaxSize = 100;
+            setIniValue(SECTION_COMMON, FIELD_ROOM_MAX_SIZE, "100");
         }
 
         log.debug(CONFIG_LOG, SECTION_COMMON);
@@ -102,12 +102,14 @@ public class ConfigManager {
         if (sendBufSize < 1024) {
             log.warn("[{}] config [{}] : [{} -> 1048576] Warn", SECTION_NETWORK, FIELD_SEND_BUF_SIZE, sendBufSize);
             sendBufSize = 1048576;
+            setIniValue(SECTION_NETWORK, FIELD_SEND_BUF_SIZE, "1048576");
         }
 
-        this.recvBufSize = Integer.parseInt(getIniValue(SECTION_NETWORK, FIELD_SEND_BUF_SIZE));
+        this.recvBufSize = Integer.parseInt(getIniValue(SECTION_NETWORK, FIELD_RECV_BUF_SIZE));
         if (recvBufSize < 1024) {
             log.warn("[{}] config [{}] : [{} -> 1048576] Warn", SECTION_NETWORK, FIELD_RECV_BUF_SIZE, recvBufSize);
             recvBufSize = 1048576;
+            setIniValue(SECTION_NETWORK, FIELD_RECV_BUF_SIZE, "1048576");
         }
 
         log.debug(CONFIG_LOG, SECTION_NETWORK);
@@ -130,12 +132,14 @@ public class ConfigManager {
         if (hgtpThreadSize <= 0) {
             log.warn("[{}] config [{}] : [{} -> 5] Warn", SECTION_HGTP, FIELD_HGTP_THREAD_SIZE, hgtpThreadSize);
             hgtpThreadSize = 5;
+            setIniValue(SECTION_NETWORK, FIELD_HGTP_THREAD_SIZE, "5");
         }
 
         this.hgtpExpireTime = Long.parseLong(getIniValue(SECTION_HGTP, FIELD_HGTP_EXPIRE_TIME));
         if (hgtpExpireTime <= 0) {
             log.warn("[{}] config [{}] : [{} -> 3600] Warn", SECTION_HGTP, FIELD_HGTP_THREAD_SIZE, hgtpExpireTime);
             hgtpExpireTime = 3600;
+            setIniValue(SECTION_NETWORK, FIELD_HGTP_EXPIRE_TIME, "3600");
         }
         log.debug(CONFIG_LOG, SECTION_HGTP);
     }
@@ -156,12 +160,6 @@ public class ConfigManager {
         if (httpMinPort > httpMaxPort) {
             log.error("[{}] config [{} > {}] Error. {} > {}", SECTION_HTTP, FIELD_HTTP_MIN_PORT, FIELD_HTTP_MAX_PORT, httpMinPort, httpMaxPort);
             System.exit(1);
-        }
-
-        this.httpThreadSize = Integer.parseInt(getIniValue(SECTION_HTTP, FIELD_HTTP_THREAD_SIZE));
-        if (httpThreadSize <= 0) {
-            log.warn("[{}] config [{}] : [{} -> 10] Warn", SECTION_HTTP, FIELD_HTTP_THREAD_SIZE, httpThreadSize);
-            httpThreadSize = 10;
         }
 
         log.debug(CONFIG_LOG, SECTION_HGTP);
@@ -210,5 +208,4 @@ public class ConfigManager {
     // http
     public int getHttpMinPort() {return httpMinPort;}
     public int getHttpMaxPort() {return httpMaxPort;}
-    public int getHttpThreadSize() {return httpThreadSize;}
 }

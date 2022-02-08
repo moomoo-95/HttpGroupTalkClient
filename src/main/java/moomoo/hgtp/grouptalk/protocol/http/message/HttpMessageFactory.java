@@ -12,6 +12,10 @@ public class HttpMessageFactory {
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
+    private HttpMessageFactory() {
+        // nothing
+    }
+
     /**
      * @fn createHttpRoomListContent
      * @brief string 형태의 json 데이터를 HttpRoomListContent 클래스로 변환하는 메서드
@@ -19,9 +23,7 @@ public class HttpMessageFactory {
      * @return
      */
     public static HttpRoomListContent createHttpRoomListContent(String jsonString) {
-        HttpRoomListContent roomListContent = gson.fromJson(jsonString, HttpRoomListContent.class);
-
-        return roomListContent;
+        return gson.fromJson(jsonString, HttpRoomListContent.class);
     }
 
     /**
@@ -31,9 +33,7 @@ public class HttpMessageFactory {
      * @return
      */
     public static HttpUserListContent createHttpUserListContent(String jsonString) {
-        HttpUserListContent userListContent = gson.fromJson(jsonString, HttpUserListContent.class);
-
-        return userListContent;
+        return gson.fromJson(jsonString, HttpUserListContent.class);
     }
 
     /**
@@ -43,9 +43,7 @@ public class HttpMessageFactory {
      * @return
      */
     public static HttpRoomUserListContent createHttpRoomUserListContent(String jsonString) {
-        HttpRoomUserListContent roomUserListContent = gson.fromJson(jsonString, HttpRoomUserListContent.class);
-
-        return roomUserListContent;
+        return gson.fromJson(jsonString, HttpRoomUserListContent.class);
     }
 
     /**
@@ -55,9 +53,7 @@ public class HttpMessageFactory {
      * @return
      */
     public static HttpMessageContent createHttpMessageContent(String jsonString) {
-        HttpMessageContent messageContent = gson.fromJson(jsonString, HttpMessageContent.class);
-
-        return messageContent;
+        return gson.fromJson(jsonString, HttpMessageContent.class);
     }
 
     /**
@@ -67,9 +63,7 @@ public class HttpMessageFactory {
      * @return
      */
     public static HttpNoticeContent createHttpNoticeContent(String jsonString) {
-        HttpNoticeContent messageContent = gson.fromJson(jsonString, HttpNoticeContent.class);
-
-        return messageContent;
+        return gson.fromJson(jsonString, HttpNoticeContent.class);
     }
 
     /**
@@ -79,8 +73,6 @@ public class HttpMessageFactory {
      * @return
      */
     public static HttpRefreshContent createHttpRefreshContent(String jsonString) {
-        HttpRefreshContent messageContent = gson.fromJson(jsonString, HttpRefreshContent.class);
-
-        return messageContent;
+        return gson.fromJson(jsonString, HttpRefreshContent.class);
     }
 }

@@ -18,7 +18,7 @@ public class HgtpState {
     public static final String EXIT = "EXIT";
     public static final String DELETE = "DELETE";
 
-    protected static final HashSet<String> TO_TALK = new HashSet<>();
+    public static final HashSet<String> TO_TALK = new HashSet<>();
 
     static {
         TO_TALK.add(CREATE_OK);

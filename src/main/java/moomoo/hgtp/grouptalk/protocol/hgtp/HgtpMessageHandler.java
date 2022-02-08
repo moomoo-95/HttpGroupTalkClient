@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 public class HgtpMessageHandler extends Job {
 
-    private static final Logger log = LoggerFactory.getLogger(HgtpResponseHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(HgtpMessageHandler.class);
 
     private final ConcurrentCyclicFIFO<byte[]> hgtpMessageQueue;
     private final HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();
@@ -26,8 +26,8 @@ public class HgtpMessageHandler extends Job {
 
     private boolean isQuit = false;
 
-    public HgtpMessageHandler(ScheduleManager scheduleManager, String name, int initialDelay, int interval, TimeUnit timeUnit, int priority, int totalRunCount, boolean isLasted, ConcurrentCyclicFIFO<byte[]> hgtpMessageQueue) {
-        super(scheduleManager, name, initialDelay, interval, timeUnit, priority, totalRunCount, isLasted);
+    public HgtpMessageHandler(ScheduleManager scheduleManager, int initialDelay, int interval, TimeUnit timeUnit, int priority, int totalRunCount, boolean isLasted, ConcurrentCyclicFIFO<byte[]> hgtpMessageQueue) {
+        super(scheduleManager, HgtpMessageHandler.class.getSimpleName(), initialDelay, interval, timeUnit, priority, totalRunCount, isLasted);
         this.hgtpMessageQueue = hgtpMessageQueue;
     }
 
@@ -56,10 +56,6 @@ public class HgtpMessageHandler extends Job {
     private void parseHgtpMessage(byte[] data) {
         try {
             HgtpHeader hgtpHeader = new HgtpHeader(data);
-            if (hgtpHeader == null) {
-                log.warn("This is not HGTP Message. [{}]", data);
-                return;
-            }
 
             log.debug("({}) () () RECV MSG TYPE : {}", hgtpHeader.getUserId(), HgtpMessageType.HGTP_HASHMAP.get(hgtpHeader.getMessageType()));
             switch (hgtpHeader.getMessageType()){

@@ -23,6 +23,8 @@ import network.definition.DestinationRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.*;
+
 public class HgtpRequestHandler {
 
     private static final Logger log = LoggerFactory.getLogger(HgtpRequestHandler.class);
@@ -474,7 +476,6 @@ public class HgtpRequestHandler {
         }
 
         UserInfo peerUserInfo = sessionManager.getUserInfo(peerUserId);
-        appInstance.getStateHandler().fire(HgtpEvent.INVITE_USER_ROOM, appInstance.getStateManager().getStateUnit(peerUserInfo.getHgtpStateUnitId()));
         short messageType = HgtpMessageType.OK;
         switch (appInstance.getMode()) {
             case SERVER:
@@ -489,6 +490,7 @@ public class HgtpRequestHandler {
                 } else if (roomInfo.getUserGroupSet().contains(peerUserId)) {
                     messageType = HgtpMessageType.DECLINE;
                 }
+                appInstance.getStateHandler().fire(HgtpEvent.INVITE_USER_ROOM, appInstance.getStateManager().getStateUnit(peerUserInfo.getHgtpStateUnitId()));
 
                 if (messageType != HgtpMessageType.OK) {
                     appInstance.getStateHandler().fire(HgtpEvent.INVITE_USER_ROOM_FAIL, appInstance.getStateManager().getStateUnit(peerUserInfo.getHgtpStateUnitId()));
@@ -509,6 +511,7 @@ public class HgtpRequestHandler {
                 }
                 break;
             case CLIENT:
+                appInstance.getStateHandler().fire(HgtpEvent.INVITE_USER_ROOM, appInstance.getStateManager().getStateUnit(peerUserInfo.getHgtpStateUnitId()));
                 if (!userInfo.getRoomId().equals("")) {
                     appInstance.getStateHandler().fire(HgtpEvent.INVITE_USER_ROOM_FAIL, appInstance.getStateManager().getStateUnit(peerUserInfo.getHgtpStateUnitId()));
                     messageType = HgtpMessageType.DECLINE;
@@ -560,7 +563,6 @@ public class HgtpRequestHandler {
         }
 
         UserInfo peerUserInfo = sessionManager.getUserInfo(peerUserId);
-        appInstance.getStateHandler().fire(HgtpEvent.REMOVE_USER_ROOM, appInstance.getStateManager().getStateUnit(peerUserInfo.getHgtpStateUnitId()));
         short messageType = HgtpMessageType.OK;
         switch (appInstance.getMode()) {
             case SERVER:
@@ -575,6 +577,7 @@ public class HgtpRequestHandler {
                 } else if (!roomInfo.getUserGroupSet().contains(peerUserId)) {
                     messageType = HgtpMessageType.DECLINE;
                 }
+                appInstance.getStateHandler().fire(HgtpEvent.REMOVE_USER_ROOM, appInstance.getStateManager().getStateUnit(peerUserInfo.getHgtpStateUnitId()));
 
                 if (messageType != HgtpMessageType.OK) {
                     appInstance.getStateHandler().fire(HgtpEvent.REMOVE_USER_ROOM_FAIL, appInstance.getStateManager().getStateUnit(peerUserInfo.getHgtpStateUnitId()));
@@ -592,6 +595,7 @@ public class HgtpRequestHandler {
                 }
                 break;
             case CLIENT:
+                appInstance.getStateHandler().fire(HgtpEvent.REMOVE_USER_ROOM, appInstance.getStateManager().getStateUnit(peerUserInfo.getHgtpStateUnitId()));
                 if (userInfo.getRoomId().equals("")) {
                     appInstance.getStateHandler().fire(HgtpEvent.REMOVE_USER_ROOM_FAIL, appInstance.getStateManager().getStateUnit(peerUserInfo.getHgtpStateUnitId()));
                     messageType = HgtpMessageType.DECLINE;
@@ -601,7 +605,7 @@ public class HgtpRequestHandler {
                     ControlPanel controlPanel = guiManager.getControlPanel();
 
                     guiManager.roomInit();
-                    controlPanel.setExitRoomButtonStatus();
+                    controlPanel.setRegisterButtonStatus();
 
                     userInfo.initRoomId();
                 }
@@ -611,6 +615,15 @@ public class HgtpRequestHandler {
                         userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
 
                 hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
+
+                JOptionPane.showConfirmDialog(
+                        null,
+                        "Kicked out of the room by room manager.",
+                        "Kicked out of the room",
+                        JOptionPane.YES_OPTION,
+                        JOptionPane.INFORMATION_MESSAGE,
+                        null
+                );
                 break;
             case PROXY:
                 break;

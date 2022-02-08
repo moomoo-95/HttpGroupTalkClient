@@ -18,11 +18,9 @@ public class HttpGroupTalkMain {
         }
 
         AppInstance appInstance = AppInstance.getInstance();
-        if (ClassUtil.isInteger(args[1])) {
-            if (!appInstance.setMode(Integer.parseInt(args[1]))) {
-                log.error("{} is not defined (server : 0, client : 1, proxy : 2)", args[1]);
-                return;
-            }
+        if (!ClassUtil.isInteger(args[1]) || !appInstance.setMode(Integer.parseInt(args[1]))) {
+            log.error("{} is not defined (server : 0, client : 1, proxy : 2)", args[1]);
+            return;
         }
 
         log.debug("HttpGroupTalk {} Start.", args[1]);

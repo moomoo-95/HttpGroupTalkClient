@@ -89,18 +89,6 @@ public class ControlPanel extends JPanel {
         GuiManager.getInstance().getMessagePanel().setEnableSendButton(true);
     }
 
-    public void setDeleteRoomButtonStatus(){
-        registerButton.setEnabled(false);
-        unregisterButton.setEnabled(true);
-        createRoomButton.setEnabled(true);
-        deleteRoomButton.setEnabled(false);
-        exitRoomButton.setEnabled(false);
-        refreshButton.setEnabled(true);
-        exitButton.setEnabled(false);
-
-        GuiManager.getInstance().getMessagePanel().setEnableSendButton(false);
-    }
-
     public void setJoinRoomButtonStatus(){
         registerButton.setEnabled(false);
         unregisterButton.setEnabled(false);
@@ -113,17 +101,4 @@ public class ControlPanel extends JPanel {
 
         GuiManager.getInstance().getMessagePanel().setEnableSendButton(true);
     }
-
-    public void setExitRoomButtonStatus(){
-        registerButton.setEnabled(false);
-        unregisterButton.setEnabled(true);
-        createRoomButton.setEnabled(true);
-        deleteRoomButton.setEnabled(false);
-        exitRoomButton.setEnabled(false);
-        refreshButton.setEnabled(true);
-        exitButton.setEnabled(false);
-
-        GuiManager.getInstance().getMessagePanel().setEnableSendButton(false);
-    }
-
 }

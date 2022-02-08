@@ -100,8 +100,8 @@ public class AppInstance {
         scheduleManager.startJob(
                 AppInstance.HGTP_SCHEDULE_KEY,
                 new HgtpMessageHandler(
-                        scheduleManager, HgtpMessageHandler.class.getSimpleName(),
-                        0, 1, TimeUnit.MILLISECONDS, 1, 0, true,
+                        scheduleManager, 0, 1, TimeUnit.MILLISECONDS,
+                        1, 0, true,
                         appInstance.getHgtpMessageQueue()
                 )
         );

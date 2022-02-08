@@ -37,8 +37,6 @@ public class GuiManager {
         getRoomUserListPanel().setRoomUserList(null);
     }
 
-    public ClientFrame getClientFrame() { return clientFrame;}
-
     public UserListPanel getUserListPanel() { return clientFrame.getUserListPanel(); }
     public RoomListPanel getRoomListPanel() { return clientFrame.getRoomListPanel(); }
     public RoomUserListPanel getRoomUserListPanel() { return clientFrame.getRoomUserListPanel(); }

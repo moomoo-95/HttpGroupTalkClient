@@ -29,7 +29,7 @@ public class RoomListPanel extends JPanel {
         setLayout(borderLayout);
 
         JLabel roomListName = new JLabel("ROOM LIST");
-        roomListName.setHorizontalAlignment(JLabel.CENTER);
+        roomListName.setHorizontalAlignment(SwingConstants.CENTER);
         roomListName.setPreferredSize(new Dimension(this.getWidth(), 20));
         this.add(roomListName, BorderLayout.NORTH);
 
@@ -98,7 +98,7 @@ public class RoomListPanel extends JPanel {
         model.clear();
 
         if (roomList != null) {
-            roomList.forEach( value -> model.addElement(value));
+            roomList.forEach(model::addElement);
         }
 
     }

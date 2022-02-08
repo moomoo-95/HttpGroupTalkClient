@@ -21,7 +21,6 @@ public class RoomPanel extends JPanel {
 
 
     private final JLabel roomName = new JLabel("");
-//    private final JTextArea jTextArea = new JTextArea();
     private final JTextPane textPane = new JTextPane();
     private final StyledDocument document = textPane.getStyledDocument();
     private final MessagePanel messagePanel = new MessagePanel();
@@ -32,7 +31,7 @@ public class RoomPanel extends JPanel {
         borderLayout.setHgap(3);
         setLayout(borderLayout);
 
-        roomName.setHorizontalAlignment(JLabel.CENTER);
+        roomName.setHorizontalAlignment(SwingConstants.CENTER);
         roomName.setPreferredSize(new Dimension(this.getWidth(), 20));
 
         initJTextPane();

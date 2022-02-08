@@ -16,7 +16,7 @@ import java.awt.event.ActionListener;
 
 public class SendButtonListener implements ActionListener {
 
-    private static final Logger log = LoggerFactory.getLogger(CreateRoomButtonListener.class);
+    private static final Logger log = LoggerFactory.getLogger(SendButtonListener.class);
 
     private static SessionManager sessionManager = SessionManager.getInstance();
 

@@ -28,7 +28,7 @@ public class UserListPanel extends JPanel {
         setLayout(borderLayout);
 
         JLabel userListName = new JLabel("USER LIST");
-        userListName.setHorizontalAlignment(JLabel.CENTER);
+        userListName.setHorizontalAlignment(SwingConstants.CENTER);
         userListName.setPreferredSize(new Dimension(this.getWidth(), 20));
         this.add(userListName, BorderLayout.NORTH);
 
@@ -96,7 +96,7 @@ public class UserListPanel extends JPanel {
         model.clear();
 
         if (userList != null) {
-            userList.forEach( value -> model.addElement(value));
+            userList.forEach(model::addElement);
         }
 
     }

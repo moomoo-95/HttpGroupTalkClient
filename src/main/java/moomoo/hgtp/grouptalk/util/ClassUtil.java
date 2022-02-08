@@ -2,7 +2,7 @@ package moomoo.hgtp.grouptalk.util;
 
 public class ClassUtil {
 
-    public ClassUtil() {
+    private ClassUtil() {
         // nothing
     }
 

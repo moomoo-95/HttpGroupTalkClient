@@ -2,7 +2,6 @@ package moomoo.hgtp.grouptalk.protocol.hgtp.message.response.handler;
 
 import moomoo.hgtp.grouptalk.config.ConfigManager;
 import moomoo.hgtp.grouptalk.fsm.HgtpEvent;
-import moomoo.hgtp.grouptalk.fsm.HgtpState;
 import moomoo.hgtp.grouptalk.gui.GuiManager;
 import moomoo.hgtp.grouptalk.gui.component.panel.ControlPanel;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
@@ -30,6 +29,7 @@ public class HgtpResponseHandler {
 
     private static final Logger log = LoggerFactory.getLogger(HgtpResponseHandler.class);
     private static final String RECV_LOG = "({}) () () RECV HGTP MSG [{}]";
+    private static final String HEADER_LOG = "() () () header is null [{}]";
 
     private static AppInstance appInstance = AppInstance.getInstance();
     private static SessionManager sessionManager = SessionManager.getInstance();
@@ -46,12 +46,11 @@ public class HgtpResponseHandler {
      */
     public void okResponseProcessing(HgtpCommonResponse hgtpOkResponse) {
         HgtpHeader hgtpHeader = hgtpOkResponse.getHgtpHeader();
-        log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpOkResponse);
-
         if (hgtpHeader == null) {
-            log.debug("() () () header is null [{}]", hgtpOkResponse);
+            log.debug(HEADER_LOG, hgtpOkResponse);
             return;
         }
+        log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpOkResponse);
 
         if (appInstance.getMode() == ProcessMode.SERVER) {
             UserInfo userInfo = sessionManager.getUserInfo(hgtpHeader.getUserId());
@@ -114,7 +113,7 @@ public class HgtpResponseHandler {
                 case HgtpMessageType.DELETE_ROOM:
                     appInstance.getStateHandler().fire(HgtpEvent.DELETE_ROOM_SUC, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
                     appInstance.setManager(false);
-                    controlPanel.setDeleteRoomButtonStatus();
+                    controlPanel.setRegisterButtonStatus();
                     sessionManager.getUserInfo(appInstance.getUserId()).initRoomId();
                     guiManager.roomInit();
                     break;
@@ -124,7 +123,7 @@ public class HgtpResponseHandler {
                     break;
                 case HgtpMessageType.EXIT_ROOM:
                     appInstance.getStateHandler().fire(HgtpEvent.EXIT_ROOM_SUC, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
-                    controlPanel.setExitRoomButtonStatus();
+                    controlPanel.setRegisterButtonStatus();
                     sessionManager.getUserInfo(appInstance.getUserId()).initRoomId();
                     break;
                 default:
@@ -139,12 +138,11 @@ public class HgtpResponseHandler {
      */
     public void badRequestResponseProcessing(HgtpCommonResponse hgtpBadRequestResponse) {
         HgtpHeader hgtpHeader = hgtpBadRequestResponse.getHgtpHeader();
-        log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpBadRequestResponse);
-
         if (hgtpHeader == null) {
-            log.debug("() () () header is null [{}]", hgtpBadRequestResponse);
+            log.debug(HEADER_LOG, hgtpBadRequestResponse);
             return;
         }
+        log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpBadRequestResponse);
 
         if (appInstance.getMode() == ProcessMode.CLIENT) {
             ControlPanel controlPanel = GuiManager.getInstance().getControlPanel();
@@ -238,12 +236,11 @@ public class HgtpResponseHandler {
 
     public void serverUnavailableResponseProcessing(HgtpCommonResponse hgtpServerUnavailableResponse) {
         HgtpHeader hgtpHeader = hgtpServerUnavailableResponse.getHgtpHeader();
-        log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpServerUnavailableResponse);
-
         if (hgtpHeader == null) {
-            log.debug("() () () header is null [{}]", hgtpServerUnavailableResponse);
+            log.debug(HEADER_LOG, hgtpServerUnavailableResponse);
             return;
         }
+        log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpServerUnavailableResponse);
 
         if (appInstance.getMode() == ProcessMode.CLIENT) {
             ControlPanel controlPanel = GuiManager.getInstance().getControlPanel();
@@ -283,12 +280,11 @@ public class HgtpResponseHandler {
      */
     public void declineResponseProcessing(HgtpCommonResponse hgtpDeclineResponse) {
         HgtpHeader hgtpHeader = hgtpDeclineResponse.getHgtpHeader();
-        log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpDeclineResponse);
-
         if (hgtpHeader == null) {
-            log.debug("() () () header is null [{}]", hgtpDeclineResponse);
+            log.debug(HEADER_LOG, hgtpDeclineResponse);
             return;
         }
+        log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpDeclineResponse);
 
         if (appInstance.getMode() == ProcessMode.SERVER) {
             UserInfo userInfo = sessionManager.getUserInfo(hgtpHeader.getUserId());

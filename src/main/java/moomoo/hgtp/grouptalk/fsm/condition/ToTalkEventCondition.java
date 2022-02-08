@@ -1,9 +1,10 @@
-package moomoo.hgtp.grouptalk.fsm;
+package moomoo.hgtp.grouptalk.fsm.condition;
 
 import com.fsm.StateManager;
 import com.fsm.event.base.StateEvent;
 import com.fsm.module.base.EventCondition;
 import com.fsm.unit.StateUnit;
+import moomoo.hgtp.grouptalk.fsm.HgtpState;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

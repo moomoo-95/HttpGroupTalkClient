@@ -3,6 +3,7 @@ package moomoo.hgtp.grouptalk.fsm;
 
 import com.fsm.StateManager;
 import com.fsm.module.StateHandler;
+import moomoo.hgtp.grouptalk.fsm.condition.ToTalkEventCondition;
 
 public class HgtpFsmManager {
 
