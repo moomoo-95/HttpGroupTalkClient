@@ -1,18 +1,23 @@
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.util.CnameGenerator;
+import moomoo.hgtp.grouptalk.util.NetworkUtil;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import protocol.hgtp.HgtpTest;
+import sun.nio.ch.Net;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Base64.Encoder;
+import java.util.Base64.Decoder;
 
 public class TestMain {
     private static final Logger log = LoggerFactory.getLogger(TestMain.class);
     @Test
     public void testMain() {
-        AppInstance appInstance = AppInstance.getInstance();
-        appInstance.setConfigManager("src/main/resources/config/user_config.ini");
+//        AppInstance appInstance = AppInstance.getInstance();
+//        appInstance.setConfigManager("src/main/resources/config/user_config.ini");
 //        HgtpManager hgtpManager = HgtpManager.getInstance();
 //        hgtpManager.startHgtp();
 //
@@ -43,6 +48,14 @@ public class TestMain {
 //        hgtpTest.hgtpUnregisterTest(userId);
 //
 //        hgtpManager.stopHgtp();
+
+        String msg = "안녕하세요. 저는 임현성입니다. kldjaslkfhjklwdshflk";
+
+        log.debug("msg : {}", msg);
+        String emg = NetworkUtil.messageEncoding(msg);
+        log.debug("emg : {}", emg);
+        String dmg = NetworkUtil.messageDecoding(emg);
+        log.debug("dmg : {}", dmg);
     }
 
 }

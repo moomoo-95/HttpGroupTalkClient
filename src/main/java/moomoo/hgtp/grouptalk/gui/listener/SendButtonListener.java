@@ -8,6 +8,7 @@ import moomoo.hgtp.grouptalk.protocol.http.message.content.HttpMessageContent;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
+import moomoo.hgtp.grouptalk.util.NetworkUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,7 @@ public class SendButtonListener implements ActionListener {
         UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
         MessagePanel messagePanel = GuiManager.getInstance().getMessagePanel();
 
-        String message = messagePanel.getSendText();
+        String message = NetworkUtil.messageEncoding( messagePanel.getSendText() );
         messagePanel.initSendText();
 
 

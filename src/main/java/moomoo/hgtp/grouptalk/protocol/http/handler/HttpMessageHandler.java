@@ -17,6 +17,7 @@ import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
 import moomoo.hgtp.grouptalk.session.base.RoomInfo;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
+import moomoo.hgtp.grouptalk.util.NetworkUtil;
 import network.definition.DestinationRecord;
 import network.socket.GroupSocket;
 import network.socket.netty.tcp.NettyTcpClientChannel;
@@ -183,7 +184,8 @@ public class HttpMessageHandler {
      */
     public void sendNoticeRequest(String notice, UserInfo userInfo) {
         DefaultFullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, HttpMessageType.NOTICE);
-        HttpNoticeContent noticeContent = new HttpNoticeContent(notice);
+        String encodeNotice = NetworkUtil.messageEncoding(notice);
+        HttpNoticeContent noticeContent = new HttpNoticeContent(encodeNotice);
 
         setRequestHeader(request, userInfo, HttpMessageType.NOTICE);
 
@@ -291,9 +293,11 @@ public class HttpMessageHandler {
                 RoomPanel roomPanel = GuiManager.getInstance().getRoomPanel();
                 boolean isMyMessage = messageContent.getUserId().equals(AppInstance.getInstance().getUserId());
 
+                String decodeMessage = NetworkUtil.messageDecoding(messageContent.getMessage());
+
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append("[" + messageContent.getMessageTimeFormat() + "]\n");
-                stringBuilder.append("| " +messageContent.getUserId() + " | " + messageContent.getMessage() + "\n");
+                stringBuilder.append("| " +messageContent.getUserId() + " | " + decodeMessage + "\n");
                 roomPanel.addMessage(stringBuilder.toString(), isMyMessage);
                 break;
             case PROXY:
@@ -312,8 +316,10 @@ public class HttpMessageHandler {
             case CLIENT:
                 RoomPanel roomPanel = GuiManager.getInstance().getRoomPanel();
 
+                String decodeNotice = NetworkUtil.messageDecoding(messageContent.getNotice());
+
                 StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.append("*** " + messageContent.getNotice() + " ***\n");
+                stringBuilder.append("*** " + decodeNotice + " ***\n");
                 roomPanel.addNotice(stringBuilder.toString());
                 break;
             case PROXY:

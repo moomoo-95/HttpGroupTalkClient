@@ -33,7 +33,7 @@ public class HttpMessageContent extends HttpMessage {
         return messageTime;
     }
     public String getMessageTimeFormat() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-DD HH:mm:ss.SSS");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-DD HH:mm:ss.SSS");
         return simpleDateFormat.format(messageTime);
     }
 }

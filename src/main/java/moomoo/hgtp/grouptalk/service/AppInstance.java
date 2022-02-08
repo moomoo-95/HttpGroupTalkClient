@@ -75,8 +75,8 @@ public class AppInstance {
         try {
             // Decoding nonce -> realm
             MessageDigest messageDigestNonce = MessageDigest.getInstance(ALGORITHM);
-            messageDigestNonce.update(AppInstance.MD5_REALM.getBytes(StandardCharsets.UTF_8));
-            messageDigestNonce.update(AppInstance.MD5_HASH_KEY.getBytes(StandardCharsets.UTF_8));
+            messageDigestNonce.update(MD5_REALM.getBytes(StandardCharsets.UTF_8));
+            messageDigestNonce.update(MD5_HASH_KEY.getBytes(StandardCharsets.UTF_8));
             byte[] digestNonce = messageDigestNonce.digest();
             messageDigestNonce.reset();
             messageDigestNonce.update(digestNonce);
@@ -140,7 +140,7 @@ public class AppInstance {
         initScheduleManager();
     }
 
-    public long getTimeStamp() { return TimeStamp.getCurrentTime().getSeconds();}
+    public long getTimeStamp() { return System.currentTimeMillis();}
 
     public BaseEnvironment getBaseEnvironment() {return baseEnvironment;}
 
