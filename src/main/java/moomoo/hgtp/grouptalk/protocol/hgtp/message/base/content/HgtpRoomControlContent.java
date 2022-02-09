@@ -32,9 +32,7 @@ public class HgtpRoomControlContent implements HgtpContent {
 
             byte[] roomNameByteData = new byte[roomNameLength];
             System.arraycopy(data, index, roomNameByteData, 0, roomNameByteData.length);
-            LoggerFactory.getLogger(HgtpRoomControlContent.class).debug("!!! 2");
             this.roomName = new String(roomNameByteData, StandardCharsets.UTF_8);
-            LoggerFactory.getLogger(HgtpRoomControlContent.class).debug("!!! 3");
         } else {
             this.roomId = "";
             this.roomNameLength = 0;

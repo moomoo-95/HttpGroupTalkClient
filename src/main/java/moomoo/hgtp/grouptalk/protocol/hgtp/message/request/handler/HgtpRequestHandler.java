@@ -468,7 +468,7 @@ public class HgtpRequestHandler {
         log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpInviteUserFromRoomRequest);
 
         String userId = hgtpHeader.getUserId();
-        String roomId = hgtpContent.getRoomId();
+        String roomName = hgtpContent.getRoomName();
         String peerHostName = hgtpContent.getPeerHostName();
 
         UserInfo userInfo = sessionManager.getUserInfo(userId);
@@ -486,9 +486,9 @@ public class HgtpRequestHandler {
         short messageType = HgtpMessageType.OK;
         switch (appInstance.getMode()) {
             case SERVER:
-                RoomInfo roomInfo = sessionManager.getRoomInfo(roomId);
+                RoomInfo roomInfo = sessionManager.getRoomInfoWithRoomName(roomName);
                 if (roomInfo == null) {
-                    log.debug(ROOM_DEL_LOG, roomId);
+                    log.debug(ROOM_DEL_LOG, roomName);
                     return;
                 }
 
@@ -508,11 +508,11 @@ public class HgtpRequestHandler {
                     hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
                 } else {
                     // 어디에 초대되었는지 확인하는 용도
-                    peerUserInfo.setRoomId(roomId);
+                    peerUserInfo.setRoomId(roomInfo.getRoomId());
 
                     HgtpInviteUserFromRoomRequest hgtpInviteRequest = new HgtpInviteUserFromRoomRequest(
                             peerUserId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT,
-                            roomId, hgtpContent.getPeerHostName()
+                            roomName, hgtpContent.getPeerHostName()
                     );
                     sendInviteUserFromRoomRequest(hgtpInviteRequest);
                 }
@@ -528,8 +528,7 @@ public class HgtpRequestHandler {
                     ControlPanel controlPanel = guiManager.getControlPanel();
 
                     controlPanel.setJoinRoomButtonStatus();
-
-                    userInfo.setRoomId(roomId);
+                    sessionManager.addRoomInfo(userId, roomName, userId);
                 }
 
                 HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
@@ -560,7 +559,7 @@ public class HgtpRequestHandler {
         log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpRemoveUserFromRoomRequest);
 
         String userId = hgtpHeader.getUserId();
-        String roomId = hgtpContent.getRoomId();
+        String roomName = hgtpContent.getRoomName();
         String peerHostName = hgtpContent.getPeerHostName();
 
         UserInfo userInfo = sessionManager.getUserInfo(userId);
@@ -578,9 +577,9 @@ public class HgtpRequestHandler {
         short messageType = HgtpMessageType.OK;
         switch (appInstance.getMode()) {
             case SERVER:
-                RoomInfo roomInfo = sessionManager.getRoomInfo(roomId);
+                RoomInfo roomInfo = sessionManager.getRoomInfoWithRoomName(roomName);
                 if (roomInfo == null) {
-                    log.debug(ROOM_DEL_LOG, roomId);
+                    log.debug(ROOM_DEL_LOG, roomName);
                     return;
                 }
 
@@ -619,7 +618,7 @@ public class HgtpRequestHandler {
                     guiManager.roomInit();
                     controlPanel.setRegisterButtonStatus();
 
-                    userInfo.initRoomId();
+                    sessionManager.deleteRoomInfo(userId, userId);
                 }
 
                 HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
@@ -762,8 +761,6 @@ public class HgtpRequestHandler {
             return;
         }
 
-        sessionManager.getUserInfo(hgtpHeader.getUserId()).setRoomId(hgtpRoomControlContent.getRoomId());
-
         byte[] data = hgtpCreateRoomRequest.getByteData();
         sendHgtpRequest(hgtpHeader.getUserId(), data);
         log.debug(SEND_LOG, appInstance.getUserId(), HgtpMessageType.REQUEST_HASHMAP.get(hgtpHeader.getMessageType()), hgtpCreateRoomRequest);
@@ -808,8 +805,7 @@ public class HgtpRequestHandler {
             log.warn(SERVER_UNAVAIL_LOG, hgtpHeader.getUserId());
             return;
         }
-
-        sessionManager.getUserInfo(hgtpHeader.getUserId()).setRoomId(hgtpRoomContent.getRoomName());
+        sessionManager.addRoomInfo(hgtpHeader.getUserId(), hgtpRoomContent.getRoomName(), hgtpHeader.getUserId());
 
         byte[] data = hgtpJoinRoomRequest.getByteData();
         sendHgtpRequest(hgtpHeader.getUserId(), data);

@@ -4,6 +4,7 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.HgtpRemoveUserFromRoo
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
+import moomoo.hgtp.grouptalk.session.base.RoomInfo;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
 import moomoo.hgtp.grouptalk.util.NetworkUtil;
 
@@ -82,10 +83,11 @@ public class RoomUserListPanel extends JPanel {
         SessionManager sessionManager = SessionManager.getInstance();
 
         UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
+        RoomInfo roomInfo = sessionManager.getRoomInfo(userInfo.getRoomId());
 
         // create request remove user from room
         HgtpRemoveUserFromRoomRequest hgtpRemoveUserFromRoomRequest = new HgtpRemoveUserFromRoomRequest(
-                appInstance.getUserId(), AppInstance.SEQ_INCREMENT, userInfo.getRoomId(), removeHostName
+                appInstance.getUserId(), AppInstance.SEQ_INCREMENT, roomInfo.getRoomName(), removeHostName
         );
 
         HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();

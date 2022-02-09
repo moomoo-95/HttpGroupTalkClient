@@ -17,7 +17,6 @@ public class HgtpRoomContent implements HgtpContent {
     public HgtpRoomContent(byte[] data) {
         if (data.length >= getBodyLength()) {
             int index = 0;
-
             byte[] roomNameLengthByteData = new byte[ByteUtil.NUM_BYTES_IN_INT];
             System.arraycopy(data, index, roomNameLengthByteData, 0, roomNameLengthByteData.length);
             this.roomNameLength = ByteUtil.bytesToInt(roomNameLengthByteData, true);
@@ -43,7 +42,6 @@ public class HgtpRoomContent implements HgtpContent {
     public byte[] getByteData() {
         byte[] data = new byte[getBodyLength()];
         int index = 0;
-
         byte[] roomNameLengthByteData = ByteUtil.intToBytes(roomNameLength, true);
         System.arraycopy(roomNameLengthByteData, 0, data, index, roomNameLengthByteData.length);
         index += roomNameLengthByteData.length;

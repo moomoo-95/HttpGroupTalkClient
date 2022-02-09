@@ -12,17 +12,23 @@ import java.nio.charset.StandardCharsets;
  */
 public class HgtpManagerControlContent implements HgtpContent {
 
-    private final String roomId;            // 12 bytes
+    private final int roomNameLength;     // 4 bytes
+    private final String roomName;            // roomNameLength bytes
     private final int peerHostNameLength;     // 4 bytes
     private final String peerHostName;            // peerHostNameLength bytes
 
     public HgtpManagerControlContent(byte[] data) {
         if (data.length >= getBodyLength()) {
             int index = 0;
-            byte[] roomIdByteData = new byte[AppInstance.ROOM_ID_SIZE];
-            System.arraycopy(data, index, roomIdByteData, 0, roomIdByteData.length);
-            this.roomId = new String(roomIdByteData, StandardCharsets.UTF_8);
-            index += roomIdByteData.length;
+            byte[] roomNameLengthByteData = new byte[ByteUtil.NUM_BYTES_IN_INT];
+            System.arraycopy(data, index, roomNameLengthByteData, 0, roomNameLengthByteData.length);
+            this.roomNameLength = ByteUtil.bytesToInt(roomNameLengthByteData, true);
+            index += roomNameLengthByteData.length;
+
+            byte[] roomNameByteData = new byte[roomNameLength];
+            System.arraycopy(data, index, roomNameByteData, 0, roomNameByteData.length);
+            this.roomName = new String(roomNameByteData, StandardCharsets.UTF_8);
+            index += roomNameByteData.length;
 
             byte[] peerHostNameLengthByteData = new byte[ByteUtil.NUM_BYTES_IN_INT];
             System.arraycopy(data, index, peerHostNameLengthByteData, 0, peerHostNameLengthByteData.length);
@@ -34,14 +40,18 @@ public class HgtpManagerControlContent implements HgtpContent {
             this.peerHostName = new String(peerHostNameByteData, StandardCharsets.UTF_8);
 
         } else {
-            this.roomId = "";
+            this.roomNameLength = 0;
+            this.roomName = "";
             this.peerHostNameLength = 0;
             this.peerHostName = "";
         }
     }
 
-    public HgtpManagerControlContent(String roomId, String peerHostName) {
-        this.roomId = roomId;
+    public HgtpManagerControlContent(String roomName, String peerHostName) {
+        String encodeRoomName = NetworkUtil.messageEncoding(roomName);
+        this.roomNameLength = encodeRoomName.getBytes(StandardCharsets.UTF_8).length;
+        this.roomName = encodeRoomName;
+
         String encodePeerHostName = NetworkUtil.messageEncoding(peerHostName);
         this.peerHostNameLength = encodePeerHostName.getBytes(StandardCharsets.UTF_8).length;
         this.peerHostName = encodePeerHostName;
@@ -52,9 +62,13 @@ public class HgtpManagerControlContent implements HgtpContent {
         byte[] data = new byte[getBodyLength()];
         int index = 0;
 
-        byte[] roomIdByteData = roomId.getBytes(StandardCharsets.UTF_8);
-        System.arraycopy(roomIdByteData, 0, data, index, roomIdByteData.length);
-        index += roomIdByteData.length;
+        byte[] roomNameLengthByteData = ByteUtil.intToBytes(roomNameLength, true);
+        System.arraycopy(roomNameLengthByteData, 0, data, index, roomNameLengthByteData.length);
+        index += roomNameLengthByteData.length;
+
+        byte[] roomNameByteData = roomName.getBytes(StandardCharsets.UTF_8);
+        System.arraycopy(roomNameByteData, 0, data, index, roomNameByteData.length);
+        index += roomNameByteData.length;
 
         byte[] peerHostNameLengthByteData = ByteUtil.intToBytes(peerHostNameLength, true);
         System.arraycopy(peerHostNameLengthByteData, 0, data, index, peerHostNameLengthByteData.length);
@@ -67,11 +81,11 @@ public class HgtpManagerControlContent implements HgtpContent {
     }
 
     public int getBodyLength() {
-        return AppInstance.ROOM_ID_SIZE + ByteUtil.NUM_BYTES_IN_INT + peerHostNameLength;
+        return ByteUtil.NUM_BYTES_IN_INT + roomNameLength + ByteUtil.NUM_BYTES_IN_INT + peerHostNameLength;
     }
 
-    public String getRoomId() {
-        return roomId;
+    public String getRoomName() {
+        return NetworkUtil.messageDecoding(roomName);
     }
 
     public String getPeerHostName() {

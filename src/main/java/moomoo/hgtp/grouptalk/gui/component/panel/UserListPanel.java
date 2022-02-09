@@ -4,6 +4,7 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.HgtpInviteUserFromRoo
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
+import moomoo.hgtp.grouptalk.session.base.RoomInfo;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
 import moomoo.hgtp.grouptalk.util.NetworkUtil;
 
@@ -83,10 +84,11 @@ public class UserListPanel extends JPanel {
         SessionManager sessionManager = SessionManager.getInstance();
 
         UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
+        RoomInfo roomInfo = sessionManager.getRoomInfo(userInfo.getRoomId());
 
         // create request invite user from room
         HgtpInviteUserFromRoomRequest hgtpInviteUserFromRoomRequest = new HgtpInviteUserFromRoomRequest(
-                appInstance.getUserId(), AppInstance.SEQ_INCREMENT, userInfo.getRoomId(), inviteHostName
+                appInstance.getUserId(), AppInstance.SEQ_INCREMENT, roomInfo.getRoomName(), inviteHostName
         );
 
         HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();
