@@ -245,14 +245,17 @@ public class HttpMessageHandler {
      * @param messageContent
      */
     public void receiveMessageRequest(HttpMessageContent messageContent) {
-        switch (AppInstance.getInstance().getMode()) {
+        AppInstance appInstance = AppInstance.getInstance();
+        SessionManager sessionManager = SessionManager.getInstance();
+
+        String hostName = NetworkUtil.messageDecoding(messageContent.getHostName());
+        UserInfo userInfo = sessionManager.getUserInfoWithHostName(hostName);
+
+        switch (appInstance.getMode()) {
             case SERVER:
-                SessionManager sessionManager = SessionManager.getInstance();
-                UserInfo userInfo = sessionManager.getUserInfo(messageContent.getUserId());
                 if (userInfo == null) {
                     return;
                 }
-
                 RoomInfo roomInfo = sessionManager.getRoomInfo(userInfo.getRoomId());
                 if (roomInfo == null) {
                     return;
@@ -267,13 +270,13 @@ public class HttpMessageHandler {
                 break;
             case CLIENT:
                 RoomPanel roomPanel = GuiManager.getInstance().getRoomPanel();
-                boolean isMyMessage = messageContent.getUserId().equals(AppInstance.getInstance().getUserId());
+                boolean isMyMessage = (userInfo != null);
 
                 String decodeMessage = NetworkUtil.messageDecoding(messageContent.getMessage());
 
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append("[" + messageContent.getMessageTimeFormat() + "]\n");
-                stringBuilder.append("| " +messageContent.getUserId() + " | " + decodeMessage + "\n");
+                stringBuilder.append("| " + hostName + " | " + decodeMessage + "\n");
                 roomPanel.addMessage(stringBuilder.toString(), isMyMessage);
                 break;
             case PROXY:

@@ -85,7 +85,7 @@ public class RoomUserListPanel extends JPanel {
 
         // create request remove user from room
         HgtpRemoveUserFromRoomRequest hgtpRemoveUserFromRoomRequest = new HgtpRemoveUserFromRoomRequest(
-                appInstance.getUserId(), AppInstance.SEQ_INCREMENT, userInfo.getRoomId(), removeUserId
+                appInstance.getUserId(), AppInstance.SEQ_INCREMENT, userInfo.getRoomId(), NetworkUtil.messageEncoding(removeUserId)
         );
 
         HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();

@@ -204,7 +204,7 @@ public class SessionManager {
                     appInstance.getStateHandler().fire(HgtpEvent.REMOVE_USER_ROOM, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
                     // create request remove user from room
                     HgtpRemoveUserFromRoomRequest hgtpRemoveUserFromRoomRequest = new HgtpRemoveUserFromRoomRequest(
-                            userId, AppInstance.SEQ_INCREMENT, roomInfo.getRoomId(), userId
+                            userId, AppInstance.SEQ_INCREMENT, roomInfo.getRoomId(), NetworkUtil.messageEncoding(userInfo.getHostName())
                     );
                     hgtpRequestHandler.sendRemoveUserFromRoomRequest(hgtpRemoveUserFromRoomRequest);
                     appInstance.getStateHandler().fire(HgtpEvent.REMOVE_USER_ROOM_SUC, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
@@ -238,7 +238,8 @@ public class SessionManager {
 
     public UserInfo getUserInfoWithHostName(String hostName) {
         List<UserInfo> userInfos = userInfoHashMap.values().stream().filter(userInfo -> userInfo.getHostName().equals(hostName)).collect(Collectors.toList());
-        return userInfos.get(0);
+
+        return userInfos.size() <= 0 ? null : userInfos.get(0);
     }
 
     public RoomInfo getRoomInfo(String roomId) {

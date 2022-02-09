@@ -11,18 +11,18 @@ import java.text.SimpleDateFormat;
  */
 public class HttpMessageContent extends HttpMessage {
 
-    private final String userId;
+    private final String hostName;
     private final String message;
     private final long messageTime;
 
-    public HttpMessageContent(String userId, String message) {
-        this.userId = userId;
+    public HttpMessageContent(String hostName, String message) {
+        this.hostName = hostName;
         this.message = message;
         this.messageTime = AppInstance.getInstance().getTimeStamp();
     }
 
-    public String getUserId() {
-        return userId;
+    public String getHostName() {
+        return hostName;
     }
 
     public String getMessage() {

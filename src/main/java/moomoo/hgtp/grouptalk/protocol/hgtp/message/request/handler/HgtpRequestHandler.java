@@ -555,7 +555,7 @@ public class HgtpRequestHandler {
 
         String userId = hgtpHeader.getUserId();
         String roomId = hgtpContent.getRoomId();
-        String peerUserId = hgtpContent.getPeerHostName();
+        String peerHostName = NetworkUtil.messageDecoding(hgtpContent.getPeerHostName());
 
         UserInfo userInfo = sessionManager.getUserInfo(userId);
         if (userInfo == null) {
@@ -563,7 +563,8 @@ public class HgtpRequestHandler {
             return;
         }
 
-        UserInfo peerUserInfo = sessionManager.getUserInfo(peerUserId);
+        UserInfo peerUserInfo = sessionManager.getUserInfoWithHostName(peerHostName);
+        String peerUserId = peerUserInfo.getUserId();
         short messageType = HgtpMessageType.OK;
         switch (appInstance.getMode()) {
             case SERVER:
@@ -589,7 +590,7 @@ public class HgtpRequestHandler {
                     hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
                 } else {
                     HgtpRemoveUserFromRoomRequest hgtpRemoveRequest = new HgtpRemoveUserFromRoomRequest(
-                            peerUserId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, peerUserInfo.getRoomId(), peerUserId
+                            peerUserId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT, peerUserInfo.getRoomId(), hgtpContent.getPeerHostName()
                     );
 
                     sendRemoveUserFromRoomRequest(hgtpRemoveRequest);

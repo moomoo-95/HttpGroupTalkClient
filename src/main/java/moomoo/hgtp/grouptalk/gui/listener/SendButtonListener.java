@@ -38,7 +38,7 @@ public class SendButtonListener implements ActionListener {
             log.warn("({}) ({}) () message is null", userInfo.getUserId(), userInfo.getRoomId());
         } else {
             // create request message
-            HttpMessageContent httpMessageContent = new HttpMessageContent(userInfo.getUserId(), message);
+            HttpMessageContent httpMessageContent = new HttpMessageContent(NetworkUtil.messageEncoding(userInfo.getHostName()), message);
 
             HttpMessageHandler httpRequestMessageHandler = new HttpMessageHandler();
             httpRequestMessageHandler.sendMessageRequest(httpMessageContent, userInfo);
