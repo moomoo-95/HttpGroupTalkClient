@@ -68,12 +68,9 @@ public class RoomPanel extends JPanel {
 
     public void addMessage(String message, boolean isMyMessage) {
         try {
-            if (isMyMessage) {
-                document.insertString(document.getLength(), message, document.getStyle(BLUE));
-            } else {
-                document.insertString(document.getLength(), message, document.getStyle(BLACK));
-            }
+            document.insertString(document.getLength(), message, document.getStyle(isMyMessage ? BLUE : BLACK));
             document.insertString(document.getLength(), LINE, document.getStyle(DARK_GRAY));
+            textPane.setCaretPosition(textPane.getDocument().getLength());
         } catch (BadLocationException e) {
             log.error("RoomPanel.addMessage ", e);
         }
@@ -83,6 +80,7 @@ public class RoomPanel extends JPanel {
         try {
             document.insertString(document.getLength(), notice, document.getStyle(DARK_GRAY));
             document.insertString(document.getLength(), LINE, document.getStyle(DARK_GRAY));
+            textPane.setCaretPosition(textPane.getDocument().getLength());
         } catch (BadLocationException e) {
             log.error("RoomPanel.addNotice ", e);
         }

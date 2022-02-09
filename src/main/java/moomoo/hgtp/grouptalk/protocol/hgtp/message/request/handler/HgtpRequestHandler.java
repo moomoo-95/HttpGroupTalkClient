@@ -909,5 +909,4 @@ public class HgtpRequestHandler {
 
         destinationRecord.getNettyChannel().sendData(data, data.length);
     }
-
 }
