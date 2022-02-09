@@ -9,6 +9,7 @@ import moomoo.hgtp.grouptalk.fsm.HgtpFsmManager;
 import moomoo.hgtp.grouptalk.protocol.hgtp.HgtpMessageHandler;
 import moomoo.hgtp.grouptalk.service.base.ProcessMode;
 import moomoo.hgtp.grouptalk.util.CnameGenerator;
+import moomoo.hgtp.grouptalk.util.NetworkUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import service.ResourceManager;
@@ -46,7 +47,6 @@ public class AppInstance {
     private BaseEnvironment baseEnvironment;
 
     private final ConcurrentCyclicFIFO<byte[]> hgtpMessageQueue = new ConcurrentCyclicFIFO<>();
-    private final ConcurrentCyclicFIFO<Object[]> httpMessageQueue = new ConcurrentCyclicFIFO<>();
 
     private HgtpFsmManager fsmManager;
     private StateManager stateManager;
@@ -72,15 +72,8 @@ public class AppInstance {
 
     private void initServerInstance(){
         try {
-            // Decoding nonce -> realm
-            MessageDigest messageDigestNonce = MessageDigest.getInstance(ALGORITHM);
-            messageDigestNonce.update(MD5_REALM.getBytes(StandardCharsets.UTF_8));
-            messageDigestNonce.update(MD5_HASH_KEY.getBytes(StandardCharsets.UTF_8));
-            byte[] digestNonce = messageDigestNonce.digest();
-            messageDigestNonce.reset();
-            messageDigestNonce.update(digestNonce);
 
-            serverNonce = new String(messageDigestNonce.digest());
+            serverNonce = NetworkUtil.createNonce(ALGORITHM, MD5_REALM, MD5_HASH_KEY);
         } catch (Exception e) {
             log.error("AppInstance.initServerInstance ", e);
             System.exit(1);
@@ -146,14 +139,10 @@ public class AppInstance {
     public ScheduleManager getScheduleManager() { return this.baseEnvironment.getScheduleManager() ; }
     public ResourceManager getResourceManager() { return this.baseEnvironment.getPortResourceManager(); }
 
-
     public ConcurrentCyclicFIFO<byte[]> getHgtpMessageQueue() {return hgtpMessageQueue;}
-
-    public ConcurrentCyclicFIFO<Object[]> getHttpMessageQueue() {return httpMessageQueue;}
 
     public void putHgtpMessage(byte[] data) {this.hgtpMessageQueue.offer(data);}
 
-    public HgtpFsmManager getFsmManager() {return fsmManager;}
     public void setFsmManager(HgtpFsmManager fsmManager) {
         this.fsmManager = fsmManager;
         this.fsmManager.initState();

@@ -94,7 +94,7 @@ public class ServiceManager {
                 break;
             case CLIENT:
                 ConfigManager configManager = appInstance.getConfigManager();
-                sessionManager.addUserInfo(appInstance.getUserId(), 0);
+                sessionManager.addUserInfo(appInstance.getUserId(), "", 0);
                 UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
                 userInfo.setHgtpTargetNetAddress(configManager.getTargetListenIp(), configManager.getHgtpTargetPort());
 

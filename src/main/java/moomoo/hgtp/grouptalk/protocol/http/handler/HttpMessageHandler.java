@@ -109,8 +109,8 @@ public class HttpMessageHandler {
         SessionManager sessionManager = SessionManager.getInstance();
 
         if (sessionManager.getUserInfoSize() > 0) {
-            HashSet<String> userInfoSet = new HashSet<>(sessionManager.getUserInfoHashMap().keySet()) ;
-            httpUserListContent.addAllUserList(userInfoSet);
+            HashSet<String> hostNameSet = (HashSet<String>) sessionManager.getHostNameSet();
+            httpUserListContent.addAllUserList(hostNameSet);
         }
 
         String content = httpUserListContent.toString();

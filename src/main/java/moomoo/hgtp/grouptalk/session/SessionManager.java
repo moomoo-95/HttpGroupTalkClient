@@ -10,6 +10,7 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHa
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.base.RoomInfo;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
+import moomoo.hgtp.grouptalk.util.NetworkUtil;
 import network.definition.NetAddress;
 import network.socket.SocketProtocol;
 import org.slf4j.Logger;
@@ -19,6 +20,7 @@ import service.ResourceManager;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class SessionManager {
 
@@ -44,7 +46,7 @@ public class SessionManager {
     }
 
 
-    public short addUserInfo(String userId, long expire) {
+    public short addUserInfo(String userId, String hostName, long expire) {
         if (userInfoHashMap.containsKey(userId)) {
             log.warn("({}) () () UserInfo already exist.", userId);
             return HgtpMessageType.BAD_REQUEST;
@@ -54,6 +56,9 @@ public class SessionManager {
             log.warn("({}) () () Unavailable add UserInfo", userId);
             return HgtpMessageType.SERVER_UNAVAILABLE;
         }
+
+
+        String duplicateUserId = getDuplicateUserId(hostName);
 
         // PortResourceManager에서 채널 할당
         ConfigManager configManager = appInstance.getConfigManager();
@@ -67,9 +72,6 @@ public class SessionManager {
 
         boolean isTaken = false;
         while (!isTaken) {
-            if (httpServerPort > 0) {
-                networkManager.removeHttpSocket(userId, true);
-            }
             httpServerPort = (short) resourceManager.takePort();
             if (httpServerPort <= 0) {
                 log.warn("({}) () () PortResourceManager's port is not available. [RECV:{}]", userId, httpServerPort);
@@ -80,9 +82,6 @@ public class SessionManager {
         }
         isTaken = false;
         while (!isTaken) {
-            if (httpClientPort > 0) {
-                networkManager.removeHttpSocket(userId, false);
-            }
             httpClientPort = (short) resourceManager.takePort();
             if (httpClientPort <= 0) {
                 log.warn("({}) () () PortResourceManager's port is not available. [SEND:{}]", userId, httpClientPort);
@@ -93,14 +92,20 @@ public class SessionManager {
         }
 
         UserInfo userInfo = new UserInfo(userId, configManager.getLocalListenIp(), configManager.getHgtpListenPort(), httpServerPort, httpClientPort, expire);
+        userInfo.setHostName(hostName);
         synchronized (userInfoHashMap) {
             userInfoHashMap.put(userId, userInfo);
         }
         appInstance.getStateManager().addStateUnit(
-                userInfo.getHgtpStateUnitId(),appInstance.getStateHandler().getName(),
+                userInfo.getHgtpStateUnitId(), appInstance.getStateHandler().getName(),
                 HgtpState.IDLE, userInfo
         );
         log.debug("({}) () () UserInfo is created.", userId);
+
+        if (!duplicateUserId.equals("")) {
+            log.warn("({}) () () {} is duplicate with [{}] in UserInfoMap ", userId, hostName,  duplicateUserId);
+            return HgtpMessageType.DECLINE;
+        }
 
         return HgtpMessageType.OK;
     }
@@ -127,6 +132,21 @@ public class SessionManager {
             appInstance.getStateManager().removeStateUnit( userInfo.getHgtpStateUnitId() );
             log.debug("({}) () () UserInfo is deleted.", userId);
         }
+    }
+
+    /**
+     * @fn getDuplicateUserId
+     * @brief userInfoMap 내 중복된 hostName이 존재하는지 확인하는 메서드
+     * @param hostName
+     * @return 중복된 이미 존재하는 UserInfo의 UserId
+     */
+    private String getDuplicateUserId(String hostName) {
+        for (UserInfo userInfo : userInfoHashMap.values()) {
+            if (userInfo.getHostName().equals(hostName)) {
+                return userInfo.getUserId();
+            }
+        }
+        return "";
     }
 
     public short addRoomInfo(String roomId, String managerId) {
@@ -225,6 +245,12 @@ public class SessionManager {
 
     public Map<String, UserInfo> getUserInfoHashMap() {
         return userInfoHashMap;
+    }
+
+    public Set<String> getHostNameSet() {
+        return userInfoHashMap.values().stream()
+                .map(userInfo -> NetworkUtil.messageEncoding(userInfo.getHostName()))
+                .collect(Collectors.toSet());
     }
 
     public Map<String, RoomInfo> getRoomInfoHashMap() {

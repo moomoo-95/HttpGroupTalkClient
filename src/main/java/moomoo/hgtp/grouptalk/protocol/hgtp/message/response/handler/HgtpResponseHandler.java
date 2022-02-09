@@ -18,12 +18,12 @@ import moomoo.hgtp.grouptalk.service.base.ProcessMode;
 import moomoo.hgtp.grouptalk.session.SessionManager;
 import moomoo.hgtp.grouptalk.session.base.RoomInfo;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
+import moomoo.hgtp.grouptalk.util.NetworkUtil;
 import network.definition.DestinationRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
+import javax.swing.*;
 
 public class HgtpResponseHandler {
 
@@ -100,10 +100,10 @@ public class HgtpResponseHandler {
             switch (hgtpHeader.getRequestType()) {
                 case HgtpMessageType.REGISTER:
                     appInstance.getStateHandler().fire(HgtpEvent.REGISTER_SUC, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
+                    guiManager.setClientTitle(userInfo.getHostName());
                     controlPanel.setRegisterButtonStatus();
                     break;
                 case HgtpMessageType.UNREGISTER:
-                    controlPanel.setInitButtonStatus();
                     break;
                 case HgtpMessageType.CREATE_ROOM:
                     appInstance.getStateHandler().fire(HgtpEvent.CREATE_ROOM_SUC, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
@@ -145,15 +145,14 @@ public class HgtpResponseHandler {
         log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpBadRequestResponse);
 
         if (appInstance.getMode() == ProcessMode.CLIENT) {
-            ControlPanel controlPanel = GuiManager.getInstance().getControlPanel();
 
             UserInfo userInfo = sessionManager.getUserInfo(hgtpHeader.getUserId());
             switch (hgtpHeader.getRequestType()) {
                 case HgtpMessageType.REGISTER:
                     appInstance.getStateHandler().fire(HgtpEvent.REGISTER_FAIL, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
+                    sessionManager.getUserInfo(appInstance.getUserId()).initHostName();
                     break;
                 case HgtpMessageType.UNREGISTER:
-                    controlPanel.setInitButtonStatus();
                     break;
                 case HgtpMessageType.CREATE_ROOM:
                     appInstance.getStateHandler().fire(HgtpEvent.CREATE_ROOM_FAIL, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
@@ -202,31 +201,22 @@ public class HgtpResponseHandler {
             return;
         }
 
-        // http socket 설정 및 target address 설정
+        String nonce = NetworkUtil.createNonce(AppInstance.ALGORITHM, hgtpRegisterContent.getRealm(), AppInstance.MD5_HASH_KEY);
+
         UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
+
+        // http socket 설정 및 target address 설정
         userInfo.setHttpTargetNetAddress(configManager.getTargetListenIp(), hgtpRegisterContent.getListenPort());
+        appInstance.getStateHandler().fire(HgtpEvent.REGISTER, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
 
-        try {
-            // Encoding realm -> nonce
-            MessageDigest messageDigest = MessageDigest.getInstance(AppInstance.ALGORITHM);
-            messageDigest.update(hgtpRegisterContent.getRealm().getBytes(StandardCharsets.UTF_8));
-            messageDigest.update(AppInstance.MD5_HASH_KEY.getBytes(StandardCharsets.UTF_8));
-            byte[] digestRealm = messageDigest.digest();
-            messageDigest.reset();
-            messageDigest.update(digestRealm);
-            String nonce = new String(messageDigest.digest());
-
-            // Send Register
-            HgtpRegisterRequest hgtpRegisterRequest = new HgtpRegisterRequest(
-                    appInstance.getUserId(),
-                    hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT,
-                    configManager.getHgtpExpireTime(), configManager.getLocalListenIp(), (short) userInfo.getHttpServerNetAddress().getPort()
-            );
-            HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();
-            hgtpRequestHandler.sendRegisterRequest(hgtpRegisterRequest, nonce);
-        } catch (Exception e) {
-            log.error("HgtpResponseHandler.unauthorizedResponseProcessing ", e);
-        }
+        // Send Register
+        HgtpRegisterRequest hgtpRegisterRequest = new HgtpRegisterRequest(
+                appInstance.getUserId(),
+                hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT,
+                configManager.getHgtpExpireTime(), configManager.getLocalListenIp(), (short) userInfo.getHttpServerNetAddress().getPort()
+        );
+        HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();
+        hgtpRequestHandler.sendRegisterRequest(hgtpRegisterRequest, nonce);
     }
 
     public boolean forbiddenResponseProcessing(HgtpCommonResponse hgtpForbiddenResponse) {
@@ -286,8 +276,8 @@ public class HgtpResponseHandler {
         }
         log.debug(RECV_LOG, hgtpHeader.getUserId(), hgtpDeclineResponse);
 
+        UserInfo userInfo = sessionManager.getUserInfo(hgtpHeader.getUserId());
         if (appInstance.getMode() == ProcessMode.SERVER) {
-            UserInfo userInfo = sessionManager.getUserInfo(hgtpHeader.getUserId());
             short messageType = HgtpMessageType.DECLINE;
             if (userInfo == null) {
                 return;
@@ -310,6 +300,20 @@ public class HgtpResponseHandler {
                     break;
                 default:
                     return;
+            }
+        } else if (appInstance.getMode() == ProcessMode.CLIENT) {
+            if (hgtpHeader.getRequestType() == HgtpMessageType.REGISTER) {
+                JOptionPane.showConfirmDialog(
+                        null,
+                        "Your name [" + userInfo.getHostName() + "] is duplicated. Please register again.",
+                        "NAME DUPLICATION",
+                        JOptionPane.YES_OPTION,
+                        JOptionPane.INFORMATION_MESSAGE,
+                        null
+                );
+
+                userInfo.initHostName();
+                GuiManager.getInstance().clientFrameInit();
             }
         }
     }

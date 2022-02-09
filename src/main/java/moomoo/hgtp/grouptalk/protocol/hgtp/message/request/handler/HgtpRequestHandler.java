@@ -19,6 +19,7 @@ import moomoo.hgtp.grouptalk.service.base.ProcessMode;
 import moomoo.hgtp.grouptalk.session.SessionManager;
 import moomoo.hgtp.grouptalk.session.base.RoomInfo;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
+import moomoo.hgtp.grouptalk.util.NetworkUtil;
 import network.definition.DestinationRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,20 +79,24 @@ public class HgtpRequestHandler {
             return;
         }
 
+        UserInfo userInfo = sessionManager.getUserInfo(userId);
+
         // 첫 번째 Register Request
         short messageType;
-        if (hgtpRegisterContent.getNonce().equals("")) {
+        if (userInfo == null) {
+            String hostName = NetworkUtil.messageDecoding( hgtpRegisterContent.getNonce() );
             // userInfo 생성
-            messageType = sessionManager.addUserInfo( userId, hgtpRegisterContent.getExpires() );
+            messageType = sessionManager.addUserInfo(userId, hostName, hgtpRegisterContent.getExpires());
+
+            // 응답할 hgtp 통신 설정
+            userInfo = sessionManager.getUserInfo(userId);
+            userInfo.setHgtpTargetNetAddress(hgtpRegisterContent.getListenIp(), hgtpRegisterContent.getListenPort());
 
             // userInfo 생성 성공 시 UNAUTHORIZED 응답 (server의 http socket port 전송)
             if (messageType == HgtpMessageType.OK) {
-                UserInfo userInfo = sessionManager.getUserInfo(userId);
                 appInstance.getStateHandler().fire(HgtpEvent.REGISTER, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
-
-                userInfo.setHgtpTargetNetAddress(hgtpRegisterContent.getListenIp(), hgtpRegisterContent.getListenPort());
+                // 수신할 http port 전달
                 short httpPort = (short) userInfo.getHttpServerNetAddress().getPort();
-
                 HgtpUnauthorizedResponse hgtpUnauthorizedResponse = new HgtpUnauthorizedResponse(
                         hgtpHeader.getRequestType(), userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT,
                         httpPort, AppInstance.MD5_REALM);
@@ -110,11 +115,6 @@ public class HgtpRequestHandler {
         }
         // 두 번째 Register Request
         else {
-            UserInfo userInfo = sessionManager.getUserInfo(userId);
-            if (userInfo == null) {
-                log.debug("({}) () () userInfo is null", userId);
-            }
-
             // nonce 일치하면 userInfo 유지
             if (hgtpRegisterContent.getNonce().equals(appInstance.getServerNonce())) {
                 userInfo.setHttpTargetNetAddress(hgtpRegisterContent.getListenIp(), hgtpRegisterContent.getListenPort());

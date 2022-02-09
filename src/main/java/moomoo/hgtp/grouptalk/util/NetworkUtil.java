@@ -4,13 +4,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Base64;
 import java.util.Base64.Decoder;
 import java.util.Base64.Encoder;
 
 public class NetworkUtil {
 
-    private static final Logger log = LoggerFactory.getLogger(NetworkUtil.class);
     private static final Encoder encoder = Base64.getEncoder();
     private static final Decoder decoder = Base64.getDecoder();
 
@@ -56,5 +56,21 @@ public class NetworkUtil {
 
     public static String messageDecoding(String encodingMessage) {
         return new String( decoder.decode(encodingMessage) );
+    }
+
+    public static String createNonce(String algorithm, String realm, String hashKey) {
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
+            messageDigest.update(realm.getBytes(StandardCharsets.UTF_8));
+            messageDigest.update(hashKey.getBytes(StandardCharsets.UTF_8));
+            byte[] digestNonce = messageDigest.digest();
+            messageDigest.reset();
+            messageDigest.update(digestNonce);
+
+            return new String(messageDigest.digest());
+        } catch (Exception e) {
+            // ignore
+        }
+        return "";
     }
 }

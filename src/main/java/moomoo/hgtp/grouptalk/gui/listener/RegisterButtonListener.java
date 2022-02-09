@@ -7,7 +7,9 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHa
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
+import moomoo.hgtp.grouptalk.util.NetworkUtil;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -23,13 +25,16 @@ public class RegisterButtonListener implements ActionListener {
         ConfigManager configManager = appInstance.getConfigManager();
 
         UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
-        appInstance.getStateHandler().fire(HgtpEvent.REGISTER, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
+
+        String inputName = JOptionPane.showInputDialog(null, "Put your name.");
+        userInfo.setHostName(inputName);
+
         // create request Register
         HgtpRegisterRequest hgtpRegisterRequest = new HgtpRegisterRequest(
                 appInstance.getUserId(), AppInstance.SEQ_INCREMENT,
                 configManager.getHgtpExpireTime(), configManager.getLocalListenIp(), configManager.getHgtpListenPort()
         );
-
-        hgtpRequestHandler.sendRegisterRequest(hgtpRegisterRequest, null);
+        String encodeHostName = NetworkUtil.messageEncoding(userInfo.getHostName());
+        hgtpRequestHandler.sendRegisterRequest(hgtpRegisterRequest, encodeHostName);
     }
 }

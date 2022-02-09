@@ -23,6 +23,8 @@ public class UserInfo {
     private final long expireTime;
     private final long createTime;
 
+    private String hostName = "";
+
     private NetAddress hgtpTargetNetAddress = null;
     private NetAddress httpTargetNetAddress = null;
 
@@ -41,9 +43,7 @@ public class UserInfo {
         this.createTime = System.currentTimeMillis();
     }
 
-    public String getUserId() {
-        return userId;
-    }
+    public String getUserId() {return userId;}
 
     public long getSessionId() {return sessionId;}
 
@@ -60,6 +60,10 @@ public class UserInfo {
     }
 
     public long getCreateTime() {return createTime;}
+
+    public String getHostName() { return hostName; }
+    public void setHostName(String hostName) {this.hostName = hostName;}
+    public void initHostName() { this.hostName = ""; }
 
     public NetAddress getHgtpTargetNetAddress() {return hgtpTargetNetAddress;}
 

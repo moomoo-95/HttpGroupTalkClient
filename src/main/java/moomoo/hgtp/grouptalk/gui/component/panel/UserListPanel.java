@@ -5,6 +5,7 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHa
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
+import moomoo.hgtp.grouptalk.util.NetworkUtil;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
@@ -96,7 +97,7 @@ public class UserListPanel extends JPanel {
         model.clear();
 
         if (userList != null) {
-            userList.forEach(model::addElement);
+            userList.forEach(user -> model.addElement(NetworkUtil.messageDecoding(user)));
         }
 
     }
