@@ -6,6 +6,7 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHa
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
+import moomoo.hgtp.grouptalk.util.NetworkUtil;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
@@ -49,18 +50,18 @@ public class RoomListPanel extends JPanel {
                     int index = roomListView.locationToIndex(e.getPoint());
                     roomListView.setSelectedIndex(index);
 
-                    String focusRoomId = "";
+                    String focusRoomName = "";
                     if (index >= 0 && index < model.size()) {
-                        focusRoomId = model.get(index);
+                        focusRoomName = model.get(index);
                     }
 
-                    if (focusRoomId.equals("")) {
+                    if (focusRoomName.equals("")) {
                         return;
                     }
 
                     int isRemove = JOptionPane.showOptionDialog(
                             null,
-                            "Would you like to join the [" + focusRoomId + "] room?",
+                            "Would you like to join the [" + focusRoomName + "] room?",
                             "JOIN ROOM",
                             JOptionPane.YES_NO_OPTION,
                             JOptionPane.QUESTION_MESSAGE,
@@ -70,7 +71,7 @@ public class RoomListPanel extends JPanel {
                     );
 
                     if (isRemove == 0) {
-                        joinRoom(focusRoomId);
+                        joinRoom(focusRoomName);
                     }
                 }
             }
@@ -79,7 +80,7 @@ public class RoomListPanel extends JPanel {
         this.add(new JScrollPane(roomListView), BorderLayout.CENTER);
     }
 
-    private void joinRoom(String joinRoomId) {
+    private void joinRoom(String joinRoomName) {
         AppInstance appInstance = AppInstance.getInstance();
 
 
@@ -87,7 +88,7 @@ public class RoomListPanel extends JPanel {
         appInstance.getStateHandler().fire(HgtpEvent.JOIN_ROOM, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
         // create request join room
         HgtpJoinRoomRequest hgtpJoinRoomRequest = new HgtpJoinRoomRequest(
-                appInstance.getUserId(), AppInstance.SEQ_INCREMENT, joinRoomId
+                appInstance.getUserId(), AppInstance.SEQ_INCREMENT, joinRoomName
         );
 
         HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();
@@ -98,7 +99,7 @@ public class RoomListPanel extends JPanel {
         model.clear();
 
         if (roomList != null) {
-            roomList.forEach(model::addElement);
+            roomList.forEach(room -> model.addElement(NetworkUtil.messageDecoding(room)));
         }
 
     }

@@ -6,9 +6,10 @@ import moomoo.hgtp.grouptalk.gui.component.panel.ControlPanel;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpHeader;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.content.HgtpManagerControlContent;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.content.HgtpRegisterContent;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.content.HgtpRoomContent;
-import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.content.HgtpRoomManagerContent;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.content.HgtpRoomControlContent;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.*;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpCommonResponse;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpUnauthorizedResponse;
@@ -215,9 +216,9 @@ public class HgtpRequestHandler {
      */
     public void createRoomRequestProcessing(HgtpCreateRoomRequest hgtpCreateRoomRequest) {
         HgtpHeader hgtpHeader = hgtpCreateRoomRequest.getHgtpHeader();
-        HgtpRoomContent hgtpRoomContent = hgtpCreateRoomRequest.getHgtpContent();
+        HgtpRoomControlContent hgtpRoomControlContent = hgtpCreateRoomRequest.getHgtpContent();
 
-        if (hgtpHeader == null || hgtpRoomContent == null) {
+        if (hgtpHeader == null || hgtpRoomControlContent == null) {
             log.debug(DATA_NULL_LOG, hgtpCreateRoomRequest);
             return;
         }
@@ -233,7 +234,8 @@ public class HgtpRequestHandler {
             return;
         }
 
-        String roomId = hgtpRoomContent.getRoomId();
+        String roomId = hgtpRoomControlContent.getRoomId();
+        String roomName = hgtpRoomControlContent.getRoomName();
         String userId = hgtpHeader.getUserId();
 
         UserInfo userInfo = sessionManager.getUserInfo(userId);
@@ -243,7 +245,7 @@ public class HgtpRequestHandler {
         }
         appInstance.getStateHandler().fire(HgtpEvent.CREATE_ROOM, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
 
-        short messageType = sessionManager.addRoomInfo(roomId, userId);
+        short messageType = sessionManager.addRoomInfo(roomId, roomName, userId);
 
         HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
                 messageType, hgtpHeader.getRequestType(),
@@ -258,7 +260,7 @@ public class HgtpRequestHandler {
             sessionManager.getUserInfoHashMap().forEach( (key, value) -> httpRequestMessageHandler.sendRoomListRequest(value));
             httpRequestMessageHandler.sendRoomUserListRequest(userInfo);
 
-            httpRequestMessageHandler.sendNoticeRequest("[" + userId + "] 님이 [" + roomId + "]방을 생성했습니다.", userInfo);
+            httpRequestMessageHandler.sendNoticeRequest("[" + userInfo.getHostName() + "] 님이 [" + roomName + "]방을 생성했습니다.", userInfo);
         } else{
             appInstance.getStateHandler().fire(HgtpEvent.CREATE_ROOM_FAIL, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
         }
@@ -271,9 +273,9 @@ public class HgtpRequestHandler {
      */
     public void deleteRoomRequestProcessing(HgtpDeleteRoomRequest hgtpDeleteRoomRequest) {
         HgtpHeader hgtpHeader = hgtpDeleteRoomRequest.getHgtpHeader();
-        HgtpRoomContent hgtpRoomContent = hgtpDeleteRoomRequest.getHgtpContent();
+        HgtpRoomControlContent hgtpRoomControlContent = hgtpDeleteRoomRequest.getHgtpContent();
 
-        if (hgtpHeader == null || hgtpRoomContent == null) {
+        if (hgtpHeader == null || hgtpRoomControlContent == null) {
             log.debug(DATA_NULL_LOG, hgtpDeleteRoomRequest);
             return;
         }
@@ -289,7 +291,7 @@ public class HgtpRequestHandler {
             return;
         }
 
-        String roomId = hgtpRoomContent.getRoomId();
+        String roomId = hgtpRoomControlContent.getRoomId();
         String userId = hgtpHeader.getUserId();
 
         UserInfo userInfo = sessionManager.getUserInfo(userId);
@@ -342,7 +344,7 @@ public class HgtpRequestHandler {
             return;
         }
 
-        String roomId = hgtpRoomContent.getRoomId();
+        String roomName = hgtpRoomContent.getRoomName();
         String userId = hgtpHeader.getUserId();
 
         UserInfo userInfo = sessionManager.getUserInfo(userId);
@@ -352,9 +354,9 @@ public class HgtpRequestHandler {
         }
         appInstance.getStateHandler().fire(HgtpEvent.JOIN_ROOM, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
 
-        RoomInfo roomInfo = sessionManager.getRoomInfo(roomId);
+        RoomInfo roomInfo = sessionManager.getRoomInfoWithRoomName(roomName);
         if (roomInfo == null) {
-            log.debug(ROOM_DEL_LOG, roomId);
+            log.debug(ROOM_DEL_LOG, roomName);
             return;
         }
 
@@ -375,7 +377,7 @@ public class HgtpRequestHandler {
                 UserInfo roomUserInfo = sessionManager.getUserInfo(roomUserId);
                 if (roomUserInfo != null) {
                     httpRequestMessageHandler.sendRoomUserListRequest(roomUserInfo);
-                    httpRequestMessageHandler.sendNoticeRequest("[" + userId+ "]님이 입장 했습니다.", roomUserInfo);
+                    httpRequestMessageHandler.sendNoticeRequest("[" + userInfo.getHostName()+ "]님이 입장 했습니다.", roomUserInfo);
                 }
             });
         } else {
@@ -408,7 +410,7 @@ public class HgtpRequestHandler {
             return;
         }
 
-        String roomId = hgtpRoomContent.getRoomId();
+        String roomHostName = hgtpRoomContent.getRoomName();
         String userId = hgtpHeader.getUserId();
 
         UserInfo userInfo = sessionManager.getUserInfo(userId);
@@ -417,9 +419,9 @@ public class HgtpRequestHandler {
             return;
         }
 
-        RoomInfo roomInfo = sessionManager.getRoomInfo(roomId);
+        RoomInfo roomInfo = sessionManager.getRoomInfoWithRoomName(roomHostName);
         if (roomInfo == null) {
-            log.debug(ROOM_DEL_LOG, roomId);
+            log.debug(ROOM_DEL_LOG, roomHostName);
             return;
         }
         appInstance.getStateHandler().fire(HgtpEvent.EXIT_ROOM, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
@@ -442,7 +444,7 @@ public class HgtpRequestHandler {
                 UserInfo roomUserInfo = sessionManager.getUserInfo(roomUserId);
                 if (roomUserInfo != null) {
                     httpRequestMessageHandler.sendRoomUserListRequest(roomUserInfo);
-                    httpRequestMessageHandler.sendNoticeRequest("[" + userId+ "]님이 퇴장 했습니다.", roomUserInfo);
+                    httpRequestMessageHandler.sendNoticeRequest("[" + userInfo.getHostName() + "]님이 퇴장 했습니다.", roomUserInfo);
                 }
             });
         } else {
@@ -457,7 +459,7 @@ public class HgtpRequestHandler {
      */
     public void inviteUserFromRoomRequestProcessing(HgtpInviteUserFromRoomRequest hgtpInviteUserFromRoomRequest) {
         HgtpHeader hgtpHeader = hgtpInviteUserFromRoomRequest.getHgtpHeader();
-        HgtpRoomManagerContent hgtpContent = hgtpInviteUserFromRoomRequest.getHgtpContent();
+        HgtpManagerControlContent hgtpContent = hgtpInviteUserFromRoomRequest.getHgtpContent();
 
         if (hgtpHeader == null || hgtpContent == null) {
             log.debug(DATA_NULL_LOG, hgtpInviteUserFromRoomRequest);
@@ -467,7 +469,7 @@ public class HgtpRequestHandler {
 
         String userId = hgtpHeader.getUserId();
         String roomId = hgtpContent.getRoomId();
-        String peerHostName = NetworkUtil.messageDecoding(hgtpContent.getPeerHostName());
+        String peerHostName = hgtpContent.getPeerHostName();
 
         UserInfo userInfo = sessionManager.getUserInfo(userId);
         if (userInfo == null) {
@@ -476,6 +478,10 @@ public class HgtpRequestHandler {
         }
 
         UserInfo peerUserInfo = sessionManager.getUserInfoWithHostName(peerHostName);
+        if (peerUserInfo == null) {
+            log.debug(USER_UNREG_LOG, peerHostName);
+            return;
+        }
         String peerUserId = peerUserInfo.getUserId();
         short messageType = HgtpMessageType.OK;
         switch (appInstance.getMode()) {
@@ -486,7 +492,7 @@ public class HgtpRequestHandler {
                     return;
                 }
 
-                if (userInfo.getRoomId().equals("") || peerUserInfo == null) {
+                if (userInfo.getRoomId().equals("")) {
                     messageType = HgtpMessageType.BAD_REQUEST;
                 } else if (roomInfo.getUserGroupSet().contains(peerUserId)) {
                     messageType = HgtpMessageType.DECLINE;
@@ -501,12 +507,12 @@ public class HgtpRequestHandler {
 
                     hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
                 } else {
+                    // 어디에 초대되었는지 확인하는 용도
                     peerUserInfo.setRoomId(roomId);
 
                     HgtpInviteUserFromRoomRequest hgtpInviteRequest = new HgtpInviteUserFromRoomRequest(
-                            peerUserId,
-                            hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT,
-                            peerUserInfo.getRoomId(), hgtpContent.getPeerHostName()
+                            peerUserId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT,
+                            roomId, hgtpContent.getPeerHostName()
                     );
                     sendInviteUserFromRoomRequest(hgtpInviteRequest);
                 }
@@ -545,7 +551,7 @@ public class HgtpRequestHandler {
      */
     public void removeUserFromRoomRequestProcessing(HgtpRemoveUserFromRoomRequest hgtpRemoveUserFromRoomRequest) {
         HgtpHeader hgtpHeader = hgtpRemoveUserFromRoomRequest.getHgtpHeader();
-        HgtpRoomManagerContent hgtpContent = hgtpRemoveUserFromRoomRequest.getHgtpContent();
+        HgtpManagerControlContent hgtpContent = hgtpRemoveUserFromRoomRequest.getHgtpContent();
 
         if (hgtpHeader == null || hgtpContent == null) {
             log.debug(DATA_NULL_LOG, hgtpRemoveUserFromRoomRequest);
@@ -555,7 +561,7 @@ public class HgtpRequestHandler {
 
         String userId = hgtpHeader.getUserId();
         String roomId = hgtpContent.getRoomId();
-        String peerHostName = NetworkUtil.messageDecoding(hgtpContent.getPeerHostName());
+        String peerHostName = hgtpContent.getPeerHostName();
 
         UserInfo userInfo = sessionManager.getUserInfo(userId);
         if (userInfo == null) {
@@ -565,6 +571,10 @@ public class HgtpRequestHandler {
 
         UserInfo peerUserInfo = sessionManager.getUserInfoWithHostName(peerHostName);
         String peerUserId = peerUserInfo.getUserId();
+        if (peerUserInfo == null) {
+            log.debug(USER_UNREG_LOG, peerHostName);
+            return;
+        }
         short messageType = HgtpMessageType.OK;
         switch (appInstance.getMode()) {
             case SERVER:
@@ -574,7 +584,7 @@ public class HgtpRequestHandler {
                     return;
                 }
 
-                if (userInfo.getRoomId().equals("") || peerUserInfo == null) {
+                if (userInfo.getRoomId().equals("")) {
                     messageType = HgtpMessageType.BAD_REQUEST;
                 } else if (!roomInfo.getUserGroupSet().contains(peerUserId)) {
                     messageType = HgtpMessageType.DECLINE;
@@ -742,8 +752,8 @@ public class HgtpRequestHandler {
      */
     public void sendCreateRoomRequest(HgtpCreateRoomRequest hgtpCreateRoomRequest) {
         HgtpHeader hgtpHeader = hgtpCreateRoomRequest.getHgtpHeader();
-        HgtpRoomContent hgtpRoomContent = hgtpCreateRoomRequest.getHgtpContent();
-        if (hgtpHeader == null || hgtpRoomContent == null) {
+        HgtpRoomControlContent hgtpRoomControlContent = hgtpCreateRoomRequest.getHgtpContent();
+        if (hgtpHeader == null || hgtpRoomControlContent == null) {
             log.warn(DATA_NULL_LOG, hgtpCreateRoomRequest);
             return;
         }
@@ -752,7 +762,7 @@ public class HgtpRequestHandler {
             return;
         }
 
-        sessionManager.getUserInfo(hgtpHeader.getUserId()).setRoomId(hgtpRoomContent.getRoomId());
+        sessionManager.getUserInfo(hgtpHeader.getUserId()).setRoomId(hgtpRoomControlContent.getRoomId());
 
         byte[] data = hgtpCreateRoomRequest.getByteData();
         sendHgtpRequest(hgtpHeader.getUserId(), data);
@@ -766,8 +776,8 @@ public class HgtpRequestHandler {
      */
     public void sendDeleteRoomRequest(HgtpDeleteRoomRequest hgtpDeleteRoomRequest) {
         HgtpHeader hgtpHeader = hgtpDeleteRoomRequest.getHgtpHeader();
-        HgtpRoomContent hgtpRoomContent = hgtpDeleteRoomRequest.getHgtpContent();
-        if (hgtpHeader == null || hgtpRoomContent == null) {
+        HgtpRoomControlContent hgtpRoomControlContent = hgtpDeleteRoomRequest.getHgtpContent();
+        if (hgtpHeader == null || hgtpRoomControlContent == null) {
             log.warn(DATA_NULL_LOG, hgtpDeleteRoomRequest);
             return;
         }
@@ -799,7 +809,7 @@ public class HgtpRequestHandler {
             return;
         }
 
-        sessionManager.getUserInfo(hgtpHeader.getUserId()).setRoomId(hgtpRoomContent.getRoomId());
+        sessionManager.getUserInfo(hgtpHeader.getUserId()).setRoomId(hgtpRoomContent.getRoomName());
 
         byte[] data = hgtpJoinRoomRequest.getByteData();
         sendHgtpRequest(hgtpHeader.getUserId(), data);
@@ -837,7 +847,7 @@ public class HgtpRequestHandler {
      */
     public void sendInviteUserFromRoomRequest(HgtpInviteUserFromRoomRequest hgtpInviteUserFromRoomRequest) {
         HgtpHeader hgtpHeader = hgtpInviteUserFromRoomRequest.getHgtpHeader();
-        HgtpRoomManagerContent hgtpRoomContent = hgtpInviteUserFromRoomRequest.getHgtpContent();
+        HgtpManagerControlContent hgtpRoomContent = hgtpInviteUserFromRoomRequest.getHgtpContent();
         if (hgtpHeader == null || hgtpRoomContent == null) {
             log.warn(DATA_NULL_LOG, hgtpInviteUserFromRoomRequest);
             return;
@@ -857,7 +867,7 @@ public class HgtpRequestHandler {
      */
     public void sendRemoveUserFromRoomRequest(HgtpRemoveUserFromRoomRequest hgtpRemoveUserFromRoomRequest) {
         HgtpHeader hgtpHeader = hgtpRemoveUserFromRoomRequest.getHgtpHeader();
-        HgtpRoomManagerContent hgtpRoomContent = hgtpRemoveUserFromRoomRequest.getHgtpContent();
+        HgtpManagerControlContent hgtpRoomContent = hgtpRemoveUserFromRoomRequest.getHgtpContent();
         if (hgtpHeader == null || hgtpRoomContent == null) {
             log.warn(DATA_NULL_LOG, hgtpRemoveUserFromRoomRequest);
             return;

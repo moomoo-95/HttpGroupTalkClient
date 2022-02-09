@@ -15,7 +15,7 @@ public class GuiManager {
     private final ClientFrame clientFrame;
 
     public GuiManager() {
-        clientFrame = new ClientFrame("GroupTalk");
+        clientFrame = new ClientFrame("GroupTalk" + "["+AppInstance.getInstance().getUserId()+"]");
     }
 
     public static GuiManager getInstance() {
@@ -27,11 +27,11 @@ public class GuiManager {
 
     public void setClientTitle(String title) {
         if (title == null) return;
-        clientFrame.setTitle("GroupTalk [" + title + "]");
+        clientFrame.setTitle("GroupTalk [" + title + "]["+AppInstance.getInstance().getUserId()+"]");
     }
 
     public void clientFrameInit() {
-        clientFrame.setTitle("GroupTalk");
+        clientFrame.setTitle("GroupTalk" + "["+AppInstance.getInstance().getUserId()+"]");
         getUserListPanel().setUserList(null);
         getRoomListPanel().setRoomList(null);
         getRoomUserListPanel().setRoomUserList(null);

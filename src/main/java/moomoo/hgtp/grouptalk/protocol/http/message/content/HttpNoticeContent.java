@@ -1,6 +1,7 @@
 package moomoo.hgtp.grouptalk.protocol.http.message.content;
 
 import moomoo.hgtp.grouptalk.protocol.http.base.HttpMessage;
+import moomoo.hgtp.grouptalk.util.NetworkUtil;
 
 /**
  * @class HttpNoticeContent
@@ -11,10 +12,11 @@ public class HttpNoticeContent extends HttpMessage {
     private final String notice;
 
     public HttpNoticeContent(String notice) {
-        this.notice = notice;
+        String encodeNotice = NetworkUtil.messageEncoding(notice);
+        this.notice = encodeNotice;
     }
 
     public String getNotice() {
-        return notice;
+        return NetworkUtil.messageDecoding(notice);
     }
 }

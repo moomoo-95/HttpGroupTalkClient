@@ -16,8 +16,6 @@ import service.ResourceManager;
 import service.scheduler.schedule.ScheduleManager;
 import util.module.ConcurrentCyclicFIFO;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.concurrent.TimeUnit;
 
 public class AppInstance {
@@ -72,7 +70,6 @@ public class AppInstance {
 
     private void initServerInstance(){
         try {
-
             serverNonce = NetworkUtil.createNonce(ALGORITHM, MD5_REALM, MD5_HASH_KEY);
         } catch (Exception e) {
             log.error("AppInstance.initServerInstance ", e);
@@ -87,7 +84,7 @@ public class AppInstance {
     private void initScheduleManager() {
         ScheduleManager scheduleManager = appInstance.getScheduleManager();
 
-        scheduleManager.initJob(AppInstance.HGTP_SCHEDULE_KEY, configManager.getHgtpThreadSize(), configManager.getRecvBufSize());
+        scheduleManager.initJob(AppInstance.HGTP_SCHEDULE_KEY, configManager.getHgtpThreadCount(), configManager.getRecvBufSize());
 
         scheduleManager.startJob(
                 AppInstance.HGTP_SCHEDULE_KEY,

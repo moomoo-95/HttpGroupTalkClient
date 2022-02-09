@@ -4,14 +4,14 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.exception.HgtpException;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpHeader;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessage;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
-import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.content.HgtpRoomContent;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.content.HgtpRoomControlContent;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 
 
 public class HgtpDeleteRoomRequest extends HgtpMessage {
 
     private final HgtpHeader hgtpHeader;
-    private final HgtpRoomContent hgtpContent;
+    private final HgtpRoomControlContent hgtpContent;
 
     public HgtpDeleteRoomRequest(byte[] data) throws HgtpException {
         if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + AppInstance.ROOM_ID_SIZE) {
@@ -24,15 +24,15 @@ public class HgtpDeleteRoomRequest extends HgtpMessage {
 
             byte[] contextByteData = new byte[hgtpHeader.getBodyLength()];
             System.arraycopy(data, index, contextByteData, 0, contextByteData.length);
-            this.hgtpContent = new HgtpRoomContent(contextByteData);
+            this.hgtpContent = new HgtpRoomControlContent(contextByteData);
         } else {
             this.hgtpHeader = null;
             this.hgtpContent = null;
         }
     }
 
-    public HgtpDeleteRoomRequest(String userId, int seqNumber, String roomId) {
-        this.hgtpContent = new HgtpRoomContent(roomId);
+    public HgtpDeleteRoomRequest(String userId, int seqNumber, String roomId, String roomName) {
+        this.hgtpContent = new HgtpRoomControlContent(roomId, roomName);
         this.hgtpHeader = new HgtpHeader(AppInstance.MAGIC_COOKIE, HgtpMessageType.DELETE_ROOM, HgtpMessageType.DELETE_ROOM, userId, seqNumber, AppInstance.getInstance().getTimeStamp(), hgtpContent.getBodyLength());
 
     }
@@ -54,5 +54,5 @@ public class HgtpDeleteRoomRequest extends HgtpMessage {
 
     public HgtpHeader getHgtpHeader() {return hgtpHeader;}
 
-    public HgtpRoomContent getHgtpContent() {return hgtpContent;}
+    public HgtpRoomControlContent getHgtpContent() {return hgtpContent;}
 }

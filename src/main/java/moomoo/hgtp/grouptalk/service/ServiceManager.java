@@ -112,6 +112,7 @@ public class ServiceManager {
     public void stop() {
         networkManager.stopSocket();
 
+        appInstance.getStateManager().stop();
         appInstance.getBaseEnvironment().stop();
     }
 }

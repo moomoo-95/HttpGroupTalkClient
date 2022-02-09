@@ -10,6 +10,7 @@ import moomoo.hgtp.grouptalk.util.CnameGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -30,12 +31,30 @@ public class CreateRoomButtonListener implements ActionListener {
         if (!userInfo.getRoomId().equals("")) {
             log.warn("({}) ({}) () UserInfo are already in the room.", userInfo.getUserId(), userInfo.getRoomId());
         } else {
+            String inputName = JOptionPane.showInputDialog(null, "Put room name.");
+            if (inputName.equals("")) {
+                JOptionPane.showConfirmDialog(
+                        null, "Fail : The name is blank.",
+                        "CREATE ROOM FAIL", JOptionPane.YES_OPTION,
+                        JOptionPane.INFORMATION_MESSAGE, null
+                );
+                return;
+            } else if (inputName.length() > 10) {
+                JOptionPane.showConfirmDialog(
+                        null, "Fail : The name is too long. (20 < ["+ inputName.length() +"])",
+                        "CREATE ROOM FAIL", JOptionPane.YES_OPTION,
+                        JOptionPane.INFORMATION_MESSAGE, null
+                );
+                return;
+            }
+
             String roomId = CnameGenerator.generateCnameRoomId();
+            sessionManager.addRoomInfo(roomId, inputName, userInfo.getUserId());
 
             appInstance.getStateHandler().fire(HgtpEvent.CREATE_ROOM, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
             // create request create room
             HgtpCreateRoomRequest hgtpCreateRoomRequest = new HgtpCreateRoomRequest(
-                    userInfo.getUserId(), AppInstance.SEQ_INCREMENT, roomId
+                    userInfo.getUserId(), AppInstance.SEQ_INCREMENT, roomId, inputName
             );
 
             hgtpRequestHandler.sendCreateRoomRequest(hgtpCreateRoomRequest);

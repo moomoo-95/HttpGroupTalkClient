@@ -4,14 +4,14 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.exception.HgtpException;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpHeader;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessage;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
-import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.content.HgtpRoomManagerContent;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.content.HgtpManagerControlContent;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 
 
 public class HgtpInviteUserFromRoomRequest extends HgtpMessage {
 
     private final HgtpHeader hgtpHeader;
-    private final HgtpRoomManagerContent hgtpContent;
+    private final HgtpManagerControlContent hgtpContent;
 
     public HgtpInviteUserFromRoomRequest(byte[] data) throws HgtpException {
         if (data.length >= HgtpHeader.HGTP_HEADER_SIZE + AppInstance.ROOM_ID_SIZE + AppInstance.USER_ID_SIZE) {
@@ -24,15 +24,15 @@ public class HgtpInviteUserFromRoomRequest extends HgtpMessage {
 
             byte[] contextByteData = new byte[hgtpHeader.getBodyLength()];
             System.arraycopy(data, index, contextByteData, 0, contextByteData.length);
-            this.hgtpContent = new HgtpRoomManagerContent(contextByteData);
+            this.hgtpContent = new HgtpManagerControlContent(contextByteData);
         } else {
             this.hgtpHeader = null;
             this.hgtpContent = null;
         }
     }
 
-    public HgtpInviteUserFromRoomRequest(String userId, int seqNumber, String roomId, String peerUserId) {
-        this.hgtpContent = new HgtpRoomManagerContent(roomId, peerUserId);
+    public HgtpInviteUserFromRoomRequest(String userId, int seqNumber, String roomId, String peerHostName) {
+        this.hgtpContent = new HgtpManagerControlContent(roomId, peerHostName);
         this.hgtpHeader = new HgtpHeader(AppInstance.MAGIC_COOKIE, HgtpMessageType.INVITE_USER_FROM_ROOM, HgtpMessageType.INVITE_USER_FROM_ROOM, userId, seqNumber, AppInstance.getInstance().getTimeStamp(), hgtpContent.getBodyLength());
     }
 
@@ -53,5 +53,5 @@ public class HgtpInviteUserFromRoomRequest extends HgtpMessage {
 
     public HgtpHeader getHgtpHeader() {return hgtpHeader;}
 
-    public HgtpRoomManagerContent getHgtpContent() {return hgtpContent;}
+    public HgtpManagerControlContent getHgtpContent() {return hgtpContent;}
 }

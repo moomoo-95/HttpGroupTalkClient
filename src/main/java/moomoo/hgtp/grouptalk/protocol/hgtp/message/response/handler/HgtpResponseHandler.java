@@ -89,7 +89,7 @@ public class HgtpResponseHandler {
                 UserInfo roomUserInfo = sessionManager.getUserInfo(roomUserId);
                 if (roomUserInfo != null) {
                     httpRequestMessageHandler.sendRoomUserListRequest(roomUserInfo);
-                    httpRequestMessageHandler.sendNoticeRequest("[" + userInfo.getUserId() + "]님이 " + processResult + "습니다.", roomUserInfo);
+                    httpRequestMessageHandler.sendNoticeRequest("[" + userInfo.getHostName() + "]님이 " + processResult + "습니다.", roomUserInfo);
                 }
             });
         } else if (appInstance.getMode() == ProcessMode.CLIENT) {
@@ -108,6 +108,7 @@ public class HgtpResponseHandler {
                 case HgtpMessageType.CREATE_ROOM:
                     appInstance.getStateHandler().fire(HgtpEvent.CREATE_ROOM_SUC, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
                     appInstance.setManager(true);
+
                     controlPanel.setCreateRoomButtonStatus();
                     break;
                 case HgtpMessageType.DELETE_ROOM:
@@ -302,18 +303,38 @@ public class HgtpResponseHandler {
                     return;
             }
         } else if (appInstance.getMode() == ProcessMode.CLIENT) {
-            if (hgtpHeader.getRequestType() == HgtpMessageType.REGISTER) {
-                JOptionPane.showConfirmDialog(
-                        null,
-                        "Your name [" + userInfo.getHostName() + "] is duplicated. Please register again.",
-                        "NAME DUPLICATION",
-                        JOptionPane.YES_OPTION,
-                        JOptionPane.INFORMATION_MESSAGE,
-                        null
-                );
+            switch (hgtpHeader.getRequestType()) {
+                case HgtpMessageType.REGISTER:
+                    JOptionPane.showConfirmDialog(
+                            null,
+                            "Your name [" + userInfo.getHostName() + "] is duplicated. Please register again.",
+                            "NAME DUPLICATION",
+                            JOptionPane.YES_OPTION,
+                            JOptionPane.INFORMATION_MESSAGE,
+                            null
+                    );
 
-                userInfo.initHostName();
-                GuiManager.getInstance().clientFrameInit();
+                    userInfo.initHostName();
+                    GuiManager.getInstance().clientFrameInit();
+                    break;
+                case HgtpMessageType.CREATE_ROOM:
+                    RoomInfo roomInfo = sessionManager.getRoomInfo(userInfo.getRoomId());
+                    if (roomInfo == null) return;
+                    JOptionPane.showConfirmDialog(
+                            null,
+                            "Room name [" + roomInfo.getRoomName() + "] is duplicated. Please register again.",
+                            "NAME DUPLICATION",
+                            JOptionPane.YES_OPTION,
+                            JOptionPane.INFORMATION_MESSAGE,
+                            null
+                    );
+
+                    userInfo.initRoomId();
+                    sessionManager.deleteRoomInfo(userInfo.getRoomId(), userInfo.getUserId());
+                    GuiManager.getInstance().getControlPanel().setRegisterButtonStatus();
+                    break;
+                default:
+                    return;
             }
         }
     }

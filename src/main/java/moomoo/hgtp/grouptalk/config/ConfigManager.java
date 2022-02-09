@@ -30,10 +30,11 @@ public class ConfigManager {
     private static final String FIELD_TARGET_LISTEN_IP = "TARGET_LISTEN_IP";
     private static final String FIELD_SEND_BUF_SIZE = "SEND_BUF_SIZE";
     private static final String FIELD_RECV_BUF_SIZE = "RECV_BUF_SIZE";
+    private static final String FIELD_THREAD_COUNT = "THREAD_COUNT";
     // HGTP
     private static final String FIELD_HGTP_LISTEN_PORT = "HGTP_LISTEN_PORT";
     private static final String FIELD_HGTP_TARGET_PORT = "HGTP_TARGET_PORT";
-    private static final String FIELD_HGTP_THREAD_SIZE = "HGTP_THREAD_SIZE";
+    private static final String FIELD_HGTP_THREAD_COUNT = "HGTP_THREAD_COUNT";
     private static final String FIELD_HGTP_EXPIRE_TIME = "HGTP_EXPIRE_TIME";
     // HTTP
     private static final String FIELD_HTTP_MIN_PORT = "HTTP_MIN_PORT";
@@ -47,10 +48,11 @@ public class ConfigManager {
     private String targetListenIp = "";
     private int  sendBufSize = 0;
     private int  recvBufSize = 0;
+    private int threadCount = 0;
     // HGTP
     private short hgtpListenPort = 0;
     private short hgtpTargetPort = 0;
-    private int  hgtpThreadSize = 0;
+    private int hgtpThreadCount = 0;
     private long hgtpExpireTime = 0;
     // HTTP
     private int  httpMinPort = 0;
@@ -112,6 +114,13 @@ public class ConfigManager {
             setIniValue(SECTION_NETWORK, FIELD_RECV_BUF_SIZE, "1048576");
         }
 
+        this.threadCount = Integer.parseInt(getIniValue(SECTION_NETWORK, FIELD_THREAD_COUNT));
+        if (threadCount <= 0) {
+            log.warn("[{}] config [{}] : [{} -> 4] Warn", SECTION_NETWORK, FIELD_THREAD_COUNT, threadCount);
+            threadCount = 4;
+            setIniValue(SECTION_NETWORK, FIELD_THREAD_COUNT, "4");
+        }
+
         log.debug(CONFIG_LOG, SECTION_NETWORK);
     }
 
@@ -128,18 +137,18 @@ public class ConfigManager {
             System.exit(1);
         }
 
-        this.hgtpThreadSize = Integer.parseInt(getIniValue(SECTION_HGTP, FIELD_HGTP_THREAD_SIZE));
-        if (hgtpThreadSize <= 0) {
-            log.warn("[{}] config [{}] : [{} -> 5] Warn", SECTION_HGTP, FIELD_HGTP_THREAD_SIZE, hgtpThreadSize);
-            hgtpThreadSize = 5;
-            setIniValue(SECTION_NETWORK, FIELD_HGTP_THREAD_SIZE, "5");
+        this.hgtpThreadCount = Integer.parseInt(getIniValue(SECTION_HGTP, FIELD_HGTP_THREAD_COUNT));
+        if (hgtpThreadCount <= 0) {
+            log.warn("[{}] config [{}] : [{} -> 4] Warn", SECTION_HGTP, FIELD_HGTP_THREAD_COUNT, hgtpThreadCount);
+            hgtpThreadCount = 4;
+            setIniValue(SECTION_HGTP, FIELD_HGTP_THREAD_COUNT, "4");
         }
 
         this.hgtpExpireTime = Long.parseLong(getIniValue(SECTION_HGTP, FIELD_HGTP_EXPIRE_TIME));
         if (hgtpExpireTime <= 0) {
-            log.warn("[{}] config [{}] : [{} -> 3600] Warn", SECTION_HGTP, FIELD_HGTP_THREAD_SIZE, hgtpExpireTime);
+            log.warn("[{}] config [{}] : [{} -> 3600] Warn", SECTION_HGTP, FIELD_HGTP_THREAD_COUNT, hgtpExpireTime);
             hgtpExpireTime = 3600;
-            setIniValue(SECTION_NETWORK, FIELD_HGTP_EXPIRE_TIME, "3600");
+            setIniValue(SECTION_HGTP, FIELD_HGTP_EXPIRE_TIME, "3600");
         }
         log.debug(CONFIG_LOG, SECTION_HGTP);
     }
@@ -198,11 +207,12 @@ public class ConfigManager {
     public String getTargetListenIp() {return targetListenIp;}
     public int getSendBufSize() {return sendBufSize;}
     public int getRecvBufSize() {return recvBufSize;}
+    public int getThreadCount() {return threadCount;}
 
     // hgtp
     public short getHgtpListenPort() {return hgtpListenPort;}
     public short getHgtpTargetPort() {return hgtpTargetPort;}
-    public int getHgtpThreadSize() {return hgtpThreadSize;}
+    public int getHgtpThreadCount() {return hgtpThreadCount;}
     public long getHgtpExpireTime() {return hgtpExpireTime;}
 
     // http

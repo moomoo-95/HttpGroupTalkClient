@@ -1,8 +1,5 @@
 package moomoo.hgtp.grouptalk.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Base64;
@@ -14,7 +11,7 @@ public class NetworkUtil {
     private static final Encoder encoder = Base64.getEncoder();
     private static final Decoder decoder = Base64.getDecoder();
 
-    public NetworkUtil() {
+    private NetworkUtil() {
         // nothing
     }
 
@@ -49,8 +46,8 @@ public class NetworkUtil {
         return result.toString();
     }
 
-    public static String messageEncoding(String DecodingMessage) {
-        return new String( encoder.encode(DecodingMessage.getBytes(StandardCharsets.UTF_8)) );
+    public static String messageEncoding(String decodingMessage) {
+        return new String( encoder.encode(decodingMessage.getBytes(StandardCharsets.UTF_8)) );
 
     }
 

@@ -1,17 +1,22 @@
 package moomoo.hgtp.grouptalk.protocol.hgtp.message.base.content;
 
 import moomoo.hgtp.grouptalk.service.AppInstance;
+import moomoo.hgtp.grouptalk.util.NetworkUtil;
 import util.module.ByteUtil;
 
 import java.nio.charset.StandardCharsets;
 
-public class HgtpRoomManagerContent implements HgtpContent {
+/**
+ * @class HgtpManagerControlContent
+ * @brief room에 user를 초대/강제퇴장 하기 위해 사용되는 hgtp 메시지의 content 타입
+ */
+public class HgtpManagerControlContent implements HgtpContent {
 
     private final String roomId;            // 12 bytes
     private final int peerHostNameLength;     // 4 bytes
     private final String peerHostName;            // peerHostNameLength bytes
 
-    public HgtpRoomManagerContent(byte[] data) {
+    public HgtpManagerControlContent(byte[] data) {
         if (data.length >= getBodyLength()) {
             int index = 0;
             byte[] roomIdByteData = new byte[AppInstance.ROOM_ID_SIZE];
@@ -35,10 +40,11 @@ public class HgtpRoomManagerContent implements HgtpContent {
         }
     }
 
-    public HgtpRoomManagerContent(String roomId, String peerHostName) {
+    public HgtpManagerControlContent(String roomId, String peerHostName) {
         this.roomId = roomId;
-        this.peerHostNameLength = peerHostName.getBytes(StandardCharsets.UTF_8).length;
-        this.peerHostName = peerHostName;
+        String encodePeerHostName = NetworkUtil.messageEncoding(peerHostName);
+        this.peerHostNameLength = encodePeerHostName.getBytes(StandardCharsets.UTF_8).length;
+        this.peerHostName = encodePeerHostName;
     }
 
     @Override
@@ -54,14 +60,14 @@ public class HgtpRoomManagerContent implements HgtpContent {
         System.arraycopy(peerHostNameLengthByteData, 0, data, index, peerHostNameLengthByteData.length);
         index += peerHostNameLengthByteData.length;
 
-        byte[] peerUserIdByteData = peerHostName.getBytes(StandardCharsets.UTF_8);
-        System.arraycopy(peerUserIdByteData, 0, data, index, peerUserIdByteData.length);
+        byte[] peerHostNameByteData = peerHostName.getBytes(StandardCharsets.UTF_8);
+        System.arraycopy(peerHostNameByteData, 0, data, index, peerHostNameByteData.length);
 
         return data;
     }
 
     public int getBodyLength() {
-        return AppInstance.ROOM_ID_SIZE + AppInstance.USER_ID_SIZE + peerHostNameLength;
+        return AppInstance.ROOM_ID_SIZE + ByteUtil.NUM_BYTES_IN_INT + peerHostNameLength;
     }
 
     public String getRoomId() {
@@ -69,6 +75,6 @@ public class HgtpRoomManagerContent implements HgtpContent {
     }
 
     public String getPeerHostName() {
-        return peerHostName;
+        return NetworkUtil.messageDecoding(peerHostName);
     }
 }

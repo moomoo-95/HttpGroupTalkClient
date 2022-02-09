@@ -58,7 +58,6 @@ public class SessionManager {
             return HgtpMessageType.SERVER_UNAVAILABLE;
         }
 
-
         String duplicateUserId = getDuplicateUserId(hostName);
 
         // PortResourceManager에서 채널 할당
@@ -139,7 +138,7 @@ public class SessionManager {
      * @fn getDuplicateUserId
      * @brief userInfoMap 내 중복된 hostName이 존재하는지 확인하는 메서드
      * @param hostName
-     * @return 중복된 이미 존재하는 UserInfo의 UserId
+     * @return 이미 존재하는 UserInfo의 UserId
      */
     private String getDuplicateUserId(String hostName) {
         for (UserInfo userInfo : userInfoHashMap.values()) {
@@ -150,7 +149,7 @@ public class SessionManager {
         return "";
     }
 
-    public short addRoomInfo(String roomId, String managerId) {
+    public short addRoomInfo(String roomId, String roomName, String managerId) {
         if (roomId.equals("")) {
             log.warn("({}) ({}) () RoomId is null", managerId, roomId);
             return HgtpMessageType.BAD_REQUEST;
@@ -160,12 +159,19 @@ public class SessionManager {
             log.warn("({}) ({}) () RoomInfo already exist.", managerId, roomId);
             return HgtpMessageType.BAD_REQUEST;
         }
+
         if (appInstance.getConfigManager().getRoomMaxSize() < roomInfoHashMap.size()) {
             log.warn("({}) ({}) () Unavailable add RoomInfo", managerId, roomId);
             return HgtpMessageType.SERVER_UNAVAILABLE;
         }
 
-        RoomInfo roomInfo = new RoomInfo(roomId, managerId);
+        String duplicateRoomId = getDuplicateRoomId(roomName);
+        if (!duplicateRoomId.equals("")) {
+            log.warn("({}) ({}) () {} is duplicate with [{}] in RoomInfoMap ", managerId, roomId, roomName,  duplicateRoomId);
+            return HgtpMessageType.DECLINE;
+        }
+
+        RoomInfo roomInfo = new RoomInfo(roomId, roomName, managerId);
         synchronized (roomInfoHashMap) {
             roomInfoHashMap.put(roomId, roomInfo);
         }
@@ -204,7 +210,7 @@ public class SessionManager {
                     appInstance.getStateHandler().fire(HgtpEvent.REMOVE_USER_ROOM, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
                     // create request remove user from room
                     HgtpRemoveUserFromRoomRequest hgtpRemoveUserFromRoomRequest = new HgtpRemoveUserFromRoomRequest(
-                            userId, AppInstance.SEQ_INCREMENT, roomInfo.getRoomId(), NetworkUtil.messageEncoding(userInfo.getHostName())
+                            userId, AppInstance.SEQ_INCREMENT, roomInfo.getRoomId(), userInfo.getHostName()
                     );
                     hgtpRequestHandler.sendRemoveUserFromRoomRequest(hgtpRemoveUserFromRoomRequest);
                     appInstance.getStateHandler().fire(HgtpEvent.REMOVE_USER_ROOM_SUC, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
@@ -224,6 +230,21 @@ public class SessionManager {
         return HgtpMessageType.OK;
     }
 
+    /**
+     * @fn getDuplicateRoomId
+     * @brief roomInfoMap 내 중복된 roomName 이 존재하는지 확인하는 메서드
+     * @param roomName
+     * @return 이미 존재하는 RoonInfo의 RoomId
+     */
+    private String getDuplicateRoomId(String roomName) {
+        for (RoomInfo roomInfo : roomInfoHashMap.values()) {
+            if (roomInfo.getRoomName().equals(roomName)) {
+                return roomInfo.getRoomId();
+            }
+        }
+        return "";
+    }
+
     public int getUserInfoSize() { return userInfoHashMap.size(); }
 
     public int getRoomInfoSize() { return roomInfoHashMap.size(); }
@@ -239,7 +260,7 @@ public class SessionManager {
     public UserInfo getUserInfoWithHostName(String hostName) {
         List<UserInfo> userInfos = userInfoHashMap.values().stream().filter(userInfo -> userInfo.getHostName().equals(hostName)).collect(Collectors.toList());
 
-        return userInfos.size() <= 0 ? null : userInfos.get(0);
+        return userInfos.isEmpty() ? null : userInfos.get(0);
     }
 
     public RoomInfo getRoomInfo(String roomId) {
@@ -248,6 +269,12 @@ public class SessionManager {
         } else {
             return null;
         }
+    }
+
+    public RoomInfo getRoomInfoWithRoomName(String roomName) {
+        List<RoomInfo> roomInfos = roomInfoHashMap.values().stream().filter(userInfo -> userInfo.getRoomName().equals(roomName)).collect(Collectors.toList());
+
+        return roomInfos.isEmpty() ? null : roomInfos.get(0);
     }
 
     public Map<String, UserInfo> getUserInfoHashMap() {
@@ -260,7 +287,7 @@ public class SessionManager {
                 .collect(Collectors.toSet());
     }
 
-    public Set<String> getHostNameSet(Set<String> userIdSet) {
+    public Set<String> getHostNameInRoomSet(Set<String> userIdSet) {
         return userInfoHashMap.values().stream().filter(userInfo -> userIdSet.contains(userInfo.getUserId()))
                 .map(userInfo -> NetworkUtil.messageEncoding(userInfo.getHostName()))
                 .collect(Collectors.toSet());
@@ -269,4 +296,11 @@ public class SessionManager {
     public Map<String, RoomInfo> getRoomInfoHashMap() {
         return roomInfoHashMap;
     }
+
+    public Set<String> getRoomNameSet() {
+        return roomInfoHashMap.values().stream()
+                .map(userInfo -> NetworkUtil.messageEncoding(userInfo.getRoomName()))
+                .collect(Collectors.toSet());
+    }
+
 }

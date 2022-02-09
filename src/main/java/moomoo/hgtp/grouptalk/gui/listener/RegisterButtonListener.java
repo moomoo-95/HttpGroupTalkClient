@@ -1,7 +1,6 @@
 package moomoo.hgtp.grouptalk.gui.listener;
 
 import moomoo.hgtp.grouptalk.config.ConfigManager;
-import moomoo.hgtp.grouptalk.fsm.HgtpEvent;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.HgtpRegisterRequest;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
@@ -27,6 +26,21 @@ public class RegisterButtonListener implements ActionListener {
         UserInfo userInfo = sessionManager.getUserInfo(appInstance.getUserId());
 
         String inputName = JOptionPane.showInputDialog(null, "Put your name.");
+        if (inputName.equals("")) {
+            JOptionPane.showConfirmDialog(
+                    null, "Fail : The name is blank.",
+                    "REGISTER FAIL", JOptionPane.YES_OPTION,
+                    JOptionPane.INFORMATION_MESSAGE, null
+            );
+            return;
+        } else if (inputName.length() > 10) {
+            JOptionPane.showConfirmDialog(
+                    null, "Fail : The name is too long. (10 < ["+ inputName.length() +"])",
+                    "REGISTER FAIL", JOptionPane.YES_OPTION,
+                    JOptionPane.INFORMATION_MESSAGE, null
+            );
+            return;
+        }
         userInfo.setHostName(inputName);
 
         // create request Register

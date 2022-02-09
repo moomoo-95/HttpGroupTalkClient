@@ -4,6 +4,7 @@ import moomoo.hgtp.grouptalk.gui.GuiManager;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.service.base.ProcessMode;
+import moomoo.hgtp.grouptalk.session.SessionManager;
 import network.definition.NetAddress;
 import network.socket.SocketProtocol;
 import util.module.ByteUtil;
@@ -87,7 +88,10 @@ public class UserInfo {
         this.roomId = roomId;
 
         if(AppInstance.getInstance().getMode() == ProcessMode.CLIENT) {
-            GuiManager.getInstance().getRoomPanel().setRoomName(this.roomId);
+            RoomInfo roomInfo = SessionManager.getInstance().getRoomInfo(roomId);
+            if (roomInfo != null) {
+                GuiManager.getInstance().getRoomPanel().setRoomName(roomInfo.getRoomName());
+            }
         }
     }
 

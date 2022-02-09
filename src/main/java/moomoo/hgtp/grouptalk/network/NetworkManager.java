@@ -28,7 +28,6 @@ import static moomoo.hgtp.grouptalk.protocol.http.base.HttpMessageType.*;
 public class NetworkManager {
 
     private static final Logger log = LoggerFactory.getLogger(NetworkManager.class);
-    private static final int SOCKET_THREAD_SIZE = 10;
 
     private static NetworkManager networkManager = null;
 
@@ -57,9 +56,9 @@ public class NetworkManager {
         BaseEnvironment baseEnvironment = appInstance.getBaseEnvironment();
 
         // SocketManager 생성
-        udpSocketManager = new SocketManager(baseEnvironment, false, false, SOCKET_THREAD_SIZE, configManager.getSendBufSize(), configManager.getRecvBufSize());
-        tcpServerSocketManager = new SocketManager(baseEnvironment, true, true, SOCKET_THREAD_SIZE, configManager.getSendBufSize(), configManager.getRecvBufSize());
-        tcpClientSocketManager = new SocketManager(baseEnvironment, true, false, SOCKET_THREAD_SIZE, configManager.getSendBufSize(), configManager.getRecvBufSize());
+        udpSocketManager = new SocketManager(baseEnvironment, false, false, configManager.getThreadCount(), configManager.getSendBufSize(), configManager.getRecvBufSize());
+        tcpServerSocketManager = new SocketManager(baseEnvironment, true, true, configManager.getThreadCount(), configManager.getSendBufSize(), configManager.getRecvBufSize());
+        tcpClientSocketManager = new SocketManager(baseEnvironment, true, false, configManager.getThreadCount(), configManager.getSendBufSize(), configManager.getRecvBufSize());
 
         // http message route table 설정
         routeTable = new HttpMessageRouteTable();

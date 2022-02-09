@@ -17,7 +17,6 @@ import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.session.SessionManager;
 import moomoo.hgtp.grouptalk.session.base.RoomInfo;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
-import moomoo.hgtp.grouptalk.util.NetworkUtil;
 import network.definition.DestinationRecord;
 import network.socket.GroupSocket;
 import network.socket.netty.tcp.NettyTcpClientChannel;
@@ -83,7 +82,7 @@ public class HttpMessageHandler {
         SessionManager sessionManager = SessionManager.getInstance();
 
         if (sessionManager.getRoomInfoSize() > 0) {
-            HashSet<String> roomInfoSet = new HashSet<>(sessionManager.getRoomInfoHashMap().keySet()) ;
+            HashSet<String> roomInfoSet = new HashSet<>(sessionManager.getRoomNameSet()) ;
             httpRoomListContent.addAllRoomList(roomInfoSet);
         }
 
@@ -141,7 +140,7 @@ public class HttpMessageHandler {
         }
 
         if (roomInfo.getUserGroupSetSize() > 0) {
-            HashSet<String> userGroupSet = (HashSet<String>) sessionManager.getHostNameSet(roomInfo.getUserGroupSet());
+            HashSet<String> userGroupSet = (HashSet<String>) sessionManager.getHostNameInRoomSet(roomInfo.getUserGroupSet());
             roomUserListContent.addAllRoomUserList(userGroupSet);
         }
 
@@ -180,8 +179,7 @@ public class HttpMessageHandler {
      */
     public void sendNoticeRequest(String notice, UserInfo userInfo) {
         DefaultFullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, HttpMessageType.NOTICE);
-        String encodeNotice = NetworkUtil.messageEncoding(notice);
-        HttpNoticeContent noticeContent = new HttpNoticeContent(encodeNotice);
+        HttpNoticeContent noticeContent = new HttpNoticeContent(notice);
 
         setRequestHeader(request, userInfo, HttpMessageType.NOTICE);
 
@@ -248,8 +246,7 @@ public class HttpMessageHandler {
         AppInstance appInstance = AppInstance.getInstance();
         SessionManager sessionManager = SessionManager.getInstance();
 
-        String hostName = NetworkUtil.messageDecoding(messageContent.getHostName());
-        UserInfo userInfo = sessionManager.getUserInfoWithHostName(hostName);
+        UserInfo userInfo = sessionManager.getUserInfoWithHostName(messageContent.getHostName());
 
         switch (appInstance.getMode()) {
             case SERVER:
@@ -272,11 +269,9 @@ public class HttpMessageHandler {
                 RoomPanel roomPanel = GuiManager.getInstance().getRoomPanel();
                 boolean isMyMessage = (userInfo != null);
 
-                String decodeMessage = NetworkUtil.messageDecoding(messageContent.getMessage());
-
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append("[" + messageContent.getMessageTimeFormat() + "]\n");
-                stringBuilder.append("| " + hostName + " | " + decodeMessage + "\n");
+                stringBuilder.append("| " + messageContent.getHostName() + " | " + messageContent.getMessage() + "\n");
                 roomPanel.addMessage(stringBuilder.toString(), isMyMessage);
                 break;
             case PROXY:
@@ -295,10 +290,8 @@ public class HttpMessageHandler {
             case CLIENT:
                 RoomPanel roomPanel = GuiManager.getInstance().getRoomPanel();
 
-                String decodeNotice = NetworkUtil.messageDecoding(messageContent.getNotice());
-
                 StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.append("*** " + decodeNotice + " ***\n");
+                stringBuilder.append("*** " + messageContent.getNotice() + " ***\n");
                 roomPanel.addNotice(stringBuilder.toString());
                 break;
             case PROXY:

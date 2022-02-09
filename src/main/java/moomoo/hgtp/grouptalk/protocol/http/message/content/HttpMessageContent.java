@@ -2,6 +2,7 @@ package moomoo.hgtp.grouptalk.protocol.http.message.content;
 
 import moomoo.hgtp.grouptalk.protocol.http.base.HttpMessage;
 import moomoo.hgtp.grouptalk.service.AppInstance;
+import moomoo.hgtp.grouptalk.util.NetworkUtil;
 
 import java.text.SimpleDateFormat;
 
@@ -16,24 +17,26 @@ public class HttpMessageContent extends HttpMessage {
     private final long messageTime;
 
     public HttpMessageContent(String hostName, String message) {
-        this.hostName = hostName;
-        this.message = message;
+        String encodeHostName = NetworkUtil.messageEncoding(hostName);
+        this.hostName = encodeHostName;
+        String encodeMessage = NetworkUtil.messageEncoding(message);
+        this.message = encodeMessage;
         this.messageTime = AppInstance.getInstance().getTimeStamp();
     }
 
     public String getHostName() {
-        return hostName;
+        return NetworkUtil.messageDecoding(hostName);
     }
 
     public String getMessage() {
-        return message;
+        return NetworkUtil.messageDecoding(message);
     }
 
     public long getMessageTime() {
         return messageTime;
     }
     public String getMessageTimeFormat() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-DD HH:mm:ss.SSS");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         return simpleDateFormat.format(messageTime);
     }
 }

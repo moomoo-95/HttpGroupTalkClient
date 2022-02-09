@@ -48,17 +48,17 @@ public class RoomUserListPanel extends JPanel {
                     int index = roomUserListView.locationToIndex(e.getPoint());
                     roomUserListView.setSelectedIndex(index);
 
-                    String focusUserId = "";
+                    String focusHostName = "";
                     if (index >= 0 && index < model.size()) {
-                        focusUserId = model.get(index);
+                        focusHostName = model.get(index);
                     }
 
-                    if (focusUserId.equals("") || focusUserId.equals(appInstance.getUserId())) {
+                    if (focusHostName.equals("") || focusHostName.equals(appInstance.getUserId())) {
                         return;
                     }
                     int isRemove = JOptionPane.showOptionDialog(
                             null,
-                            "Will you force [" + focusUserId + "] to leave?",
+                            "Will you force [" + focusHostName + "] to leave?",
                             "USER REFUSE",
                             JOptionPane.YES_NO_OPTION,
                             JOptionPane.QUESTION_MESSAGE,
@@ -68,7 +68,7 @@ public class RoomUserListPanel extends JPanel {
                     );
 
                     if (isRemove == 0) {
-                        removeUser(focusUserId);
+                        removeUser(focusHostName);
                     }
                 }
             }
@@ -77,7 +77,7 @@ public class RoomUserListPanel extends JPanel {
         this.add(new JScrollPane(roomUserListView), BorderLayout.CENTER);
     }
 
-    private void removeUser(String removeUserId) {
+    private void removeUser(String removeHostName) {
         AppInstance appInstance = AppInstance.getInstance();
         SessionManager sessionManager = SessionManager.getInstance();
 
@@ -85,7 +85,7 @@ public class RoomUserListPanel extends JPanel {
 
         // create request remove user from room
         HgtpRemoveUserFromRoomRequest hgtpRemoveUserFromRoomRequest = new HgtpRemoveUserFromRoomRequest(
-                appInstance.getUserId(), AppInstance.SEQ_INCREMENT, userInfo.getRoomId(), NetworkUtil.messageEncoding(removeUserId)
+                appInstance.getUserId(), AppInstance.SEQ_INCREMENT, userInfo.getRoomId(), removeHostName
         );
 
         HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();

@@ -3,6 +3,7 @@ package moomoo.hgtp.grouptalk.protocol.http.message.content;
 import moomoo.hgtp.grouptalk.protocol.http.base.HttpMessage;
 
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @class HttpUserListContent
@@ -10,7 +11,7 @@ import java.util.HashSet;
  */
 public class HttpUserListContent extends HttpMessage {
 
-    private final HashSet<String> userListSet = new HashSet<>();
+    private final Set<String> userListSet = new HashSet<>();
 
     public HttpUserListContent() {
         // nothing
@@ -21,6 +22,6 @@ public class HttpUserListContent extends HttpMessage {
     }
 
     public boolean isEmpty() { return userListSet.isEmpty(); }
-    public HashSet<String> getUserListSet() { return userListSet; }
+    public Set<String> getUserListSet() { return userListSet; }
 
 }

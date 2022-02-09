@@ -34,7 +34,7 @@ public class DeleteRoomButtonListener implements ActionListener {
             appInstance.getStateHandler().fire(HgtpEvent.DELETE_ROOM, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
             // create request delete room
             HgtpDeleteRoomRequest hgtpDeleteRoomRequest = new HgtpDeleteRoomRequest(
-                    appInstance.getUserId(), AppInstance.SEQ_INCREMENT, roomId
+                    appInstance.getUserId(), AppInstance.SEQ_INCREMENT, roomId, ""
             );
 
             hgtpRequestHandler.sendDeleteRoomRequest(hgtpDeleteRoomRequest);

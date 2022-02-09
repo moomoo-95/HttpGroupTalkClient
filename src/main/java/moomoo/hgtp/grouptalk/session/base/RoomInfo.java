@@ -8,18 +8,22 @@ import java.util.Set;
 public class RoomInfo {
 
     private final String roomId;
+    private final String roomName;
     private final String managerId;
     private final long createTime;
     private final HashSet<String> userGroupSet;
 
-    public RoomInfo(String roomId, String managerId) {
+    public RoomInfo(String roomId, String roomName, String managerId) {
         this.roomId = roomId;
+        this.roomName = roomName;
         this.managerId = managerId;
         this.createTime = System.currentTimeMillis();
         this.userGroupSet = new HashSet<>();
     }
 
     public String getRoomId() {return roomId;}
+
+    public String getRoomName() {return roomName;}
 
     public String getManagerId() {return managerId;}
 

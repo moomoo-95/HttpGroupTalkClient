@@ -11,7 +11,7 @@ import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @class UserListPanel
@@ -49,17 +49,17 @@ public class UserListPanel extends JPanel {
                     int index = userListView.locationToIndex(e.getPoint());
                     userListView.setSelectedIndex(index);
 
-                    String focusUserId = "";
+                    String focusHostName = "";
                     if (index >= 0 && index < model.size()) {
-                        focusUserId = model.get(index);
+                        focusHostName = model.get(index);
                     }
 
-                    if (focusUserId.equals("") || focusUserId.equals(appInstance.getUserId())) {
+                    if (focusHostName.equals("") || focusHostName.equals(appInstance.getUserId())) {
                         return;
                     }
                     int isInvite = JOptionPane.showOptionDialog(
                             null,
-                            "Do you want to invite [" + focusUserId + "] ?",
+                            "Do you want to invite [" + focusHostName + "] ?",
                             "USER INVITE",
                             JOptionPane.YES_NO_OPTION,
                             JOptionPane.QUESTION_MESSAGE,
@@ -69,7 +69,7 @@ public class UserListPanel extends JPanel {
                     );
 
                     if (isInvite == 0) {
-                        inviteUser(focusUserId);
+                        inviteUser(focusHostName);
                     }
                 }
             }
@@ -78,7 +78,7 @@ public class UserListPanel extends JPanel {
         this.add(new JScrollPane(userListView), BorderLayout.CENTER);
     }
 
-    private void inviteUser(String inviteUserId) {
+    private void inviteUser(String inviteHostName) {
         AppInstance appInstance = AppInstance.getInstance();
         SessionManager sessionManager = SessionManager.getInstance();
 
@@ -86,14 +86,14 @@ public class UserListPanel extends JPanel {
 
         // create request invite user from room
         HgtpInviteUserFromRoomRequest hgtpInviteUserFromRoomRequest = new HgtpInviteUserFromRoomRequest(
-                appInstance.getUserId(), AppInstance.SEQ_INCREMENT, userInfo.getRoomId(), NetworkUtil.messageEncoding(inviteUserId)
+                appInstance.getUserId(), AppInstance.SEQ_INCREMENT, userInfo.getRoomId(), inviteHostName
         );
 
         HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();
         hgtpRequestHandler.sendInviteUserFromRoomRequest(hgtpInviteUserFromRoomRequest);
     }
 
-    public void setUserList(HashSet<String> userList) {
+    public void setUserList(Set<String> userList) {
         model.clear();
 
         if (userList != null) {
