@@ -115,8 +115,8 @@ public class HgtpResponseHandler {
                     appInstance.getStateHandler().fire(HgtpEvent.DELETE_ROOM_SUC, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
                     appInstance.setManager(false);
                     controlPanel.setRegisterButtonStatus();
-                    sessionManager.deleteRoomInfo(hgtpHeader.getUserId(), hgtpHeader.getUserId());
-                    guiManager.roomInit();
+                    RoomInfo roomInfo = sessionManager.getRoomInfo(userInfo.getRoomId());
+                    sessionManager.deleteRoomInfo(roomInfo.getRoomId(), userInfo.getUserId());
                     break;
                 case HgtpMessageType.JOIN_ROOM:
                     appInstance.getStateHandler().fire(HgtpEvent.JOIN_ROOM_SUC, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
@@ -157,7 +157,8 @@ public class HgtpResponseHandler {
                     break;
                 case HgtpMessageType.CREATE_ROOM:
                     appInstance.getStateHandler().fire(HgtpEvent.CREATE_ROOM_FAIL, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
-                    sessionManager.deleteRoomInfo(hgtpHeader.getUserId(), hgtpHeader.getUserId());
+                    RoomInfo roomInfo = sessionManager.getRoomInfo(userInfo.getRoomId());
+                    sessionManager.deleteRoomInfo(roomInfo.getRoomId(), userInfo.getUserId());
                     break;
                 case HgtpMessageType.DELETE_ROOM:
                     appInstance.getStateHandler().fire(HgtpEvent.DELETE_ROOM_FAIL, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));

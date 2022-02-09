@@ -39,6 +39,7 @@ public class GuiManager {
     }
 
     public void roomInit() {
+        getRoomPanel().setRoomName("");
         getRoomPanel().initMessage();
         getRoomUserListPanel().setRoomUserList(null);
     }

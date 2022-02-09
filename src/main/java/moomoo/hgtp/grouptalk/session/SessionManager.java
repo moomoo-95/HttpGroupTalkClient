@@ -3,11 +3,13 @@ package moomoo.hgtp.grouptalk.session;
 import moomoo.hgtp.grouptalk.config.ConfigManager;
 import moomoo.hgtp.grouptalk.fsm.HgtpEvent;
 import moomoo.hgtp.grouptalk.fsm.HgtpState;
+import moomoo.hgtp.grouptalk.gui.GuiManager;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.HgtpRemoveUserFromRoomRequest;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
+import moomoo.hgtp.grouptalk.service.base.ProcessMode;
 import moomoo.hgtp.grouptalk.session.base.RoomInfo;
 import moomoo.hgtp.grouptalk.session.base.UserInfo;
 import moomoo.hgtp.grouptalk.util.NetworkUtil;
@@ -226,6 +228,9 @@ public class SessionManager {
         }
         UserInfo userInfo = getUserInfo(managerId);
         userInfo.initRoomId();
+        if (appInstance.getMode() == ProcessMode.CLIENT) {
+            GuiManager.getInstance().roomInit();
+        }
 
         return HgtpMessageType.OK;
     }

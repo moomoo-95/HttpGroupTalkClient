@@ -569,11 +569,11 @@ public class HgtpRequestHandler {
         }
 
         UserInfo peerUserInfo = sessionManager.getUserInfoWithHostName(peerHostName);
-        String peerUserId = peerUserInfo.getUserId();
         if (peerUserInfo == null) {
             log.debug(USER_UNREG_LOG, peerHostName);
             return;
         }
+        String peerUserId = peerUserInfo.getUserId();
         short messageType = HgtpMessageType.OK;
         switch (appInstance.getMode()) {
             case SERVER:
@@ -615,9 +615,7 @@ public class HgtpRequestHandler {
                     GuiManager guiManager = GuiManager.getInstance();
                     ControlPanel controlPanel = guiManager.getControlPanel();
 
-                    guiManager.roomInit();
                     controlPanel.setRegisterButtonStatus();
-
                     sessionManager.deleteRoomInfo(userId, userId);
                 }
 
@@ -832,7 +830,6 @@ public class HgtpRequestHandler {
         byte[] data = hgtpExitRoomRequest.getByteData();
         sendHgtpRequest(hgtpHeader.getUserId(), data);
 
-        GuiManager.getInstance().roomInit();
         log.debug(SEND_LOG, appInstance.getUserId(), HgtpMessageType.REQUEST_HASHMAP.get(hgtpHeader.getMessageType()), hgtpExitRoomRequest);
     }
 
