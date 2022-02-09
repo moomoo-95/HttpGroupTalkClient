@@ -467,7 +467,7 @@ public class HgtpRequestHandler {
 
         String userId = hgtpHeader.getUserId();
         String roomId = hgtpContent.getRoomId();
-        String peerUserId = hgtpContent.getPeerUserId();
+        String peerHostName = NetworkUtil.messageDecoding(hgtpContent.getPeerHostName());
 
         UserInfo userInfo = sessionManager.getUserInfo(userId);
         if (userInfo == null) {
@@ -475,7 +475,8 @@ public class HgtpRequestHandler {
             return;
         }
 
-        UserInfo peerUserInfo = sessionManager.getUserInfo(peerUserId);
+        UserInfo peerUserInfo = sessionManager.getUserInfoWithHostName(peerHostName);
+        String peerUserId = peerUserInfo.getUserId();
         short messageType = HgtpMessageType.OK;
         switch (appInstance.getMode()) {
             case SERVER:
@@ -505,7 +506,7 @@ public class HgtpRequestHandler {
                     HgtpInviteUserFromRoomRequest hgtpInviteRequest = new HgtpInviteUserFromRoomRequest(
                             peerUserId,
                             hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT,
-                            peerUserInfo.getRoomId(), peerUserId
+                            peerUserInfo.getRoomId(), hgtpContent.getPeerHostName()
                     );
                     sendInviteUserFromRoomRequest(hgtpInviteRequest);
                 }
@@ -554,7 +555,7 @@ public class HgtpRequestHandler {
 
         String userId = hgtpHeader.getUserId();
         String roomId = hgtpContent.getRoomId();
-        String peerUserId = hgtpContent.getPeerUserId();
+        String peerUserId = hgtpContent.getPeerHostName();
 
         UserInfo userInfo = sessionManager.getUserInfo(userId);
         if (userInfo == null) {

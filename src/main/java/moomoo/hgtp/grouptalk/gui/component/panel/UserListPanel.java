@@ -86,7 +86,7 @@ public class UserListPanel extends JPanel {
 
         // create request invite user from room
         HgtpInviteUserFromRoomRequest hgtpInviteUserFromRoomRequest = new HgtpInviteUserFromRoomRequest(
-                appInstance.getUserId(), AppInstance.SEQ_INCREMENT, userInfo.getRoomId(), inviteUserId
+                appInstance.getUserId(), AppInstance.SEQ_INCREMENT, userInfo.getRoomId(), NetworkUtil.messageEncoding(inviteUserId)
         );
 
         HgtpRequestHandler hgtpRequestHandler = new HgtpRequestHandler();

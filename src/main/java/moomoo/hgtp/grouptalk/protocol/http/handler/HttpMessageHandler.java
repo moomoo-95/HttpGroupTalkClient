@@ -141,7 +141,7 @@ public class HttpMessageHandler {
         }
 
         if (roomInfo.getUserGroupSetSize() > 0) {
-            HashSet<String> userGroupSet = new HashSet<>(roomInfo.getUserGroupSet());
+            HashSet<String> userGroupSet = (HashSet<String>) sessionManager.getHostNameSet(roomInfo.getUserGroupSet());
             roomUserListContent.addAllRoomUserList(userGroupSet);
         }
 

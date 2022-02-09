@@ -10,7 +10,7 @@ import java.util.HashSet;
  */
 public class HttpRoomListContent extends HttpMessage {
 
-    private HashSet<String> roomListSet = new HashSet<>();
+    private final HashSet<String> roomListSet = new HashSet<>();
 
     public HttpRoomListContent() {
         // nothing

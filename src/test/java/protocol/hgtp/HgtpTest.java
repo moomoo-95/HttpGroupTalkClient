@@ -412,7 +412,7 @@ public class HgtpTest {
             } else {
                 if (recvHgtpInviteUserFromRoomRequest.getHgtpHeader().getMessageType() != HgtpMessageType.INVITE_USER_FROM_ROOM
                         || !roomInfoMap.containsKey(recvHgtpInviteUserFromRoomRequest.getHgtpContent().getRoomId())
-                        || !userInfoMap.containsKey(recvHgtpInviteUserFromRoomRequest.getHgtpContent().getPeerUserId())){
+                        || !userInfoMap.containsKey(recvHgtpInviteUserFromRoomRequest.getHgtpContent().getPeerHostName())){
                     messageType = HgtpMessageType.BAD_REQUEST;
                     msgType = "BAD";
                 } else {
@@ -458,7 +458,7 @@ public class HgtpTest {
             } else {
                 if (recvHgtpRemoveUserFromRoomRequest.getHgtpHeader().getMessageType() != HgtpMessageType.REMOVE_USER_FROM_ROOM
                         || !roomInfoMap.containsKey(recvHgtpRemoveUserFromRoomRequest.getHgtpContent().getRoomId())
-                        || !userInfoMap.containsKey(recvHgtpRemoveUserFromRoomRequest.getHgtpContent().getPeerUserId())){
+                        || !userInfoMap.containsKey(recvHgtpRemoveUserFromRoomRequest.getHgtpContent().getPeerHostName())){
                     messageType = HgtpMessageType.BAD_REQUEST;
                     msgType = "BAD";
                 } else {

@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import service.ResourceManager;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -235,6 +236,11 @@ public class SessionManager {
         }
     }
 
+    public UserInfo getUserInfoWithHostName(String hostName) {
+        List<UserInfo> userInfos = userInfoHashMap.values().stream().filter(userInfo -> userInfo.getHostName().equals(hostName)).collect(Collectors.toList());
+        return userInfos.get(0);
+    }
+
     public RoomInfo getRoomInfo(String roomId) {
         if ( roomInfoHashMap.containsKey(roomId) ) {
             return roomInfoHashMap.get(roomId);
@@ -249,6 +255,12 @@ public class SessionManager {
 
     public Set<String> getHostNameSet() {
         return userInfoHashMap.values().stream()
+                .map(userInfo -> NetworkUtil.messageEncoding(userInfo.getHostName()))
+                .collect(Collectors.toSet());
+    }
+
+    public Set<String> getHostNameSet(Set<String> userIdSet) {
+        return userInfoHashMap.values().stream().filter(userInfo -> userIdSet.contains(userInfo.getUserId()))
                 .map(userInfo -> NetworkUtil.messageEncoding(userInfo.getHostName()))
                 .collect(Collectors.toSet());
     }
