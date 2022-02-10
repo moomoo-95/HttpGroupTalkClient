@@ -12,7 +12,6 @@ import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.content.HgtpRoomContent;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.content.HgtpRoomControlContent;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.*;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpCommonResponse;
-import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpUnauthorizedResponse;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.handler.HgtpResponseHandler;
 import moomoo.hgtp.grouptalk.protocol.http.handler.HttpMessageHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
@@ -65,21 +64,15 @@ public class HgtpRequestHandler {
 
         // client 일 경우 bad request 전송
         if (appInstance.getMode() == ProcessMode.CLIENT) {
-            HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                    HgtpMessageType.BAD_REQUEST, hgtpHeader.getRequestType(),
-                    hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
-
-            hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
+            hgtpResponseHandler.sendHgtpResponse(HgtpMessageType.BAD_REQUEST, hgtpHeader, (short) 0);
             return;
         }
 
         String userId = hgtpHeader.getUserId();
-
         if (userId.equals("")) {
             log.warn("({}) () () UserId is null", userId);
             return;
         }
-
         UserInfo userInfo = sessionManager.getUserInfo(userId);
 
         // 첫 번째 Register Request
@@ -98,19 +91,11 @@ public class HgtpRequestHandler {
                 appInstance.getStateHandler().fire(HgtpEvent.REGISTER, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
                 // 수신할 http port 전달
                 short httpPort = (short) userInfo.getHttpServerNetAddress().getPort();
-                HgtpUnauthorizedResponse hgtpUnauthorizedResponse = new HgtpUnauthorizedResponse(
-                        hgtpHeader.getRequestType(), userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT,
-                        httpPort, AppInstance.MD5_REALM);
-
-                hgtpResponseHandler.sendUnauthorizedResponse(hgtpUnauthorizedResponse);
+                hgtpResponseHandler.sendHgtpResponse(HgtpMessageType.UNAUTHORIZED, hgtpHeader, httpPort);
             }
             // userInfo 생성 실패
             else {
-                HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                        messageType, hgtpHeader.getRequestType(),
-                        userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
-
-                hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
+                hgtpResponseHandler.sendHgtpResponse(messageType, hgtpHeader, (short) 0);
                 sessionManager.deleteUserInfo(userId);
             }
         }
@@ -126,11 +111,7 @@ public class HgtpRequestHandler {
                 messageType = HgtpMessageType.FORBIDDEN;
             }
 
-            HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                    messageType, hgtpHeader.getRequestType(),
-                    userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
-
-            hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
+            hgtpResponseHandler.sendHgtpResponse(messageType, hgtpHeader, (short) 0);
 
             if (messageType == HgtpMessageType.FORBIDDEN) {
                 appInstance.getStateHandler().fire(HgtpEvent.REGISTER_FAIL, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));
@@ -163,21 +144,15 @@ public class HgtpRequestHandler {
 
         // client 일 경우 bad request 전송
         if (appInstance.getMode() == ProcessMode.CLIENT) {
-            HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                    HgtpMessageType.BAD_REQUEST, hgtpHeader.getRequestType(),
-                    hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
-
-            hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
+            hgtpResponseHandler.sendHgtpResponse(HgtpMessageType.BAD_REQUEST, hgtpHeader, (short) 0);
             return;
         }
 
         String userId = hgtpHeader.getUserId();
-
         if (userId.equals("")) {
             log.warn("({}) () () UserId is null", userId);
             return;
         }
-
         UserInfo userInfo = sessionManager.getUserInfo(userId);
         if (userInfo == null) {
             log.debug(USER_UNREG_LOG, userId);
@@ -193,11 +168,7 @@ public class HgtpRequestHandler {
             messageType = HgtpMessageType.OK;
         }
 
-        HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                messageType, hgtpHeader.getRequestType(),
-                userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
-
-        hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
+        hgtpResponseHandler.sendHgtpResponse(messageType, hgtpHeader, (short) 0);
 
         // ok 응답시에만 userInfo 제거
         if (messageType == HgtpMessageType.OK) {
@@ -226,11 +197,7 @@ public class HgtpRequestHandler {
 
         // client 일 경우 bad request 전송
         if (appInstance.getMode() == ProcessMode.CLIENT) {
-            HgtpCommonResponse hgtpCommonResponse = new HgtpCommonResponse(
-                    HgtpMessageType.BAD_REQUEST, hgtpHeader.getRequestType(),
-                    hgtpHeader.getUserId(), hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
-
-            hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
+            hgtpResponseHandler.sendHgtpResponse(HgtpMessageType.BAD_REQUEST, hgtpHeader, (short) 0);
             return;
         }
 
@@ -251,7 +218,7 @@ public class HgtpRequestHandler {
                 messageType, hgtpHeader.getRequestType(),
                 userId, hgtpHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT);
 
-        hgtpResponseHandler.sendCommonResponse(hgtpCommonResponse);
+        hgtpResponseHandler.sendHgtpResponse(messageType, hgtpHeader, (short) 0);
 
         if (messageType == HgtpMessageType.OK) {
             appInstance.getStateHandler().fire(HgtpEvent.CREATE_ROOM_SUC, appInstance.getStateManager().getStateUnit(userInfo.getHgtpStateUnitId()));

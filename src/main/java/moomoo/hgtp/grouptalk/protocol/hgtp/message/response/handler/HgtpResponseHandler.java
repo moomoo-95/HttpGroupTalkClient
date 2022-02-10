@@ -6,12 +6,12 @@ import moomoo.hgtp.grouptalk.gui.GuiManager;
 import moomoo.hgtp.grouptalk.gui.component.panel.ControlPanel;
 import moomoo.hgtp.grouptalk.network.NetworkManager;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpHeader;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessage;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.content.HgtpUnauthorizedContent;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.HgtpRegisterRequest;
 import moomoo.hgtp.grouptalk.protocol.hgtp.message.request.handler.HgtpRequestHandler;
-import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpCommonResponse;
-import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpUnauthorizedResponse;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.*;
 import moomoo.hgtp.grouptalk.protocol.http.handler.HttpMessageHandler;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.service.base.ProcessMode;
@@ -345,42 +345,74 @@ public class HgtpResponseHandler {
      * @param hgtpCommonResponse
      */
     public void sendCommonResponse(HgtpCommonResponse hgtpCommonResponse) {
-        UserInfo userInfo = sessionManager.getUserInfo(hgtpCommonResponse.getHgtpHeader().getUserId());
+        HgtpHeader hgtpHeader = hgtpCommonResponse.getHgtpHeader();
+        if (hgtpHeader == null) {
+            log.warn("() () () hgtpHeader is null.");
+            return;
+        }
 
+        String userId = hgtpHeader.getUserId();
+        UserInfo userInfo = sessionManager.getUserInfo(userId);
         if (userInfo == null) {
-            log.warn("({}) () () UserInfo is null.", userInfo.getUserId());
+            log.warn("() () () UserInfo is null.");
+            return;
         }
 
         DestinationRecord destinationRecord = networkManager.getHgtpGroupSocket().getDestination(userInfo.getSessionId());
         if (destinationRecord == null) {
-            log.warn("({}) () () DestinationRecord Channel is null.", userInfo.getUserId());
+            log.warn("({}) () () DestinationRecord Channel is null.", userId);
+            return;
         }
 
         byte[] data = hgtpCommonResponse.getByteData();
         destinationRecord.getNettyChannel().sendData(data, data.length);
-        log.debug("({}) () () [{}] SEND DATA {}", userInfo.getUserId(), HgtpMessageType.RESPONSE_HASHMAP.get(hgtpCommonResponse.getHgtpHeader().getMessageType()), hgtpCommonResponse);
+        log.debug("({}) () () [{}] SEND DATA {}", userId, HgtpMessageType.RESPONSE_HASHMAP.get(hgtpCommonResponse.getHgtpHeader().getMessageType()), hgtpCommonResponse);
 
     }
 
-    /**
-     * @fn sendCommonResponse
-     * @brief UnauthorizedResponse 를 전송하는 메서드
-     * @param hgtpUnauthorizedResponse
-     */
-    public void sendUnauthorizedResponse(HgtpUnauthorizedResponse hgtpUnauthorizedResponse) {
-        UserInfo userInfo = sessionManager.getUserInfo(hgtpUnauthorizedResponse.getHgtpHeader().getUserId());
+    private HgtpMessage createHgtpResponse(short messageType, HgtpHeader requestHeader, short listenPort) {
+        int seqNumber = requestHeader.getSeqNumber() + AppInstance.SEQ_INCREMENT;
+        switch (messageType) {
+            case HgtpMessageType.OK:
+                return new HgtpOkResponse(requestHeader.getRequestType(), requestHeader.getUserId(), seqNumber);
+            case HgtpMessageType.BAD_REQUEST:
+                return new HgtpBadRequestResponse(requestHeader.getRequestType(), requestHeader.getUserId(), seqNumber);
+            case HgtpMessageType.SERVER_UNAVAILABLE:
+                return new HgtpServerUnavailableResponse(requestHeader.getRequestType(), requestHeader.getUserId(), seqNumber);
+            case HgtpMessageType.FORBIDDEN:
+                return new HgtpForbiddenResponse(requestHeader.getRequestType(), requestHeader.getUserId(), seqNumber);
+            case HgtpMessageType.UNAUTHORIZED:
+                if (listenPort <= 0) {
+                    return null;
+                } else {
+                    return new HgtpUnauthorizedResponse(requestHeader.getRequestType(), requestHeader.getUserId(), seqNumber, listenPort, AppInstance.MD5_REALM);
+                }
+            default:
+                return null;
+        }
+    }
 
+    public void sendHgtpResponse(short messageType, HgtpHeader requestHeader, short listenPort) {
+        if (requestHeader == null) {
+            log.warn("() () () hgtpHeader is null.");
+            return;
+        }
+        HgtpMessage hgtpMessage = createHgtpResponse(messageType, requestHeader, listenPort);
+
+        String userId = requestHeader.getUserId();
+        UserInfo userInfo = sessionManager.getUserInfo(userId);
         if (userInfo == null) {
-            log.warn("({}) () () UserInfo is null.", userInfo.getUserId());
+            log.warn("() () () UserInfo is null.");
+            return;
         }
 
         DestinationRecord destinationRecord = networkManager.getHgtpGroupSocket().getDestination(userInfo.getSessionId());
         if (destinationRecord == null) {
-            log.warn("({}) () () DestinationRecord Channel is null.", userInfo.getUserId());
+            log.warn("({}) () () DestinationRecord Channel is null.", userId);
+            return;
         }
 
-        byte[] data = hgtpUnauthorizedResponse.getByteData();
+        byte[] data = hgtpMessage.getByteData();
         destinationRecord.getNettyChannel().sendData(data, data.length);
-        log.debug("({}) () () [{}] SEND DATA {}", userInfo.getUserId(), HgtpMessageType.RESPONSE_HASHMAP.get(hgtpUnauthorizedResponse.getHgtpHeader().getMessageType()), hgtpUnauthorizedResponse);
     }
 }

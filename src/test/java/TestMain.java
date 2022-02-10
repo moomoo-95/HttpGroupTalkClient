@@ -1,3 +1,8 @@
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessage;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.base.HgtpMessageType;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpBadRequestResponse;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpForbiddenResponse;
+import moomoo.hgtp.grouptalk.protocol.hgtp.message.response.HgtpOkResponse;
 import moomoo.hgtp.grouptalk.service.AppInstance;
 import moomoo.hgtp.grouptalk.util.CnameGenerator;
 import moomoo.hgtp.grouptalk.util.NetworkUtil;
@@ -7,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import protocol.hgtp.HgtpTest;
 import sun.nio.ch.Net;
 
+import java.awt.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Base64;
@@ -54,30 +60,7 @@ public class TestMain {
 //
 //        hgtpManager.stopHgtp();
 
-        HashMap<String, testClass> testClassMap = new HashMap<>();
-        testClassMap.put("aaa", new testClass("aaa", 23));
-        testClassMap.put("bbb", new testClass("bbb", 24));
-        testClassMap.put("ccc", new testClass("ccc", 25));
-        testClassMap.put("ddd", new testClass("ddd", 28));
-        testClassMap.put("eee", new testClass("eee", 21));
-
-        Set<String> mmap = testClassMap.values().stream().map(testClass -> testClass.getAge()).collect(Collectors.toSet());;
-
-        log.debug("{}", mmap);
     }
 
-    class testClass{
-
-        private String name;
-        private int age;
-        public testClass(String name, int age) {
-            this.name = name;
-            this.age = age;
-        }
-
-        public String getAge() {
-            return String.valueOf(age);
-        }
-    }
 
 }

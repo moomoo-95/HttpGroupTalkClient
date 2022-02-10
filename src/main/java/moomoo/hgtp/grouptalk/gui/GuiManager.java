@@ -27,11 +27,11 @@ public class GuiManager {
 
     public void setClientTitle(String title) {
         if (title == null) return;
-        clientFrame.setTitle("GroupTalk [" + title + "]["+AppInstance.getInstance().getUserId()+"]");
+        clientFrame.setTitle("GroupTalk [" + title + "]");
     }
 
     public void clientFrameInit() {
-        clientFrame.setTitle("GroupTalk" + "["+AppInstance.getInstance().getUserId()+"]");
+        clientFrame.setTitle("GroupTalk");
         getUserListPanel().setUserList(null);
         getRoomListPanel().setRoomList(null);
         getRoomUserListPanel().setRoomUserList(null);
